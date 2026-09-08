@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>John Brown — Developer</title>
+<meta name="description" content="John Brown, self-taught developer. Projects in HTML, CSS, JavaScript and Python, including Purawepa, Style Sage, and Python Practice." />
+<meta name="theme-color" content="#f3f3f1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<a href="#work" class="skip-link">Skip to work</a>
+
+<header id="site-nav">
+  <a href="#top" class="nav-mark">John Brown</a>
+  <nav aria-label="Primary">
+    <a href="#work">Work</a>
+    <a href="#skills">Skills</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ============================================================
+       HERO — asymmetric split: statement left, live project right
+       ============================================================ -->
+  <section id="hero">
+    <div class="hero-copy">
+      <h1>I build interfaces, then sweat the details.</h1>
+      <p class="hero-sub">
+        Self-taught developer working across HTML, CSS, JavaScript and Python,
+        learning full-stack development one real project at a time.
+      </p>
+      <a class="btn btn-primary" href="#work">View my work</a>
+    </div>
+    <figure class="hero-shot" data-reveal>
+      <img src="assets/img/purawepa-shot.jpg" alt="Purawepa website hero section, showing an animated food truck illustration on a dusk street scene" width="1547" height="784" loading="eager" />
+      <figcaption>Purawepa, a live site I designed and built.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================
+       FEATURED WORK — full-width stacked case study
+       ============================================================ -->
+  <section id="work" class="section">
+    <h2>Selected work</h2>
+
+    <article class="feature" data-reveal>
+      <div class="feature-media">
+        <img src="assets/img/purawepa-shot.jpg" alt="Purawepa landing page, dusk street scene with an illustrated food truck and the headline Pura Comida Puro Wepa" loading="lazy" />
+      </div>
+      <div class="feature-body">
+        <h3>Purawepa</h3>
+        <p>
+          A landing page for a Puerto Rican street food truck, built with plain
+          HTML, CSS and JavaScript. No framework: a scroll-scrubbed animated
+          hero, a custom CSS design system, and a two-act color palette that
+          shifts from dusk to daylight as you scroll.
+        </p>
+        <ul class="tags">
+          <li>HTML</li>
+          <li>CSS</li>
+          <li>JavaScript</li>
+          <li>GitHub Pages</li>
+        </ul>
+        <div class="feature-links">
+          <a class="link-arrow" href="https://biotekk127.github.io/purawepa/" target="_blank" rel="noopener">Live demo <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+          <a class="link-arrow" href="https://github.com/Biotekk127/purawepa" target="_blank" rel="noopener">View code <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================================================
+       MORE PROJECTS — asymmetric two-column grid
+       ============================================================ -->
+  <section id="projects" class="section">
+    <h2>More projects</h2>
+    <div class="project-grid">
+
+      <article class="project project-lg" data-reveal>
+        <div class="project-media">
+          <img src="assets/img/style-sage-files.png" alt="File listing from the Style Sage repository, showing app.py, analysis.py, style_rules.py and a Next.js frontend" loading="lazy" />
+        </div>
+        <h3>Style Sage</h3>
+        <p>
+          An AI-assisted style recommender MVP. A FastAPI backend analyzes an
+          uploaded photo's color and tone, paired with a Next.js frontend and
+          a rule-based recommendation engine.
+        </p>
+        <ul class="tags">
+          <li>Python</li>
+          <li>FastAPI</li>
+          <li>Next.js</li>
+          <li>Docker</li>
+        </ul>
+        <div class="feature-links">
+          <a class="link-arrow" href="https://github.com/Biotekk127/style-sage" target="_blank" rel="noopener">View code <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+        </div>
+      </article>
+
+      <article class="project project-sm" data-reveal>
+        <h3>Python Practice</h3>
+        <p>
+          Fundamentals practice. Small scripts and exercises working through
+          core Python syntax, logic and control flow, including a run of the
+          30 Days of Python challenge.
+        </p>
+        <ul class="tags">
+          <li>Python</li>
+        </ul>
+        <div class="feature-links">
+          <a class="link-arrow" href="https://github.com/Biotekk127/python-practice" target="_blank" rel="noopener">View code <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SKILLS — chip cloud, grouped
+       ============================================================ -->
+  <section id="skills" class="section">
+    <h2>What I work with</h2>
+    <div class="skill-group">
+      <h3>Languages</h3>
+      <ul class="tags tags-lg">
+        <li>HTML</li>
+        <li>CSS</li>
+        <li>JavaScript</li>
+        <li>Python</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <h3>Tools &amp; frameworks</h3>
+      <ul class="tags tags-lg">
+        <li>Git</li>
+        <li>GitHub</li>
+        <li>FastAPI</li>
+        <li>Next.js</li>
+        <li>Docker</li>
+        <li>VS Code</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     CONTACT
+     ============================================================ -->
+<footer id="contact">
+  <div class="contact-inner">
+    <h2>Let's talk</h2>
+    <p>Open to internship and junior developer roles.</p>
+    <div class="contact-links">
+      <a href="https://github.com/Biotekk127" target="_blank" rel="noopener"><i class="ph ph-github-logo" aria-hidden="true"></i> github.com/Biotekk127</a>
+      <a href="mailto:johnbrownjr127@gmail.com"><i class="ph ph-envelope-simple" aria-hidden="true"></i> johnbrownjr127@gmail.com</a>
+    </div>
+    <p class="fine-print">© 2026 John Brown</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
