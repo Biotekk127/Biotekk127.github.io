@@ -27,6 +27,30 @@
     "Workspace": {
       "$properties": {
         "FallenPartsDestroyHeight": -50
+      },
+      "Baseplate": {
+        "$className": "Part",
+        "$properties": {
+          "Anchored": true,
+          "Locked": true,
+          "Size": [
+            2048,
+            16,
+            2048
+          ],
+          "Position": [
+            0,
+            -8,
+            0
+          ],
+          "Color": [
+            0.392,
+            0.784,
+            0.431
+          ],
+          "Material": "Grass",
+          "TopSurface": "Smooth"
+        }
       }
     }
   }

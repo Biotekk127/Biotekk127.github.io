@@ -4385,5 +4385,25 @@ return Ui
       <float name="FallenPartsDestroyHeight">-50</float>
       <bool name="NeedsPivotMigration">false</bool>
     </Properties>
+    <Item class="Part" referent="26">
+      <Properties>
+        <string name="Name">Baseplate</string>
+        <bool name="Anchored">true</bool>
+        <Color3uint8 name="Color3uint8">6604910</Color3uint8>
+        <bool name="Locked">true</bool>
+        <token name="Material">1280</token>
+        <Vector3 name="Position">
+          <X>0</X>
+          <Y>-8</Y>
+          <Z>0</Z>
+        </Vector3>
+        <Vector3 name="size">
+          <X>2048</X>
+          <Y>16</Y>
+          <Z>2048</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+    </Item>
   </Item>
 </roblox>
