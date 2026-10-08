@@ -48,15 +48,23 @@ local PUPIL = "#121217"
 local SHINE = "#ffffff"
 local STEAM = "#ffffff"
 
+local CHAIN = "#565b69" -- kusari mesh undershirt
+local ENGRAVE = "#2b2f3a" -- swirl engraved in the forehead plate
+
 -- Layout (world studs) -------------------------------------------------------------------
-local HIPC = { 0, 3.35, 0 } -- upper-body bob origin
+-- The upper body is written upright and then dropped + leaned forward as a whole (Stance),
+-- which turns the pose into a low crouched assassin stance.
+local HIPC = { 0, 3.35, 0 } -- upper-body pivot (before the stance drop)
+local DROP = 0.38 -- how far the whole upper body sinks into the crouch
+local LEAN = -7 -- forward lean of the upper body (degrees about X)
 local NECK = { 0, 5.62, -0.06 } -- head pivot
 local CZ = -0.08 -- cup axis z
 local CUP_R = 1.35 -- cup radius (straight upper wall)
 local BOWL_Y = 7.15 -- centre of the round bowl / start of the straight wall
 local BOWL_SY = 1.25 -- bowl depth (bottom at 5.9)
 local CUP_TOP = 8.4
-local BAND_Y = 8.08 -- ninja cloth tied around the cup
+local BAND_Y = 8.1 -- ninja cloth tied around the cup
+local BAND_H = 0.44
 
 -- Torso volumes {cx, cy, cz, ax, ay, az}
 local CHEST = { 0, 4.72, -0.04, 0.7, 0.675, 0.45 }
@@ -74,9 +82,10 @@ local L_ELBOW = { -1.36, 4.42, 0.0 }
 local L_HAND = { -1.55, 4.32, -0.76 }
 local L_BLADE = { -0.45, -0.82, -0.35 } -- low-guard katana direction
 
-local HIP = { 0.42, 3.3, 0.02 }
-local KNEE = { 1.0, 1.95, -0.5 }
-local ANKLE = { 1.14, 0.62, -0.06 }
+-- legs are built in final (crouched) coordinates
+local HIP = { 0.42, 2.93, 0.02 }
+local KNEE = { 1.14, 1.72, -0.58 }
+local ANKLE = { 1.2, 0.58, -0.04 }
 
 -- Helpers --------------------------------------------------------------------------------
 local function deg(r)
@@ -105,6 +114,13 @@ end
 -- Animated joint: rotates/bobs around p, children keep world coordinates
 local function joint(k, name, p, anim, fn)
 	k:Group({ Name = name, Pos = p, Anim = anim }, function()
+		k:Group({ Name = name .. "Frame", Pos = { -p[1], -p[2], -p[3] } }, fn)
+	end)
+end
+
+-- Static pivot: rotates children by rot around p, then shifts them by off (world coords kept)
+local function pivot(k, name, p, rot, off, fn)
+	k:Group({ Name = name, Pos = { p[1] + off[1], p[2] + off[2], p[3] + off[3] }, Rot = rot }, function()
 		k:Group({ Name = name .. "Frame", Pos = { -p[1], -p[2], -p[3] } }, fn)
 	end)
 end
@@ -193,27 +209,23 @@ local function katana(k, glintPhase, sparkle)
 	-- handle (tsuka)
 	k:Part({ Name = "Kashira", Shape = "Cylinder", Size = { 0.08, 0.21, 0.21 }, Pos = { 0, -0.52, 0 }, Rot = { 0, 0, 90 }, Color = GOLD, Material = "Foil" })
 	k:Part({ Name = "Tsuka", Shape = "Cylinder", Size = { 0.84, 0.17, 0.17 }, Pos = { 0, -0.08, 0 }, Rot = { 0, 0, 90 }, Color = ITO, Material = "Fabric" })
-	for _, y in ipairs({ -0.4, -0.22 }) do
-		for _, z in ipairs({ -0.08, 0.08 }) do
-			k:Part({ Name = "TsukaDiamond", Size = { 0.09, 0.09, 0.05 }, Pos = { 0, y, z }, Rot = { 0, 0, 45 }, Color = SAME })
-		end
+	for _, y in ipairs({ -0.36, -0.16 }) do
+		k:Part({ Name = "TsukaDiamond", Size = { 0.09, 0.09, 0.2 }, Pos = { 0, y, 0 }, Rot = { 0, 0, 45 }, Color = SAME })
 	end
-	k:Part({ Name = "Fuchi", Shape = "Cylinder", Size = { 0.06, 0.2, 0.2 }, Pos = { 0, 0.34, 0 }, Rot = { 0, 0, 90 }, Color = GOLD, Material = "Foil" })
+	k:Part({ Name = "Fuchi", Shape = "Cylinder", Size = { 0.07, 0.2, 0.2 }, Pos = { 0, 0.34, 0 }, Rot = { 0, 0, 90 }, Color = GOLD, Material = "Foil" })
 	-- guard (tsuba): gold rim around a dark iron centre
-	k:Part({ Name = "Tsuba", Shape = "Cylinder", Size = { 0.05, 0.52, 0.52 }, Pos = { 0, 0.39, 0 }, Rot = { 0, 0, 90 }, Color = GOLD, Material = "Foil" })
-	k:Part({ Name = "TsubaIron", Shape = "Cylinder", Size = { 0.08, 0.4, 0.4 }, Pos = { 0, 0.39, 0 }, Rot = { 0, 0, 90 }, Color = IRON, Material = "Metal" })
-	k:Part({ Name = "Habaki", Size = { 0.22, 0.12, 0.09 }, Pos = { 0, 0.48, 0 }, Color = GOLD, Material = "Foil" })
-	-- blade
-	k:Part({ Name = "Blade", Size = { 0.2, 2.3, 0.06 }, Pos = { 0, 1.6, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
-	k:Part({ Name = "BladeTip", Shape = "Wedge", Size = { 0.06, 0.38, 0.2 }, Pos = { 0, 2.94, 0 }, Rot = { 0, 90, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
-	k:Part({ Name = "EdgeGleam", Size = { 0.05, 2.3, 0.07 }, Pos = { -0.085, 1.6, 0 }, Color = GLEAM, Material = "Neon" })
-	k:Part({ Name = "Bohi", Size = { 0.05, 1.8, 0.07 }, Pos = { 0.045, 1.35, 0 }, Color = STEEL_DARK, Material = "Metal" })
+	k:Part({ Name = "Tsuba", Shape = "Cylinder", Size = { 0.05, 0.54, 0.54 }, Pos = { 0, 0.4, 0 }, Rot = { 0, 0, 90 }, Color = GOLD, Material = "Foil" })
+	k:Part({ Name = "TsubaIron", Shape = "Cylinder", Size = { 0.08, 0.42, 0.42 }, Pos = { 0, 0.4, 0 }, Rot = { 0, 0, 90 }, Color = IRON, Material = "Metal" })
+	-- blade: steel body, gleaming Neon cutting edge, dark fuller groove, wedge tip
+	k:Part({ Name = "Blade", Size = { 0.22, 2.3, 0.06 }, Pos = { 0, 1.6, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
+	k:Part({ Name = "BladeTip", Shape = "Wedge", Size = { 0.06, 0.4, 0.22 }, Pos = { 0, 2.95, 0 }, Rot = { 0, 90, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
+	k:Part({ Name = "EdgeGleam", Size = { 0.05, 2.3, 0.07 }, Pos = { -0.095, 1.6, 0 }, Color = GLEAM, Material = "Neon" })
+	k:Part({ Name = "Bohi", Size = { 0.05, 1.8, 0.07 }, Pos = { 0.05, 1.35, 0 }, Color = STEEL_DARK, Material = "Metal" })
 	-- pulsing glint near the tip + a sparkle emitter on the raised blade (Rare flair)
-	local glint = { Type = "Pulse", Amount = 0.35, Speed = 0.7, Phase = glintPhase }
 	if sparkle then
 		k:Particles({ Pos = { 0, 1.9, 0 }, Color = GLEAM, Color2 = "#ffffff", Rate = 2, Size = 0.14, Speed = 0.25, Lifetime = 0.7, Spread = 180 })
+		k:Part({ Name = "Glint", Shape = "Ball", Size = { 0.12, 0.12, 0.12 }, Pos = { -0.07, 2.62, 0 }, Color = SHINE, Material = "Neon", Anim = { Type = "Pulse", Amount = 0.35, Speed = 0.7, Phase = glintPhase } })
 	end
-	k:Part({ Name = "Glint", Shape = "Ball", Size = { 0.11, 0.11, 0.11 }, Pos = { -0.06, 2.62, 0 }, Color = SHINE, Material = "Neon", Anim = glint })
 	-- gloved fist around the handle
 	k:Part({ Name = "Fist", Shape = "Ellipsoid", Size = { 0.38, 0.44, 0.36 }, Pos = { 0, 0.11, 0 }, Color = NINJA, Material = "Fabric" })
 	k:Part({ Name = "Thumb", Shape = "Ball", Size = { 0.15, 0.15, 0.15 }, Pos = { 0.08, 0.3, -0.12 }, Color = NINJA, Material = "Fabric" })
@@ -222,17 +234,19 @@ end
 --------------------------------------------------------------------------------------------
 -- Arm: shoulder -> elbow -> hand, with wrist wraps and a katana in the fist
 --------------------------------------------------------------------------------------------
-local function arm(k, name, S, E, H, bladeDir, shoulderAnim, elbowAnim, wristAnim, glintPhase)
+local function arm(k, name, side, S, E, H, bladeDir, shoulderAnim, elbowAnim, wristAnim, glintPhase)
 	joint(k, name, S, shoulderAnim, function()
-		k:Part({ Name = "Shoulder", Shape = "Ball", Size = { 0.5, 0.5, 0.5 }, Pos = S, Color = NINJA, Material = "Fabric" })
-		bone(k, "UpperArm", S, E, 0.42, 0.42, NINJA, "Fabric", "Ellipsoid", 0.2)
+		k:Part({ Name = "Shoulder", Shape = "Ellipsoid", Size = { 0.56, 0.52, 0.54 }, Pos = S, Color = NINJA, Material = "Fabric" })
+		bone(k, "Sleeve", S, E, 0.47, 0.47, NINJA, "Fabric", "Ellipsoid", 0.2)
 		joint(k, name .. "Forearm", E, elbowAnim, function()
-			k:Part({ Name = "Elbow", Shape = "Ball", Size = { 0.34, 0.34, 0.34 }, Pos = E, Color = NINJA, Material = "Fabric" })
+			k:Part({ Name = "Elbow", Shape = "Ball", Size = { 0.36, 0.36, 0.36 }, Pos = E, Color = NINJA, Material = "Fabric" })
 			seg(k, "Forearm", E, H, function(L)
 				k:Part({ Name = "ForearmCore", Shape = "Ellipsoid", Size = { 0.38, L + 0.1, 0.38 }, Pos = { 0, L * 0.45, 0 }, Color = NINJA, Material = "Fabric" })
-				for i, f in ipairs({ 0.58, 0.76 }) do
+				-- tekko: dark iron arm guard strapped on the outside of the forearm
+				k:Part({ Name = "Tekko", Shape = "Ellipsoid", Size = { 0.14, L * 0.5, 0.3 }, Pos = { side * 0.16, L * 0.36, 0 }, Color = IRON, Material = "Metal", Reflectance = 0.1 })
+				for i, f in ipairs({ 0.62, 0.79 }) do
 					local tilt = if i % 2 == 0 then -10 else 10
-					k:Part({ Name = "WristWrap", Shape = "Cylinder", Size = { 0.12, 0.38, 0.38 }, Pos = { 0, L * f, 0 }, Rot = { tilt, 0, 90 }, Color = if i == 2 then WRAP_LIGHT else WRAP, Material = "Fabric" })
+					k:Part({ Name = "WristWrap", Shape = "Cylinder", Size = { 0.12, 0.39, 0.39 }, Pos = { 0, L * f, 0 }, Rot = { tilt, 0, 90 }, Color = if i == 2 then WRAP_LIGHT else WRAP, Material = "Fabric" })
 				end
 			end)
 			joint(k, name .. "Katana", H, wristAnim, function()

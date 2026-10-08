@@ -18,7 +18,7 @@ local SHARK_MID = "#83a3c2" -- highlights, gill lips
 local BELLY = "#eef3f3" -- white underside
 local BELLY_SHADE = "#d3dee5"
 local LEG = "#6889ab"
-local LEG_LIGHT = "#8aa7c2"
+local LEG_LIGHT = "#7b9aba"
 local MOUTH = "#6e1a2a"
 local GUM = "#e07a8a"
 local TONGUE = "#c24a5e"
@@ -345,7 +345,7 @@ return {
 		----------------------------------------------------------------------------------
 		k:Light({ Pos = { 0, 7.6, -1.2 }, Color = "#5fe3ff", Range = 12, Brightness = 1.2 })
 		k:Light({ Pos = { 0, 0.8, 0 }, Color = "#3d8bff", Range = 9, Brightness = 1.5 })
-		k:Particles({ Pos = { 0, 4.2, -2.8 }, Color = "#e8fbff", Color2 = "#7fdcff", Rate = 4, Size = 0.22, Speed = 1.2, Lifetime = 2, Spread = 25, Direction = "Top" })
+		k:Particles({ Pos = { 0, 4.32, -2.85 }, Color = "#e8fbff", Color2 = "#7fdcff", Rate = 4, Size = 0.22, Speed = 1.2, Lifetime = 2, Spread = 25, Direction = "Top" })
 		k:Particles({ Pos = { 0, 0.2, 0 }, Color = "#9fe8ff", Color2 = "#3d8bff", Rate = 8, Size = 0.35, Speed = 2.4, Lifetime = 0.8, Spread = 60, Direction = "Top" })
 		k:Particles({ Pos = { 0, 5.4, 2.4 }, Color = "#bff6ff", Color2 = "#46d8ff", Rate = 3, Size = 0.2, Speed = 0.8, Lifetime = 1.6, Spread = 40, Direction = "Top" })
 	end,

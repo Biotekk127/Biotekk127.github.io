@@ -27,8 +27,7 @@ local NAIL = "#f8e3d2"
 local NOSE = "#e98767" -- accent: the famous nose
 local NOSE_LIGHT = "#f6b096"
 local NOSTRIL = "#7a3328"
-local FUR = "#a39a90" -- grey cheek fur
-local FUR_LIGHT = "#c4bcb1"
+local LICHEN = "#8d9a6c" -- grey-green beard
 local EYE_WHITE = "#fff6e6"
 local PUPIL = "#1e1612"
 local SHINE = "#fff8ec"
@@ -133,23 +132,29 @@ local TOES = { -- x offset (toward the outside of the foot), y, z, size x, y, z
 	{ 0.66, 0.15, -1.72, 0.26, 0.28, 0.4 },
 }
 
+local FS = 1.1 -- foot scale: these feet are the whole joke
+
 local function buildFoot(k, s)
 	k:Group({ Name = "Foot", Pos = { FOOT_X * s, 0, FOOT_Z }, Rot = { 0, -6 * s, 0 } }, function()
-		local function X(o)
-			return o * s
+		-- local foot space, scaled by FS; x offsets are mirrored by s (positive = outside)
+		local function P(x, y, z)
+			return { x * s * FS, y * FS, z * FS }
 		end
-		k:Part({ Name = "FootSole", Shape = "Ellipsoid", Size = { 1.6, 0.62, 3.15 }, Pos = { 0, 0.31, -0.72 }, Color = SKIN })
-		local instep = { X(-0.03), 0.56, -0.2, 0.56, 0.56, 0.875 }
-		k:Part({ Name = "FootInstep", Shape = "Ellipsoid", Size = { 1.12, 1.12, 1.75 }, Pos = { instep[1], instep[2], instep[3] }, Color = SKIN })
-		k:Part({ Name = "Heel", Shape = "Ellipsoid", Size = { 1.05, 0.82, 1.0 }, Pos = { 0, 0.41, 0.5 }, Color = SKIN })
+		local function S(x, y, z)
+			return { x * FS, y * FS, z * FS }
+		end
+		k:Part({ Name = "FootSole", Shape = "Ellipsoid", Size = S(1.6, 0.62, 3.15), Pos = P(0, 0.31, -0.72), Color = SKIN })
+		local instep = { -0.03, 0.56, -0.2, 0.56, 0.56, 0.875 }
+		k:Part({ Name = "FootInstep", Shape = "Ellipsoid", Size = S(1.12, 1.12, 1.75), Pos = P(instep[1], instep[2], instep[3]), Color = SKIN })
+		k:Part({ Name = "Heel", Shape = "Ellipsoid", Size = S(1.05, 0.82, 1.0), Pos = P(0, 0.41, 0.5), Color = SKIN })
 		for i, t in ipairs(TOES) do
-			k:Part({ Name = "Toe" .. i, Shape = "Ellipsoid", Size = { t[4], t[5], t[6] }, Pos = { X(t[1]), t[2], t[3] }, Color = SKIN })
-			if i <= 3 then
+			k:Part({ Name = "Toe" .. i, Shape = "Ellipsoid", Size = S(t[4], t[5], t[6]), Pos = P(t[1], t[2], t[3]), Color = SKIN })
+			if i <= 2 then
 				k:Part({
 					Name = "Toenail" .. i,
 					Shape = "Ellipsoid",
-					Size = { t[4] * 0.58, 0.06, t[6] * 0.4 },
-					Pos = { X(t[1]), t[2] + t[5] * 0.42, t[3] - t[6] * 0.28 },
+					Size = S(t[4] * 0.58, 0.06, t[6] * 0.4),
+					Pos = P(t[1], t[2] + t[5] * 0.42, t[3] - t[6] * 0.28),
 					Rot = { -26, 0, 0 },
 					Color = NAIL,
 				})
@@ -160,17 +165,16 @@ local function buildFoot(k, s)
 			local u, w = (x - instep[1]) / instep[4], (z - instep[3]) / instep[6]
 			return instep[2] + instep[5] * math.sqrt(math.max(0, 1 - u * u - w * w))
 		end
-		k:Part({ Name = "AnkleRoots", Shape = "Ellipsoid", Size = { 0.74, 0.42, 0.74 }, Pos = { 0, 1.08, 0.05 }, Color = BARK_DARK, Material = "Wood" })
+		k:Part({ Name = "AnkleRoots", Shape = "Ellipsoid", Size = S(0.74, 0.42, 0.74), Pos = P(0, 1.08, 0.05), Color = BARK_DARK, Material = "Wood" })
 		for _, r in ipairs({ { 0.4, -0.5 }, { -0.36, -0.7 } }) do
-			local ex, ez = X(r[1]), r[2]
-			twig(k, "Root", { X(r[1] * 0.3), 1.1, 0.05 + (ez - 0.05) * 0.25 }, { ex, instepTop(ex, ez) + 0.02, ez }, 0.15, BARK_DARK)
+			twig(k, "Root", P(r[1] * 0.3, 1.1, 0.05 + (r[2] - 0.05) * 0.25), P(r[1], instepTop(r[1], r[2]) + 0.02, r[2]), 0.15 * FS, BARK_DARK)
 		end
 	end)
 end
 
 -- Short legs of two entwined roots, crossing at a knotted knee
 local function buildLeg(k, s)
-	local ankle = { FOOT_X * s, 1.12, FOOT_Z + 0.05 }
+	local ankle = { FOOT_X * s, 1.12 * FS, FOOT_Z + 0.05 }
 	local knee = { 0.9 * s, 2.08, 0.06 }
 	local hip = { 0.5 * s, 3.1, 0.04 }
 	local d = { 0.1 * s, 0, 0.09 }
@@ -230,8 +234,8 @@ local function buildHat(k)
 		k:Part({ Name = "HatBrim", Shape = "Cylinder", Size = { 0.09, 1.5, 1.5 }, Pos = { P[1], 8.26, P[3] }, Rot = { 0, 0, 90 }, Color = HAT, Material = "Fabric" })
 		k:Part({ Name = "HatCrown", Shape = "Cylinder", Size = { 0.62, 0.92, 0.92 }, Pos = { P[1], 8.6, P[3] }, Rot = { 0, 0, 90 }, Color = HAT, Material = "Fabric" })
 		k:Part({ Name = "HatBand", Shape = "Cylinder", Size = { 0.15, 0.96, 0.96 }, Pos = { P[1], 8.38, P[3] }, Rot = { 0, 0, 90 }, Color = HAT_BAND, Material = "Fabric" })
-		k:Part({ Name = "Slim", Shape = "Ellipsoid", Size = { 1.0, 0.4, 1.0 }, Pos = { P[1], 8.93, P[3] }, Color = SLIME, Material = "Glass", Anim = { Type = "Pulse", Amount = 0.06, Speed = 0.6 } })
-		k:Part({ Name = "SlimDrip", Shape = "Ellipsoid", Size = { 0.17, 0.52, 0.13 }, Pos = { P[1] + 0.27, 8.72, P[3] - 0.37 }, Rot = { 0, 36, 0 }, Color = SLIME, Material = "Glass" })
+		k:Part({ Name = "Slim", Shape = "Ellipsoid", Size = { 1.08, 0.42, 1.08 }, Pos = { P[1], 8.93, P[3] }, Color = SLIME, Material = "Glass", Anim = { Type = "Pulse", Amount = 0.06, Speed = 0.6 } })
+		k:Part({ Name = "SlimOverflow", Shape = "Ellipsoid", Size = { 0.5, 0.42, 0.46 }, Pos = { P[1] + 0.3, 8.84, P[3] - 0.3 }, Rot = { 0, 0, -20 }, Color = SLIME, Material = "Glass" })
 	end, { -6, 0, -10 })
 end
 
@@ -240,13 +244,13 @@ local function buildHead(k)
 		k:Part({ Name = "Neck", Shape = "Cylinder", Size = { 0.7, 1.0, 1.0 }, Pos = { 0, 5.5, 0.12 }, Rot = { 0, 0, 90 }, Color = BARK_DARK, Material = "Wood" })
 		k:Part({ Name = "Skull", Shape = "Ellipsoid", Size = { 2.35, 2.25, 2.1 }, Pos = { 0, 6.75, 0.1 }, Color = BARK, Material = "Wood" })
 		k:Part({ Name = "Face", Shape = "Ellipsoid", Size = { 1.8, 1.75, 0.85 }, Pos = { 0, 6.6, -0.72 }, Color = SKIN })
+		-- grey-green "old man's beard" lichen: his grey jaw fur and mossy chin in one
+		k:Part({ Name = "LichenBeard", Shape = "Ellipsoid", Size = { 2.05, 1.05, 1.4 }, Pos = { 0, 5.92, -0.38 }, Color = LICHEN, Material = "Grass" })
 		k:Part({ Name = "Muzzle", Shape = "Ellipsoid", Size = { 1.45, 0.85, 0.8 }, Pos = { 0, 5.95, -0.82 }, Color = SKIN })
 		k:Mirror(function()
-			k:Part({ Name = "Cheek", Shape = "Ellipsoid", Size = { 0.55, 0.5, 0.36 }, Pos = { 0.64, 6.3, -0.92 }, Rot = { 0, -25, 0 }, Color = SKIN })
+			k:Part({ Name = "Cheek", Shape = "Ellipsoid", Size = { 0.5, 0.4, 0.26 }, Pos = { 0.62, 6.32, -0.98 }, Rot = { 0, -25, 0 }, Color = SKIN })
 			k:Part({ Name = "Ear", Shape = "Ellipsoid", Size = { 0.24, 0.5, 0.42 }, Pos = { 1.18, 6.8, 0.1 }, Color = SKIN_DARK })
-			-- pale grey proboscis-monkey fur framing the jaw
-			blob(k, "FurTuft", { 1.0, 6.55, -0.32 }, { 1.24, 5.9, -0.5 }, 0.34, 0.24, FUR)
-			blob(k, "FurTuft", { 0.8, 6.05, -0.72 }, { 0.98, 5.45, -0.86 }, 0.3, 0.22, FUR_LIGHT)
+			k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 0.08, 0.32, 0.24 }, Pos = { 1.29, 6.8, 0.08 }, Color = NOSTRIL })
 			k:Part({ Name = "Brow", Shape = "Ellipsoid", Size = { 0.7, 0.22, 0.34 }, Pos = { 0.44, 7.34, -0.98 }, Rot = { 0, -18, -12 }, Color = BARK_DARK, Material = "Wood" })
 			-- tiny beady eyes
 			k:Part({ Name = "EyeSocket", Shape = "Ellipsoid", Size = { 0.44, 0.38, 0.1 }, Pos = { 0.42, 7.02, -1.02 }, Rot = { 0, -20, 0 }, Color = SKIN_DARK })
@@ -254,16 +258,38 @@ local function buildHead(k)
 			k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.2, 0.22, 0.08 }, Pos = { 0.41, 7.01, -1.12 }, Rot = { 0, -20, 0 }, Color = PUPIL, Anim = { Type = "Blink", Speed = 0.3 } })
 			k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.07, 0.07, 0.07 }, Pos = { 0.44, 7.07, -1.16 }, Color = SHINE, Anim = { Type = "Blink", Speed = 0.3 } })
 		end)
-		k:Part({ Name = "HeadMoss", Shape = "Ellipsoid", Size = { 1.25, 0.95, 0.35 }, Pos = { -0.1, 7.25, 1.05 }, Rot = { -25, 0, 6 }, Color = MOSS, Material = "Grass" })
+		-- bark grooves running down the back of the wooden head
+		for _, a in ipairs({ -38, 0, 38 }) do
+			local ra = math.rad(180 + a)
+			k:Part({
+				Name = "BarkRidge",
+				Shape = "Ellipsoid",
+				Size = { 0.16, 1.05, 0.16 },
+				Pos = { 1.12 * math.sin(ra), 6.6, 0.1 - 1.03 * math.cos(ra) },
+				Rot = { 0, a, 0 },
+				Color = BARK_DARK,
+				Material = "Wood",
+			})
+		end
 		buildNose(k)
 
 		-- leafy crown
-		k:Part({ Name = "CrownLeaves", Shape = "Ellipsoid", Size = { 2.05, 0.85, 1.95 }, Pos = { 0, 7.85, 0.15 }, Color = LEAF_DARK, Material = "Grass" })
-		for i, a in ipairs({ 40, 110, 180, 250, 320 }) do
+		-- bushy canopy of leaf clumps on top of the head
+		k:Part({ Name = "CrownLeaves", Shape = "Ellipsoid", Size = { 1.95, 0.85, 1.85 }, Pos = { 0, 7.85, 0.15 }, Color = LEAF_DARK, Material = "Grass" })
+		for i, a in ipairs({ 0, 72, 144, 216, 288 }) do
 			local ra = math.rad(a)
-			local sa, ca = math.sin(ra), math.cos(ra)
-			leaf(k, "CrownLeaf", { 0.55 * sa, 7.98, 0.15 - 0.5 * ca }, { 1.22 * sa, 8.28, 0.15 - 1.12 * ca }, 0.5, if i % 2 == 0 then LEAF_LIGHT else LEAF, nil, true)
+			local big = i % 2 == 1
+			k:Part({
+				Name = "LeafClump",
+				Shape = "Ellipsoid",
+				Size = if big then { 0.9, 0.66, 0.8 } else { 0.8, 0.6, 0.72 },
+				Pos = { 0.74 * math.sin(ra), 7.86 + (if big then 0.06 else 0), 0.15 - 0.7 * math.cos(ra) },
+				Rot = { 0, -a, if big then 10 else -8 },
+				Color = if big then LEAF else LEAF_LIGHT,
+				Material = "Grass",
+			})
 		end
+		leaf(k, "CrownLeaf", { 0.55, 8.0, -0.35 }, { 1.05, 8.5, -0.75 }, 0.36, LEAF)
 		leaf(k, "CrownSprig", { -0.6, 8.05, 0.2 }, { -1.25, 8.5, 0.38 }, 0.32, LEAF_LIGHT, { Type = "Wiggle", Axis = "X", Amount = 20, Speed = 0.6, Phase = 0.4 })
 		leaf(k, "CrownSprig", { 0.3, 8.1, 0.7 }, { 0.5, 8.55, 1.25 }, 0.32, LEAF, { Type = "Wiggle", Axis = "X", Amount = 20, Speed = 0.8, Phase = 0.7 }, true)
 
@@ -275,7 +301,7 @@ end
 -- Trunk body under an open robe of leaves (sways gently from the hips like a tree)
 --------------------------------------------------------------------------------------------
 -- right half of the leafy robe {cx, cy, cz, semiX, semiY, semiZ}; mirrored for the left
-local ROBE = { 0.54, 4.2, 0.1, 0.68, 1.2, 0.98 }
+local ROBE = { 0.5, 4.2, 0.15, 0.72, 1.2, 0.98 }
 
 -- point on the robe surface at azimuth a (0 = front, 90 = outside) and height y, pushed out
 local function robePoint(a, y, out)
@@ -297,17 +323,17 @@ local function shingle(k, a, y, size, color, roll, flare)
 end
 
 local ROBE_LEAVES = { -- azimuth, height, colour, roll in the robe plane
-	{ 24, 4.75, LEAF, 14 },
-	{ 80, 4.85, LEAF_LIGHT, -12 },
-	{ 52, 3.85, LEAF_LIGHT, -16 },
-	{ 118, 4.05, LEAF, 18 },
-	{ 214, 4.2, LEAF_LIGHT, 10 },
+	{ 26, 4.6, LEAF, 16 },
+	{ 82, 4.75, LEAF_LIGHT, -14 },
+	{ 58, 3.75, MOSS, -20 },
+	{ 138, 4.2, LEAF, 18 },
+	{ 176, 3.85, LEAF_LIGHT, -12 },
 }
 
 local function buildTrunk(k)
 	joint(k, "Trunk", { 0, 2.95, 0 }, { Type = "Wiggle", Axis = "Z", Amount = 2.5, Speed = 0.35 }, function()
 		k:Part({ Name = "RootFlare", Shape = "Ellipsoid", Size = { 1.8, 0.9, 1.55 }, Pos = { 0, 3.08, 0.03 }, Color = BARK_DARK, Material = "Wood" })
-		k:Part({ Name = "TrunkCore", Shape = "Cylinder", Size = { 2.3, 1.6, 1.6 }, Pos = { 0, 4.05, 0 }, Rot = { 0, 0, 90 }, Color = BARK, Material = "Wood" })
+		k:Part({ Name = "TrunkCore", Shape = "Ellipsoid", Size = { 1.65, 2.6, 1.65 }, Pos = { 0, 4.1, 0 }, Color = BARK, Material = "Wood" })
 		-- knot hole belly button on the bark showing between the robe halves
 		k:Part({ Name = "KnotRim", Shape = "Ellipsoid", Size = { 0.42, 0.6, 0.2 }, Pos = { 0, 3.95, -0.78 }, Color = BARK_LIGHT, Material = "Wood" })
 		k:Part({ Name = "KnotHole", Shape = "Ellipsoid", Size = { 0.22, 0.36, 0.08 }, Pos = { 0, 3.95, -0.86 }, Color = HOLE })
@@ -315,7 +341,7 @@ local function buildTrunk(k)
 		k:Mirror(function()
 			k:Part({ Name = "LeafRobe", Shape = "Ellipsoid", Size = { ROBE[4] * 2, ROBE[5] * 2, ROBE[6] * 2 }, Pos = { ROBE[1], ROBE[2], ROBE[3] }, Color = LEAF_DARK, Material = "Grass" })
 			for _, c in ipairs(ROBE_LEAVES) do
-				shingle(k, c[1], c[2], { 0.62, 1.05, 0.14 }, c[3], c[4])
+				shingle(k, c[1], c[2], { 0.5, 1.35, 0.13 }, c[3], c[4], 20)
 			end
 			-- pointed leaves hanging from the robe's hem
 			for i, a in ipairs({ 22, 80, 140 }) do
@@ -360,7 +386,7 @@ return {
 	Build = function(k)
 		-- left foot plants, right foot taps along to the "brr brr" (pivoting on its heel)
 		buildFoot(k, -1)
-		joint(k, "TappingFoot", { FOOT_X, 0.02, FOOT_Z + 0.95 }, { Type = "Wiggle", Axis = "X", Amount = 3.5, Speed = 0.9 }, function()
+		joint(k, "TappingFoot", { FOOT_X, 0.02, FOOT_Z + 1.02 * FS }, { Type = "Wiggle", Axis = "X", Amount = 3.5, Speed = 0.9 }, function()
 			buildFoot(k, 1)
 		end, { 3.5, 0, 0 })
 		buildLeg(k, -1)
@@ -374,7 +400,7 @@ return {
 
 	BuildMini = function(k)
 		k:Mirror(function()
-			k:Part({ Name = "Foot", Shape = "Ellipsoid", Size = { 0.62, 0.38, 1.1 }, Pos = { 0.36, -1.11, -0.17 }, Color = SKIN })
+			k:Part({ Name = "Foot", Shape = "Ellipsoid", Size = { 0.7, 0.4, 1.3 }, Pos = { 0.39, -1.13, -0.26 }, Rot = { 0, -8, 0 }, Color = SKIN })
 			k:Part({ Name = "Arm", Shape = "Cylinder", Size = { 0.8, 0.13, 0.13 }, Pos = { 0.7, -0.5, -0.08 }, Rot = axisRot(0.53, -0.55, -0.15), Color = BARK, Material = "Wood" })
 			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.15, 0.15, 0.15 }, Pos = { 0.19, 0.5, -0.5 }, Color = PUPIL })
 		end)

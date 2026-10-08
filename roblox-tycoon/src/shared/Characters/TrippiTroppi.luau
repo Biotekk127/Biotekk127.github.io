@@ -38,6 +38,8 @@ local SHELL_DARK = "#d6493a" -- segment bands
 local SHELL_PALE = "#ffcab2" -- pale lower plates / belly
 local SHELL_RED = "#bf3a2e" -- tail tips
 local LEG = "#f8906f"
+local ANTENNA = "#e0533f"
+local ANTENNA_DARK = "#c94433"
 
 -- Layout (world studs) -------------------------------------------------------------------
 local HC = { 1.4, 3.5, -0.4 } -- head centre
@@ -186,6 +188,7 @@ local function buildEar(k, side, phase)
 	}, function()
 		triangle(k, "Ear", 1.1, 1.35, 0.3, FUR, { 0, 0.675, 0 })
 		triangle(k, "EarInner", 0.7, 0.95, 0.1, EAR_PINK, { 0, 0.52, -0.15 })
+		k:Part({ Name = "EarTuft", Shape = "Wedge", Size = { 0.08, 0.5, 0.22 }, Pos = { 0, 0.32, -0.21 }, Rot = { 0, 90, 0 }, Color = CREAM })
 	end)
 end
 
@@ -201,9 +204,9 @@ local function buildHead(k)
 	k:Mirror(function()
 		k:Part({ Name = "Cheek", Shape = "Ellipsoid", Size = { CHEEK_R[4] * 2, CHEEK_R[5] * 2, CHEEK_R[6] * 2 }, Pos = { CHEEK_R[1], CHEEK_R[2], CHEEK_R[3] }, Color = FUR })
 		-- cheek fluff tufts sticking out of the silhouette
-		k:Group({ Name = "CheekFluff", Pos = { 1.22, -0.78, -0.5 }, Rot = { 0, -40, -118 } }, function()
-			triangle(k, "Fluff", 0.5, 0.52, 0.14, FUR_LIGHT, { 0, 0.26, 0 })
-		end)
+		for _, f in { { -0.62, -112, 0.56 }, { -0.95, -140, 0.44 } } do
+			k:Part({ Name = "CheekFluff", Shape = "Wedge", Size = { 0.12, f[3], 0.3 }, Pos = { 1.28 + f[1] * 0.1, f[1], -0.42 }, Rot = { 0, -60, f[2] }, Color = FUR_LIGHT })
+		end
 
 		-- eyes
 		buildEye(k)
@@ -247,9 +250,9 @@ local function buildHead(k)
 	local php = headSurface(0, -0.38, -1, 0.05)
 	k:Part({ Name = "Philtrum", Size = { 0.05, 0.2, 0.06 }, Pos = php, Color = LINER })
 	local mp, mn = headSurface(0, -0.7, -1, -0.12)
-	k:Part({ Name = "Mouth", Shape = "Ellipsoid", Size = { 0.66, 0.44, 0.36 }, Pos = mp, Rot = faceRot(mn, 0), Color = MOUTH })
+	k:Part({ Name = "Mouth", Shape = "Ellipsoid", Size = { 0.74, 0.5, 0.36 }, Pos = mp, Rot = faceRot(mn, 0), Color = MOUTH })
 	local tp = headSurface(0, -0.8, -1, -0.07)
-	k:Part({ Name = "Tongue", Shape = "Ellipsoid", Size = { 0.42, 0.2, 0.3 }, Pos = tp, Rot = faceRot(mn, 0), Color = TONGUE })
+	k:Part({ Name = "Tongue", Shape = "Ellipsoid", Size = { 0.48, 0.22, 0.3 }, Pos = tp, Rot = faceRot(mn, 0), Color = TONGUE })
 	local cp, cn = headSurface(0, -1, -0.75, -0.2)
 	k:Part({ Name = "Chin", Shape = "Ellipsoid", Size = { 0.85, 0.5, 0.6 }, Pos = cp, Rot = faceRot(cn, 0), Color = CREAM })
 
@@ -263,13 +266,13 @@ local function buildAntenna(k, name, pts, phase)
 	k:Part({ Name = "AntennaSocket", Shape = "Ball", Size = { 0.26, 0.26, 0.26 }, Pos = pts[1], Color = SHELL_DARK })
 	local function link(i)
 		local a, b = pts[i], pts[i + 1]
-		local d = 0.15 - (i - 1) * 0.014
+		local d = 0.13 - (i - 1) * 0.013
 		k:Group({
 			Name = name .. i,
 			Pos = if i == 1 then a else { a[1] - pts[i - 1][1], a[2] - pts[i - 1][2], a[3] - pts[i - 1][3] },
 			Anim = { Type = "Wiggle", Axis = if i % 2 == 0 then "Z" else "X", Amount = 4, Speed = 0.55, Phase = phase + i * 0.07 },
 		}, function()
-			segment(k, "Antenna", { 0, 0, 0 }, { b[1] - a[1], b[2] - a[2], b[3] - a[3] }, d, if i % 2 == 0 then SHELL else SHELL_DARK)
+			segment(k, "Antenna", { 0, 0, 0 }, { b[1] - a[1], b[2] - a[2], b[3] - a[3] }, d, if i % 2 == 0 then ANTENNA else ANTENNA_DARK)
 			if i + 1 < #pts then
 				link(i + 1)
 			end
@@ -283,24 +286,32 @@ end
 --------------------------------------------------------------------------------------------
 local function buildThorax(k)
 	k:Group({ Name = "Carapace", Pos = { 0.45, 2.3, 0.05 } }, function()
-		k:Part({ Name = "Carapace", Shape = "Ellipsoid", Size = { 2.5, 1.7, 1.8 }, Color = SHELL, Reflectance = 0.05 })
-		k:Part({ Name = "DorsalRidge", Shape = "Ellipsoid", Size = { 2.1, 0.24, 0.26 }, Pos = { -0.1, 0.84, 0 }, Color = SHELL_DARK })
-		for _, x in { -0.55, -0.95 } do
-			k:Part({ Name = "Spine", Shape = "Wedge", Size = { 0.12, 0.24, 0.26 }, Pos = { x, 0.98, 0 }, Rot = { 0, 90, 0 }, Color = SHELL_DARK })
+		-- laterally compressed like a real shrimp's head-shell
+		k:Part({ Name = "Carapace", Shape = "Ellipsoid", Size = { 2.5, 1.7, 1.6 }, Color = SHELL, Reflectance = 0.05 })
+		k:Part({ Name = "DorsalRidge", Shape = "Ellipsoid", Size = { 2.1, 0.24, 0.24 }, Pos = { -0.1, 0.84, 0 }, Color = SHELL_DARK })
+		k:Part({ Name = "ShellGloss", Shape = "Ellipsoid", Size = { 1.5, 0.2, 0.62 }, Pos = { -0.15, 0.73, 0 }, Color = SHELL_LIGHT })
+		for _, x in { -0.45, -0.85 } do
+			k:Part({ Name = "Spine", Shape = "Wedge", Size = { 0.12, 0.26, 0.28 }, Pos = { x, 0.99, 0 }, Rot = { 0, 90, 0 }, Color = SHELL_DARK })
 		end
-		k:Part({ Name = "Sternum", Shape = "Ellipsoid", Size = { 2.0, 0.4, 1.25 }, Pos = { 0, -0.74, 0 }, Color = SHELL_LIGHT })
+		for side = -1, 1, 2 do
+			-- gill-chamber groove and the pale lower edge of the side plate (body sides are +-Z)
+			k:Part({ Name = "GillGroove", Shape = "Ellipsoid", Size = { 1.2, 0.08, 0.12 }, Pos = { -0.2, 0.08, 0.77 * side }, Rot = { 0, 0, -8 }, Color = SHELL_DARK })
+			k:Part({ Name = "SidePlateRim", Shape = "Ellipsoid", Size = { 1.9, 0.22, 0.12 }, Pos = { 0, -0.48, 0.66 * side }, Color = SHELL_PALE })
+		end
+		k:Part({ Name = "Sternum", Shape = "Ellipsoid", Size = { 1.8, 0.34, 0.86 }, Pos = { 0, -0.68, 0 }, Color = SHELL_PALE })
 	end)
 end
 
+-- Shrimp abdomen: laterally compressed (taller than wide), long overlapping shell plates
 local SEGMENTS = {
-	{ th = -12, w = 1.78, h = 1.66, l = 1.05, swim = true },
-	{ th = 17, w = 1.7, h = 1.58, l = 1.05, swim = true },
-	{ th = 46, w = 1.6, h = 1.48, l = 1.02 },
-	{ th = 75, w = 1.46, h = 1.34, l = 1.0 },
-	{ th = 104, w = 1.3, h = 1.18, l = 0.98 },
-	{ th = 132, w = 1.12, h = 1.02, l = 0.95, bare = true },
+	{ th = -12, w = 1.5, h = 1.66, l = 1.2, swim = true },
+	{ th = 17, w = 1.44, h = 1.58, l = 1.2, swim = true },
+	{ th = 46, w = 1.36, h = 1.48, l = 1.16, swim = true },
+	{ th = 75, w = 1.26, h = 1.34, l = 1.12 },
+	{ th = 104, w = 1.12, h = 1.18, l = 1.08, bare = true },
+	{ th = 132, w = 0.96, h = 1.02, l = 1.1, bare = true },
 }
-local FAN_TH = 163
+local FAN_TH = 166
 
 local function buildSegment(k, i)
 	local s = SEGMENTS[i]
@@ -308,15 +319,18 @@ local function buildSegment(k, i)
 	-- local frame: +X = toward the head, +Y = back (dorsal), Z = sideways
 	k:Group({ Name = "Segment" .. i, Pos = { cx, cy, 0 }, Rot = { 0, 0, s.th } }, function()
 		k:Part({ Name = "Shell", Shape = "Ellipsoid", Size = { s.l, s.h, s.w }, Color = SHELL, Reflectance = 0.05 })
-		k:Part({ Name = "Band", Shape = "Ellipsoid", Size = { 0.18, s.h * 0.86, s.w * 0.86 }, Pos = { -s.l / 2 + 0.24, 0.02, 0 }, Color = SHELL_DARK })
+		-- the raised rear rim of each plate, where it overlaps the next one
+		k:Part({ Name = "Band", Shape = "Ellipsoid", Size = { 0.16, s.h * 0.84, s.w * 0.84 }, Pos = { -s.l / 2 + 0.26, 0.02, 0 }, Color = SHELL_DARK })
+		-- glossy cooked-shell highlight running along the back
+		k:Part({ Name = "Gloss", Shape = "Ellipsoid", Size = { s.l * 0.5, 0.12, s.w * 0.3 }, Pos = { 0.08, s.h / 2 - 0.05, 0 }, Color = SHELL_LIGHT })
 		for side = -1, 1, 2 do
-			if s.bare then
-				break -- the last segment is too tucked in to show side plates
+			if not s.bare then
+				k:Part({ Name = "Pleuron", Shape = "Ellipsoid", Size = { s.l * 0.8, s.h * 0.42, 0.12 }, Pos = { 0.02, -s.h * 0.3, side * (s.w * 0.42 + (7 - i) * 0.01) }, Color = SHELL_LIGHT })
 			end
-			k:Part({ Name = "Pleuron", Shape = "Ellipsoid", Size = { s.l * 0.86, s.h * 0.42, 0.12 }, Pos = { 0.02, -s.h * 0.3, side * (s.w * 0.4 + (7 - i) * 0.01) }, Color = SHELL_LIGHT })
 			if s.swim then
-				k:Group({ Name = "Swimmeret", Pos = { 0, -s.h / 2 + 0.12, side * 0.34 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 18, Speed = 1.1, Phase = i * 0.13 } }, function()
-					k:Part({ Name = "Paddle", Shape = "Ellipsoid", Size = { 0.22, 0.5, 0.1 }, Pos = { 0, -0.2, 0 }, Color = SHELL_PALE })
+				-- thin paddling swimmerets under the abdomen
+				k:Group({ Name = "Swimmeret", Pos = { 0.05, -s.h / 2 + 0.1, side * 0.26 }, Rot = { side * 12, 0, -14 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 16, Speed = 1.0, Phase = i * 0.17 + (side + 1) * 0.1 } }, function()
+					k:Part({ Name = "Paddle", Shape = "Ellipsoid", Size = { 0.13, 0.56, 0.07 }, Pos = { 0, -0.24, 0 }, Color = LEG })
 				end)
 			end
 		end
@@ -327,23 +341,26 @@ local function buildTailFan(k)
 	local px, py = arcPoint(FAN_TH)
 	-- local frame: -X = toward the tail tip, fan spreads in the profile (XY) plane
 	k:Group({ Name = "Fan", Pos = { px, py, 0 }, Rot = { 0, 0, FAN_TH } }, function()
-		k:Part({ Name = "Telson", Shape = "Ellipsoid", Size = { 0.98, 0.3, 0.22 }, Pos = { -0.45, 0, 0 }, Color = SHELL_DARK })
-		for _, u in { { 18, -0.07 }, { -13, -0.07 }, { 40, 0.07 }, { -31, 0.07 } } do
+		-- pointed central telson on top, two pairs of paddle uropods spread like a fan
+		k:Part({ Name = "Telson", Shape = "Ellipsoid", Size = { 1.04, 0.28, 0.2 }, Pos = { -0.5, 0, -0.1 }, Color = SHELL_DARK })
+		for _, u in { { 22, -0.02 }, { -18, -0.02 }, { 52, 0.08 }, { -40, 0.08 } } do
 			k:Group({ Name = "Uropod", Rot = { 0, 0, u[1] } }, function()
-				k:Part({ Name = "Blade", Shape = "Ellipsoid", Size = { 0.9, 0.5, 0.12 }, Pos = { -0.48, 0, u[2] }, Color = SHELL })
-				k:Part({ Name = "BladeTip", Shape = "Ellipsoid", Size = { 0.26, 0.46, 0.14 }, Pos = { -0.84, 0, u[2] }, Color = SHELL_RED })
+				k:Part({ Name = "Blade", Shape = "Ellipsoid", Size = { 0.98, 0.42, 0.1 }, Pos = { -0.5, 0, u[2] }, Color = SHELL })
+				k:Part({ Name = "BladeTip", Shape = "Ellipsoid", Size = { 0.3, 0.4, 0.12 }, Pos = { -0.9, 0, u[2] }, Color = SHELL_RED })
 			end)
 		end
 	end)
 end
 
+-- Jointed walking leg: a short thigh flares out and up to a raised knee, then the slim
+-- shin drops to a pointed tip. Legs fan forward (front pairs) and backward (rear pairs).
 local function buildLeg(k, x, side, reach, phase)
-	local hip = { x, 1.6, 0.45 * side }
-	local knee = { x + reach * 0.45, 1.5, 1.0 * side }
-	local foot = { x + reach, 0.07, 1.38 * side }
-	joint(k, "Leg", hip, { Type = "Wiggle", Axis = "Z", Amount = 6, Speed = 0.8, Phase = phase }, function()
-		segment(k, "Thigh", hip, knee, 0.22, SHELL)
-		segment(k, "Shin", knee, foot, 0.15, LEG)
+	local hip = { x, 1.6, 0.4 * side }
+	local knee = { x + reach * 0.35, 1.72, 1.02 * side }
+	local foot = { x + reach, 0.06, 1.3 * side }
+	joint(k, "Leg", hip, { Type = "Wiggle", Axis = "Z", Amount = 7, Speed = 0.8, Phase = phase }, function()
+		segment(k, "Thigh", hip, knee, 0.2, SHELL)
+		segment(k, "Shin", knee, foot, 0.13, LEG)
 	end)
 end
 
@@ -358,7 +375,7 @@ return {
 
 	Build = function(k)
 		-- eight spindly walking legs (front pair reaches forward, back pair backward)
-		local legs = { { 1.35, 0.6 }, { 0.85, 0.28 }, { 0.35, -0.04 }, { -0.15, -0.3 } }
+		local legs = { { 1.3, 0.85 }, { 0.8, 0.35 }, { 0.3, -0.2 }, { -0.2, -0.7 } }
 		for i, l in legs do
 			buildLeg(k, l[1], -1, l[2], i * 0.18)
 			-- far-side legs sit a touch further forward so all eight read from the front

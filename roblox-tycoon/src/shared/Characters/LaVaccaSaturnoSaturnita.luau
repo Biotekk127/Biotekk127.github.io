@@ -32,26 +32,27 @@ local HORN = "#f1e4c6"
 local HORN_MID = "#dcc497"
 local HORN_TIP = "#9a7a55"
 
-local SKIN = "#f1c6a2" -- bare human legs
-local SKIN_DARK = "#e0aa86"
-local SKIN_LIGHT = "#f8d8bd"
-local NAIL = "#fbe4d8"
+local SKIN = "#f4cbb0" -- bare human legs (warm pinkish skin, not wood)
+local SKIN_DARK = "#e2ad91"
+local SKIN_LIGHT = "#f9dcc8"
+local NAIL = "#fde9df"
 
--- Saturn bands, pole -> equator
+-- Saturn bands, pole -> equator. Steal a Brainrot's cow-Saturn reads beige / white / blue,
+-- so the planet is soft butterscotch-beige with only gentle orange accents.
 local BAND = {
-	"#d9cdb6", -- polar cap (pale grey-beige)
-	"#d4a066", -- tan
-	"#f3e3c2", -- cream
-	"#e88f48", -- orange
-	"#f6e8cc", -- light cream
-	"#c96f3a", -- rust
-	"#ecd2a2", -- sand
-	"#e0a463", -- gold-tan equator
+	"#cbc6b4", -- polar cap (pale grey-beige, faintly cool)
+	"#dcbf94", -- tan
+	"#f3e6ca", -- cream
+	"#e3b47e", -- butterscotch
+	"#f7ecd4", -- light cream
+	"#d99c62", -- soft orange accent belt
+	"#efdcb5", -- sand
+	"#ead0a0", -- golden-beige equator
 }
-local RING_C = { "#b49c7c", "#a68f72" } -- dusky inner ring (Glass)
-local RING_B = { "#f3e4c4", "#e7d4ae", "#f8ecd4" } -- bright cream main ring
-local RING_A = { "#a9c9ea", "#98b9df" } -- pale blue outer ring
-local RING_GLOW = "#bfe8ff"
+local RING_C = { "#dccaa6", "#cfbb96" } -- beige inner ring (Glass)
+local RING_B = { "#a9cff2", "#9dc4ec", "#b8d9f6" } -- the big pale-blue main ring
+local RING_A = { "#7fa9dc", "#7299d0" } -- deeper blue outer ring (Ice)
+local RING_GLOW = "#c8eeff"
 local STAR = "#fff3b0"
 local STAR_BLUE = "#cfe9ff"
 local AURA = "#b9a8ff"
@@ -157,6 +158,32 @@ local function segment(k, name, a, b, diameter, color, material)
 	})
 end
 
+-- Rotation that points an Ellipsoid's local Y along unit-ish vector u (limbs, tails)
+local function upRot(ux, uy, uz)
+	ux, uy, uz = unit(ux, uy, uz)
+	return { deg(math.atan2(uz, uy)), 0, deg(-math.asin(ux)) }
+end
+
+-- Smooth organic limb: a chain of heavily overlapping round beads along a polyline.
+-- pts = { {x, y, z, radius}, ... }. Overlap 2.6x hides every bead's tapering ends.
+local function loft(k, name, pts, color, material)
+	for i = 1, #pts - 1 do
+		local a, b = pts[i], pts[i + 1]
+		local vx, vy, vz = a[1] - b[1], a[2] - b[2], a[3] - b[3]
+		local len = math.sqrt(vx * vx + vy * vy + vz * vz)
+		local r = math.max(a[4], b[4])
+		k:Part({
+			Name = name,
+			Shape = "Ellipsoid",
+			Size = { r * 2, len * 2.6, r * 2 },
+			Pos = { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2 },
+			Rot = upRot(vx, vy, vz),
+			Color = color,
+			Material = material or "SmoothPlastic",
+		})
+	end
+end
+
 -- Animated joint whose children are written in world coordinates
 local function joint(k, name, p, anim, fn, rot)
 	k:Group({ Name = name, Pos = p, Rot = rot, Anim = anim }, function()
@@ -217,7 +244,7 @@ end
 -- Saturn: a sphere built from concentric stacked band layers. Layer i is a little wider and
 -- flatter than the one below it, so it only shows in a band |latitude| < THETA[i].
 ------------------------------------------------------------------------------------------
-local THETA = { 64, 52, 42, 32, 23, 14, 6 }
+local THETA = { 66, 55, 46, 37, 28, 19, 9 }
 local BAND_STEP = 0.022
 
 local function planetLayers()
@@ -300,7 +327,7 @@ local function ringBand(k, name, rIn, rOut, n, thick, colors, material, transpar
 		local a = (i + 0.5) / n * 2 * math.pi
 		k:Part({
 			Name = name,
-			Size = { rOut - rIn, thick + (i % 2) * 0.012, L },
+			Size = { rOut - rIn, thick, L },
 			Pos = { rc * math.cos(a), 0, rc * math.sin(a) },
 			Rot = { 0, -deg(a), 0 },
 			Color = colors[i % #colors + 1],
@@ -311,10 +338,13 @@ local function ringBand(k, name, rIn, rOut, n, thick, colors, material, transpar
 end
 
 local function buildRings(k)
-	ringBand(k, "RingC", 2.28, 2.48, 30, 0.07, RING_C, "Glass", 0.3)
-	ringBand(k, "RingB", 2.48, 2.8, 36, 0.1, RING_B, "SmoothPlastic", 0)
-	ringBand(k, "RingA", 2.86, 3.04, 40, 0.09, RING_A, "Ice", 0)
-	ringBand(k, "RingGlow", 3.04, 3.1, 40, 0.06, { RING_GLOW }, "Neon", 0)
+	-- concentric bands, each one colour so the ring reads as smooth sheets (not tiles):
+	-- beige glassy C ring, two-tone pale-blue B ring, Cassini gap, deeper-blue A ring, glow rim
+	ringBand(k, "RingC", 2.2, 2.44, 24, 0.07, { RING_C[1] }, "Glass", 0.3)
+	ringBand(k, "RingB", 2.44, 2.62, 28, 0.1, { RING_B[3] }, "SmoothPlastic", 0)
+	ringBand(k, "RingB", 2.62, 2.82, 30, 0.1, { RING_B[1] }, "SmoothPlastic", 0)
+	ringBand(k, "RingA", 2.89, 3.04, 32, 0.09, { RING_A[1] }, "Ice", 0)
+	ringBand(k, "RingGlow", 3.04, 3.1, 32, 0.06, { RING_GLOW }, "Neon", 0)
 
 	-- little ice boulders riding on the bright ring
 	for i = 0, 7 do
@@ -326,8 +356,8 @@ local function buildRings(k)
 			Size = { sz, sz * 0.8, sz * 1.1 },
 			Pos = { r * math.cos(a), 0.06 + sz * 0.3, r * math.sin(a) },
 			Rot = { i * 37, i * 53, i * 29 },
-			Color = if i % 2 == 0 then "#e9e2d6" else "#c4b9a8",
-			Material = "Slate",
+			Color = if i % 2 == 0 then "#eef3f8" else "#c3cdd9",
+			Material = "Glacier",
 		})
 	end
 
@@ -567,19 +597,28 @@ end
 -- Tail (swishes from the back of the planet)
 ------------------------------------------------------------------------------------------
 local function buildTail(k)
-	-- springs from the lower back, arcs out behind and droops to a black tuft
-	local T0, T1, T2, T3 = { 0, 3.62, 1.72 }, { 0.04, 3.36, 2.17 }, { 0.08, 3.27, 2.5 }, { 0.12, 3.4, 2.78 }
-	joint(k, "Tail", T0, { Type = "Wiggle", Axis = "Y", Amount = 24, Speed = 0.7 }, function()
-		k:Part({ Name = "TailRoot", Shape = "Ball", Size = { 0.3, 0.3, 0.3 }, Pos = T0, Color = COW_SHADE })
-		segment(k, "Tail", T0, T1, 0.2, COW)
-		k:Part({ Name = "TailJoint", Shape = "Ball", Size = { 0.2, 0.2, 0.2 }, Pos = T1, Color = COW })
-		segment(k, "Tail", T1, T2, 0.18, COW)
-		joint(k, "TailTip", T2, { Type = "Wiggle", Axis = "Y", Amount = 20, Speed = 0.7, Phase = 0.18 }, function()
-			k:Part({ Name = "TailJoint", Shape = "Ball", Size = { 0.18, 0.18, 0.18 }, Pos = T2, Color = COW })
-			segment(k, "Tail", T2, T3, 0.15, COW)
-			local tuft = { { 0, 0, 0, 0 }, { 0.09, 0.02, 0.05, 15 }, { -0.09, 0.02, 0.05, -15 }, { 0, 0.03, -0.09, 0 }, { 0.05, -0.1, 0.0, 6 } }
+	-- springs from the lower back of the planet and hangs in a lazy S down to a black tuft
+	local root = onPlanet(-36, 180, -0.08)
+	local T1, T2 = { 0, 3.08, 1.98 }, { 0.03, 2.62, 2.18 }
+	local T3 = { 0.06, 2.12, 2.17 }
+	joint(k, "Tail", root, { Type = "Wiggle", Axis = "Z", Amount = 14, Speed = 0.6 }, function()
+		k:Part({ Name = "TailRoot", Shape = "Ellipsoid", Size = { 0.34, 0.3, 0.22 }, Pos = root, Color = COW_SHADE })
+		loft(k, "Tail", { { root[1], root[2], root[3], 0.1 }, { T1[1], T1[2], T1[3], 0.095 }, { T2[1], T2[2], T2[3], 0.085 } }, COW)
+		-- a Holstein tail is white with a black band near the bottom
+		joint(k, "TailTip", T2, { Type = "Wiggle", Axis = "Z", Amount = 18, Speed = 0.6, Phase = 0.2 }, function()
+			loft(k, "Tail", { { T2[1], T2[2], T2[3], 0.085 }, { T3[1], T3[2], T3[3], 0.075 } }, COW)
+			k:Part({ Name = "TailBand", Shape = "Ellipsoid", Size = { 0.17, 0.2, 0.17 }, Pos = { T3[1], T3[2] + 0.06, T3[3] }, Color = PATCH })
+			-- swishy tuft: long hair locks fanning down from the tip
+			local tuft = { { 0, 0, 0, 0, 0 }, { 0.08, 0.02, 0.03, 0, 14 }, { -0.08, 0.02, 0.03, 0, -14 }, { 0.02, 0.0, -0.08, -12, 4 }, { -0.03, 0.01, 0.09, 12, -6 } }
 			for _, t in tuft do
-				k:Part({ Name = "TailTuft", Shape = "Ellipsoid", Size = { 0.24, 0.5, 0.24 }, Pos = { T3[1] + t[1], T3[2] - 0.2 + t[2], T3[3] + t[3] }, Rot = { 0, 0, t[4] }, Color = PATCH })
+				k:Part({
+					Name = "TailTuft",
+					Shape = "Ellipsoid",
+					Size = { 0.17, 0.56, 0.17 },
+					Pos = { T3[1] + t[1], T3[2] - 0.3 + t[2], T3[3] + t[3] },
+					Rot = { t[4], 0, t[5] },
+					Color = PATCH,
+				})
 			end
 		end)
 	end)
@@ -604,19 +643,26 @@ local function buildFoot(k, s)
 end
 
 local function buildLeg(k, s)
-	local K, A = { s * 0.78, 1.5, -0.06 }, { s * 0.8, 0.5, 0.05 }
-	-- smooth organic leg: tapering ellipsoids instead of tubes
-	k:Part({ Name = "Thigh", Shape = "Ellipsoid", Size = { 0.74, 2.3, 0.78 }, Pos = { s * 0.76, 2.3, -0.01 }, Rot = { -5, 0, s * 2.5 }, Color = SKIN })
-	k:Part({ Name = "InnerThigh", Shape = "Ellipsoid", Size = { 0.5, 1.2, 0.6 }, Pos = { s * 0.6, 2.3, 0.04 }, Rot = { -5, 0, s * 4 }, Color = SKIN_DARK })
-	k:Part({ Name = "KneeCap", Shape = "Ellipsoid", Size = { 0.34, 0.4, 0.2 }, Pos = { K[1], K[2] + 0.03, K[3] - 0.19 }, Color = SKIN })
-	k:Part({ Name = "KneeBack", Shape = "Ellipsoid", Size = { 0.4, 0.06, 0.12 }, Pos = { K[1], K[2] - 0.02, K[3] + 0.25 }, Color = SKIN_DARK })
-	k:Part({ Name = "Shin", Shape = "Ellipsoid", Size = { 0.52, 1.6, 0.54 }, Pos = { s * 0.79, 1.05, -0.02 }, Rot = { 7, 0, 0 }, Color = SKIN })
-	k:Part({ Name = "Calf", Shape = "Ellipsoid", Size = { 0.54, 0.82, 0.5 }, Pos = { s * 0.79, 1.12, 0.08 }, Color = SKIN })
-	k:Part({ Name = "Ankle", Shape = "Ellipsoid", Size = { 0.44, 0.5, 0.46 }, Pos = A, Color = SKIN })
-	k:Part({ Name = "AnkleBone", Shape = "Ball", Size = { 0.17, 0.17, 0.17 }, Pos = { A[1] + s * 0.24, A[2] - 0.02, A[3] }, Color = SKIN_DARK })
-	k:Part({ Name = "AnkleBone", Shape = "Ball", Size = { 0.15, 0.15, 0.15 }, Pos = { A[1] - s * 0.23, A[2] + 0.03, A[3] }, Color = SKIN_DARK })
+	-- hip (hidden inside the planet) -> thigh -> knee -> calf -> ankle, slight knock-knee
+	loft(k, "Leg", {
+		{ s * 0.7, 3.2, 0.0, 0.42 },
+		{ s * 0.74, 2.6, -0.01, 0.4 },
+		{ s * 0.77, 2.05, -0.03, 0.33 },
+		{ s * 0.78, 1.58, -0.04, 0.265 },
+		{ s * 0.79, 1.22, -0.01, 0.255 },
+		{ s * 0.8, 0.86, 0.02, 0.205 },
+		{ s * 0.8, 0.56, 0.05, 0.17 },
+	}, SKIN)
+	-- soft secondary forms (same skin tone so the leg stays one smooth piece)
+	k:Part({ Name = "KneeCap", Shape = "Ellipsoid", Size = { 0.3, 0.34, 0.2 }, Pos = { s * 0.78, 1.55, -0.24 }, Color = SKIN })
+	k:Part({ Name = "KneeDimple", Shape = "Ellipsoid", Size = { 0.16, 0.06, 0.06 }, Pos = { s * 0.78, 1.38, -0.285 }, Color = SKIN_DARK })
+	k:Part({ Name = "KneeCrease", Shape = "Ellipsoid", Size = { 0.32, 0.05, 0.08 }, Pos = { s * 0.78, 1.56, 0.205 }, Color = SKIN_DARK })
+	k:Part({ Name = "Calf", Shape = "Ellipsoid", Size = { 0.48, 0.86, 0.42 }, Pos = { s * 0.8, 1.12, 0.08 }, Rot = { -4, 0, 0 }, Color = SKIN })
+	k:Part({ Name = "Achilles", Shape = "Ellipsoid", Size = { 0.2, 0.6, 0.2 }, Pos = { s * 0.8, 0.62, 0.15 }, Color = SKIN })
+	k:Part({ Name = "AnkleBone", Shape = "Ellipsoid", Size = { 0.1, 0.15, 0.15 }, Pos = { s * 0.96, 0.5, 0.05 }, Color = SKIN })
+	k:Part({ Name = "AnkleBone", Shape = "Ellipsoid", Size = { 0.1, 0.15, 0.15 }, Pos = { s * 0.64, 0.54, 0.05 }, Color = SKIN })
 	if s > 0 then
-		-- the right foot taps along to the music of the spheres (pivot under the heel,
+		-- the right foot taps along to the music of the spheres (pivot behind the heel,
 		-- pre-tilted so the toes only ever lift, never dig into the ground)
 		joint(k, "FootTap", { s * 0.84, 0.0, 0.56 }, { Type = "Wiggle", Axis = "X", Amount = 5, Speed = 0.9 }, function()
 			buildFoot(k, s)

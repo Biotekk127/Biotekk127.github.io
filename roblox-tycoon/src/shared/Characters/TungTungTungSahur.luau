@@ -200,7 +200,7 @@ local function buildLog(k)
 	local grains = {
 		{ -28, LB + 0.4, 4.85, 2.5, GRAIN_SOFT }, { 27, LB + 0.55, 4.6, -2.5, GRAIN_SOFT },
 		{ 58, LB + 0.25, LT - 0.3, 2 }, { 80, LB + 0.2, 4.85, -2 },
-		{ 128, LB + 0.3, LT - 0.25, 2 }, { 154, 4.3, LT - 0.2, -2 },
+		{ 120, LB + 0.3, LT - 0.25, 2 }, { 158, 4.3, LT - 0.2, -2 },
 		{ -58, LB + 0.2, LT - 0.45, -2 }, { -82, LB + 0.6, LT - 0.2, 2 },
 		{ -106, LB + 0.2, 5.9, -2 }, { -134, LB + 0.3, LT - 0.25, 2 },
 		{ -156, 4.0, LT - 0.3, -2 },
@@ -222,12 +222,17 @@ local function buildLog(k)
 	crack(k, 44, LOG_BOTTOM + 0.95, { 18, -16, 14 }, 0.28)
 
 	-- old nail holes / worm holes
-	for _, h in { { 118, 5.15 }, { -94, 3.85 }, { -146, 7.3 } } do
+	for _, h in { { 132, 5.5 }, { -94, 3.85 }, { -146, 7.3 }, { 104, 6.9 } } do
 		onLog(k, { Name = "NailHole", Shape = "Ellipsoid", Size = { 0.09, 0.09, 0.06 }, Color = CRACK }, h[1], h[2], 0.0)
 	end
 
-	-- a sawn-off branch on his right flank
-	branchStub(k, 108, 3.55)
+	-- a sawn-off branch round the back of his right flank
+	branchStub(k, 140, 3.45)
+
+	-- open wood pores: tiny dark flecks that give the plain front some texture
+	for _, f in { { -6, 3.0 }, { 13, 3.9 }, { 8, 2.95 }, { -20, 4.45 } } do
+		onLog(k, { Name = "Pore", Shape = "Ellipsoid", Size = { 0.05, 0.12, 0.05 }, Color = GRAIN }, f[1], f[2], 0.0)
+	end
 
 	-- the kentongan slit drum on his back
 	onLog(k, { Name = "SlitRim", Size = { 0.38, 1.7, 0.08 }, Color = WOOD_SHADE }, 180, 4.75, -0.02)
@@ -246,18 +251,18 @@ end
 -- Face
 --------------------------------------------------------------------------------------------
 local BLINK = { Type = "Blink", Speed = 0.3, Phase = 0.2 }
-local EYE_X = 0.48
+local EYE_X = 0.52
 
 local function buildFace(k)
 	k:Mirror(function()
-		-- big round eye, set INTO the log (centred behind the surface so its rim sits flush)
+		-- big round bulging eye in a thin carved socket
 		surfaceGroup(k, "Eye", thetaAt(EYE_X, EYE_Y), EYE_Y, 0.0, nil, function()
-			k:Part({ Name = "EyeSocket", Shape = "Ellipsoid", Size = { 1.0, 1.06, 0.36 }, Pos = { 0, 0, 0.075 }, Color = WOOD_SHADE, Material = "Wood" })
-			k:Part({ Name = "EyeWhite", Shape = "Ellipsoid", Size = { 0.88, 0.94, 0.36 }, Pos = { 0, 0, 0.06 }, Color = EYE_WHITE, Anim = BLINK })
+			k:Part({ Name = "EyeSocket", Shape = "Ellipsoid", Size = { 0.99, 1.05, 0.2 }, Pos = { 0, 0, 0.01 }, Color = WOOD_SHADE, Material = "Wood" })
+			k:Part({ Name = "EyeWhite", Shape = "Ellipsoid", Size = { 0.92, 0.98, 0.3 }, Pos = { 0, 0, 0.0 }, Color = EYE_WHITE, Anim = BLINK })
 			k:Group({ Name = "Look", Anim = { Type = "Bob", Axis = "X", Amount = 0.05, Speed = 0.25, Phase = 0.1 } }, function()
-				k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.22, 0.24, 0.1 }, Pos = { -0.02, 0.0, -0.105 }, Color = PUPIL, Anim = BLINK })
-				k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.08, 0.08, 0.08 }, Pos = { 0.045, 0.07, -0.15 }, Color = SHINE, Material = "Neon", Anim = BLINK })
-				k:Part({ Name = "EyeShineSmall", Shape = "Ball", Size = { 0.05, 0.05, 0.05 }, Pos = { -0.08, -0.06, -0.14 }, Color = SHINE, Anim = BLINK })
+				k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.22, 0.24, 0.1 }, Pos = { -0.02, 0.0, -0.13 }, Color = PUPIL, Anim = BLINK })
+				k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.08, 0.08, 0.08 }, Pos = { 0.045, 0.07, -0.18 }, Color = SHINE, Material = "Neon", Anim = BLINK })
+				k:Part({ Name = "EyeShineSmall", Shape = "Ball", Size = { 0.05, 0.05, 0.05 }, Pos = { -0.08, -0.06, -0.17 }, Color = SHINE, Anim = BLINK })
 			end)
 		end)
 		-- thin arched brow, raised a little high (unsettling); two overlapping ellipsoids
@@ -299,7 +304,7 @@ end
 --------------------------------------------------------------------------------------------
 local S_R = { 1.15, SHOULDER_Y, 0 }
 local E_R = { 1.96, 5.02, 0.06 }
-local H_R = { 2.14, 6.05, -0.08 }
+local H_R = { 2.14, 5.95, -0.08 }
 local BAT_DIR = norm({ 0.16, 1, 0.2 })
 
 local S_L = { -1.15, SHOULDER_Y, 0 }
@@ -352,6 +357,7 @@ end
 local function buildBatArm(k)
 	k:Group({ Name = "BatArm", Pos = S_R, Anim = { Type = "Wiggle", Axis = "X", Amount = 20, Speed = 0.9 } }, function()
 		k:Group({ Name = "BatArmOffset", Pos = { -S_R[1], -S_R[2], -S_R[3] } }, function()
+			k:Part({ Name = "Shoulder", Shape = "Ball", Size = { 0.26, 0.26, 0.26 }, Pos = add(S_R, { 0.08, 0, 0 }), Color = LIMB_DARK, Material = "Wood" })
 			segment(k, "UpperArm", S_R, E_R, 0.2, LIMB)
 			k:Part({ Name = "Elbow", Shape = "Ball", Size = { 0.27, 0.27, 0.27 }, Pos = E_R, Color = LIMB_DARK, Material = "Wood" })
 			segment(k, "Forearm", E_R, H_R, 0.19, LIMB)
@@ -377,6 +383,7 @@ end
 local function buildSwayArm(k)
 	k:Group({ Name = "SwayArm", Pos = S_L, Anim = { Type = "Wiggle", Axis = "X", Amount = 14, Speed = 0.45, Phase = 0.25 } }, function()
 		k:Group({ Name = "SwayArmOffset", Pos = { -S_L[1], -S_L[2], -S_L[3] } }, function()
+			k:Part({ Name = "Shoulder", Shape = "Ball", Size = { 0.26, 0.26, 0.26 }, Pos = add(S_L, { -0.08, 0, 0 }), Color = LIMB_DARK, Material = "Wood" })
 			segment(k, "UpperArm", S_L, E_L, 0.2, LIMB)
 			k:Part({ Name = "Elbow", Shape = "Ball", Size = { 0.27, 0.27, 0.27 }, Pos = E_L, Color = LIMB_DARK, Material = "Wood" })
 			segment(k, "Forearm", E_L, H_L, 0.19, LIMB)
@@ -425,7 +432,8 @@ local function buildLeg(k, sx, tap)
 			k:Part({ Name = "Instep", Shape = "Ellipsoid", Size = { 0.36, 0.26, 0.56 }, Pos = { fx, 0.19, -0.04 }, Color = LIMB, Material = "Wood" })
 			-- big toe on the inside, smaller toes outward
 			local toes = { { -0.13, 0.15, -0.56 }, { -0.01, 0.12, -0.58 }, { 0.1, 0.11, -0.55 }, { 0.19, 0.09, -0.49 } }
-			k:Group({ Name = "Toes", Pos = { fx, 0.06, -0.5 }, Anim = (not tap) and { Type = "Wiggle", Axis = "X", Amount = 8, Speed = 0.6, Phase = 0.5 } or nil }, function()
+			-- toes of the planted foot wiggle gently about their own knuckle line
+			k:Group({ Name = "Toes", Pos = { fx, 0.06, -0.5 }, Anim = (not tap) and { Type = "Wiggle", Axis = "X", Amount = 6, Speed = 0.6, Phase = 0.5 } or nil }, function()
 				for _, t in toes do
 					local d = t[2]
 					k:Part({ Name = "Toe", Shape = "Ball", Size = { d, d, d }, Pos = { sx * t[1], d / 2 - 0.06, t[3] + 0.5 }, Color = LIMB, Material = "Wood" })
@@ -477,11 +485,12 @@ return {
 		end)
 		-- one dark ellipsoid tipped back into the log: only its lower half shows, so it
 		-- reads as a wide D-shaped grin whose corners curl up round the log
-		k:Part({ Name = "Grin", Shape = "Ellipsoid", Size = { 0.5, 0.24, 0.12 }, Pos = { 0, 0.27, -0.44 }, Rot = { 35, 0, 0 }, Color = MOUTH })
-		segment(k, "Arm", { 0.42, 0.12, 0 }, { 0.7, 0.42, 0 }, 0.1, LIMB)
-		-- bat: thin handle in the fist, fat tapered barrel up top
-		segment(k, "BatHandle", { 0.7, 0.36, 0 }, { 0.76, 0.86, 0 }, 0.1, BAT, "Wood", 0)
+		k:Part({ Name = "Grin", Shape = "Ellipsoid", Size = { 0.6, 0.3, 0.12 }, Pos = { 0, 0.33, -0.43 }, Rot = { 55, 0, 0 }, Color = MOUTH })
+		segment(k, "Arm", { 0.42, 0.08, 0 }, { 0.68, 0.36, 0 }, 0.1, LIMB)
+		-- bat: thin handle in the fist, long fat barrel on top
 		local dir = norm({ 0.1, 1, 0 })
-		k:Part({ Name = "BatBarrel", Shape = "Ellipsoid", Size = { 0.66, 0.24, 0.24 }, Pos = add({ 0.76, 0.86, 0 }, dir, 0.14), Rot = axisRot(dir), Color = BAT, Material = "Wood" })
+		local grip = { 0.68, 0.36, 0 }
+		segment(k, "BatHandle", add(grip, dir, -0.06), add(grip, dir, 0.5), 0.09, BAT, "Wood", 0)
+		segment(k, "BatBarrel", add(grip, dir, 0.42), add(grip, dir, 0.95), 0.19, BAT, "Wood", 0)
 	end,
 }
