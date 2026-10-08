@@ -41,8 +41,8 @@ local TIRE_W = 1.7 -- tyre width (along Z)
 local NECK_Y = 7.1 -- head pivot (where the chin rests on the tread)
 
 -- Head volumes {cx, cy, cz, semiX, semiY, semiZ}
-local SKULL = { 0, 7.95, -0.2, 1.72, 0.92, 1.5 }
-local JAW = { 0, 7.25, -0.45, 1.35, 0.425, 1.15 }
+local SKULL = { 0, 7.95, -0.2, 1.84, 0.92, 1.55 }
+local JAW = { 0, 7.25, -0.45, 1.45, 0.425, 1.18 }
 
 local function deg(r)
 	return r * 180 / math.pi
@@ -236,10 +236,10 @@ local function buildHead(k)
 		end
 
 		-- Huge bulging eye
-		local EC = { 0.86, 8.76, -0.82 } -- eyeball centre
+		local EC = { 0.9, 8.76, -0.84 } -- eyeball centre
 		local ER = 0.57
-		k:Part({ Name = "EyeDome", Shape = "Ball", Size = { 1.34, 1.34, 1.34 }, Pos = { 0.84, 8.68, -0.66 }, Color = FROG, Reflectance = 0.08 })
-		k:Part({ Name = "EyeLid", Shape = "Ellipsoid", Size = { 1.2, 0.42, 1.12 }, Pos = { 0.84, 9.08, -0.62 }, Rot = { -12, 0, -6 }, Color = FROG_DARK, Reflectance = 0.06 })
+		k:Part({ Name = "EyeDome", Shape = "Ball", Size = { 1.34, 1.34, 1.34 }, Pos = { 0.88, 8.68, -0.68 }, Color = FROG, Reflectance = 0.08 })
+		k:Part({ Name = "EyeLid", Shape = "Ellipsoid", Size = { 1.2, 0.42, 1.12 }, Pos = { 0.88, 9.08, -0.64 }, Rot = { -12, 0, -6 }, Color = FROG_DARK, Reflectance = 0.06 })
 		local BLINK = { Type = "Blink", Speed = 0.28, Phase = 0.3 }
 		k:Part({ Name = "Eyeball", Shape = "Ball", Size = { ER * 2, ER * 2, ER * 2 }, Pos = EC, Color = EYE_WHITE, Anim = BLINK })
 		-- iris / pupil / shine sit on the eyeball surface, looking forward and slightly out
@@ -268,7 +268,9 @@ local function buildLeg(k, side, phase)
 		Rot = { 0, 0, 2 * side },
 		Anim = { Type = "Wiggle", Axis = "X", Amount = SWING, Speed = SPEED, Phase = phase },
 	}, function()
-		k:Part({ Name = "Thigh", Shape = "Ellipsoid", Size = { 0.62, 2.5, 0.68 }, Pos = { 0, -0.82, 0 }, Color = SKIN })
+		k:Part({ Name = "Thigh", Shape = "Ellipsoid", Size = { 0.64, 2.5, 0.7 }, Pos = { 0, -0.82, 0 }, Color = SKIN })
+		-- lower thigh keeps the leg from pinching above the knee
+		k:Part({ Name = "LowerThigh", Shape = "Cylinder", Size = { 1.05, 0.44, 0.44 }, Pos = { 0, -1.45, 0.01 }, Rot = { 0, 0, 90 }, Color = SKIN })
 
 		-- knee bends the opposite way so the foot stays planted (a little knee-bob shuffle)
 		k:Group({
@@ -276,8 +278,7 @@ local function buildLeg(k, side, phase)
 			Pos = { 0, -1.95, 0 },
 			Anim = { Type = "Wiggle", Axis = "X", Amount = -SWING * 2, Speed = SPEED, Phase = phase },
 		}, function()
-			k:Part({ Name = "KneeJoint", Shape = "Ellipsoid", Size = { 0.5, 0.62, 0.52 }, Pos = { 0, 0.04, 0 }, Color = SKIN })
-			k:Part({ Name = "Kneecap", Shape = "Ellipsoid", Size = { 0.3, 0.34, 0.16 }, Pos = { 0, 0.02, -0.2 }, Color = SKIN_LIGHT })
+			k:Part({ Name = "KneeJoint", Shape = "Ellipsoid", Size = { 0.47, 0.6, 0.5 }, Pos = { 0, 0.02, -0.02 }, Color = SKIN })
 			k:Part({ Name = "Shin", Shape = "Ellipsoid", Size = { 0.46, 2.0, 0.5 }, Pos = { 0, -0.84, 0 }, Color = SKIN })
 			k:Part({ Name = "Calf", Shape = "Ellipsoid", Size = { 0.42, 0.9, 0.4 }, Pos = { 0, -0.55, 0.09 }, Color = SKIN })
 
