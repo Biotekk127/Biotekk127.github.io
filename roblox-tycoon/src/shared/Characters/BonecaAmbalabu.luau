@@ -34,7 +34,7 @@ local SKIN_LIGHT = "#f6d0b0"
 local NAIL = "#f7dccb"
 
 -- Layout (world studs) -------------------------------------------------------------------
-local HIP_Y = 3.95 -- hip joints (top of the legs, inside the tyre bottom)
+local HIP_Y = 3.935 -- hip joints (top of the legs, inside the tyre bottom)
 local TIRE_Y = 5.55 -- tyre centre
 local TIRE_R = 1.8 -- tyre radius
 local TIRE_W = 1.7 -- tyre width (along Z)
@@ -157,6 +157,11 @@ local function buildTire(k)
 		})
 	end
 
+	-- valve stem poking out of the front of the rim
+	local va = math.rad(235)
+	k:Part({ Name = "ValveStem", Shape = "Cylinder", Size = { 0.34, 0.1, 0.1 }, Pos = { math.cos(va) * 0.99, math.sin(va) * 0.99, -0.92 }, Rot = AXLE, Color = RUBBER_DARK, Material = "Rubber" })
+	k:Part({ Name = "ValveCap", Shape = "Cylinder", Size = { 0.1, 0.13, 0.13 }, Pos = { math.cos(va) * 0.99, math.sin(va) * 0.99, -1.12 }, Rot = AXLE, Color = LUG, Material = "Metal" })
+
 	-- tread: two staggered rows of blocks around the whole circumference
 	local N = 10
 	for row = 0, 1 do
@@ -203,18 +208,23 @@ local function buildHead(k)
 	for i = 0, SEG do
 		local f = (i / SEG) * 2 - 1 -- -1..1
 		local phi = math.rad(f * PHI)
-		local y = 7.47 + 0.26 * f * f * f * f
-		local p = headSurface(0, y, -0.3, math.sin(phi), 0, -math.cos(phi), 0.04)
+		local y = 7.56 + 0.2 * f * f + 0.12 * f * f * f * f
+		local p = headSurface(0, y, -0.3, math.sin(phi), 0, -math.cos(phi), 0.025)
 		table.insert(pts, p)
 	end
 	for i = 1, SEG do
 		segment(k, "Mouth", pts[i], pts[i + 1], 0.15, MOUTH)
 	end
 
+	do
+		local p, n = headSurface(0, 8.0, -0.2, 0, 0.62, 0.8, -0.025)
+		k:Part({ Name = "Spot", Shape = "Cylinder", Size = { 0.08, 0.52, 0.52 }, Pos = p, Rot = axisRot(n[1], n[2], n[3]), Color = FROG_SPOT, Reflectance = 0.05 })
+	end
+
 	k:Mirror(function()
 		-- mouth corner dimples
 		local c = pts[SEG + 1]
-		k:Part({ Name = "MouthCorner", Shape = "Ball", Size = { 0.2, 0.2, 0.2 }, Pos = { c[1] - 0.03, c[2] + 0.03, c[3] }, Color = MOUTH })
+		k:Part({ Name = "MouthCorner", Shape = "Ball", Size = { 0.17, 0.17, 0.17 }, Pos = { c[1] - 0.03, c[2] + 0.03, c[3] }, Color = MOUTH })
 
 		-- Nostrils
 		local np = headSurface(0, 8.0, -0.2, 0.17, 0.02, -1, -0.02)
@@ -224,15 +234,14 @@ local function buildHead(k)
 		local tp, tn = headSurface(0, 8.0, -0.2, 0.95, 0.08, 0.35, -0.02)
 		k:Part({ Name = "Tympanum", Shape = "Cylinder", Size = { 0.1, 0.62, 0.62 }, Pos = tp, Rot = axisRot(tn[1], tn[2], tn[3]), Color = EAR, Reflectance = 0.1 })
 
-		-- Dorsal mottling (embedded balls read as round patches)
+		-- Dorsal mottling: flat darker patches lying on the skin
 		local spots = {
-			{ 0.32, 0.85, 0.42, 0.5 },
-			{ 0.7, 0.5, 0.55, 0.42 },
-			{ 0.12, 0.6, 0.85, 0.44 },
+			{ 0.36, 0.85, 0.4, 0.48 },
+			{ 0.74, 0.42, 0.62, 0.4 },
 		}
 		for _, s in spots do
-			local p = headSurface(0, 8.0, -0.2, s[1], s[2], s[3], -s[4] * 0.32)
-			k:Part({ Name = "Spot", Shape = "Ball", Size = { s[4], s[4], s[4] }, Pos = p, Color = FROG_SPOT, Reflectance = 0.05 })
+			local p, n = headSurface(0, 8.0, -0.2, s[1], s[2], s[3], -0.025)
+			k:Part({ Name = "Spot", Shape = "Cylinder", Size = { 0.08, s[4], s[4] }, Pos = p, Rot = axisRot(n[1], n[2], n[3]), Color = FROG_SPOT, Reflectance = 0.05 })
 		end
 
 		-- Huge bulging eye
@@ -242,77 +251,78 @@ local function buildHead(k)
 		k:Part({ Name = "EyeLid", Shape = "Ellipsoid", Size = { 1.2, 0.42, 1.12 }, Pos = { 0.88, 9.08, -0.64 }, Rot = { -12, 0, -6 }, Color = FROG_DARK, Reflectance = 0.06 })
 		local BLINK = { Type = "Blink", Speed = 0.28, Phase = 0.3 }
 		k:Part({ Name = "Eyeball", Shape = "Ball", Size = { ER * 2, ER * 2, ER * 2 }, Pos = EC, Color = EYE_WHITE, Anim = BLINK })
-		-- iris / pupil / shine sit on the eyeball surface, looking forward and slightly out
-		local function onEye(yaw, pitch, depth)
+		-- iris / pupil are flattened lenses sunk into the eyeball: only their front caps show,
+		-- so their edges never poke out of the white. They look forward and slightly outward.
+		local function onEye(yaw, pitch, r)
 			local dx = math.sin(math.rad(yaw))
 			local dy = math.sin(math.rad(pitch)) * math.cos(math.rad(yaw))
 			local dz = -math.cos(math.rad(pitch)) * math.cos(math.rad(yaw))
-			local r = ER + depth
 			return { EC[1] + dx * r, EC[2] + dy * r, EC[3] + dz * r }
 		end
-		k:Part({ Name = "Iris", Shape = "Ellipsoid", Size = { 0.8, 0.8, 0.14 }, Pos = onEye(16, 6, -0.04), Rot = { 6, -16, 0 }, Color = IRIS, Anim = BLINK })
-		k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.48, 0.5, 0.12 }, Pos = onEye(16, 6, 0.01), Rot = { 6, -16, 0 }, Color = PUPIL, Anim = BLINK })
-		k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.16, 0.16, 0.16 }, Pos = onEye(4, 20, 0.03), Color = SHINE, Material = "Neon", Anim = BLINK })
+		local LOOK = { 6, -16, 0 }
+		k:Part({ Name = "Iris", Shape = "Ellipsoid", Size = { 0.74, 0.74, 0.32 }, Pos = onEye(16, 6, 0.43), Rot = LOOK, Color = IRIS, Anim = BLINK })
+		k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.5, 0.54, 0.28 }, Pos = onEye(16, 6, 0.49), Rot = LOOK, Color = PUPIL, Anim = BLINK })
+		k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.15, 0.15, 0.15 }, Pos = onEye(7, 17, 0.61), Color = SHINE, Material = "Neon", Anim = BLINK })
 	end)
 end
 
 --------------------------------------------------------------------------------------------
--- One long, thin, bare human leg. side = 1 (right, +X) or -1 (left, -X)
+-- One long, thin, bare human leg. side = 1 (right, +X) or -1 (left, -X).
+-- stride = forward swing at the hip (degrees): the meme is "frozen mid-stride".
 --------------------------------------------------------------------------------------------
-local function buildLeg(k, side, phase)
+local function buildLeg(k, side, phase, stride)
 	local SWING = 7
 	local SPEED = 0.55
 	k:Group({
 		Name = if side > 0 then "RightLeg" else "LeftLeg",
 		Pos = { 0.56 * side, HIP_Y, 0.05 },
-		Rot = { 0, 0, 2 * side },
+		Rot = { stride, 0, 2 * side },
 		Anim = { Type = "Wiggle", Axis = "X", Amount = SWING, Speed = SPEED, Phase = phase },
 	}, function()
-		k:Part({ Name = "Thigh", Shape = "Ellipsoid", Size = { 0.64, 2.5, 0.7 }, Pos = { 0, -0.82, 0 }, Color = SKIN })
-		-- lower thigh keeps the leg from pinching above the knee
-		k:Part({ Name = "LowerThigh", Shape = "Cylinder", Size = { 1.05, 0.44, 0.44 }, Pos = { 0, -1.45, 0.01 }, Rot = { 0, 0, 90 }, Color = SKIN })
+		-- one long tapering thigh: widest mid-thigh, narrowing into the knee
+		k:Part({ Name = "Thigh", Shape = "Ellipsoid", Size = { 0.66, 2.75, 0.72 }, Pos = { 0, -0.92, 0 }, Color = SKIN })
 
-		-- knee bends the opposite way so the foot stays planted (a little knee-bob shuffle)
+		-- knee bends the opposite way so the foot stays planted (a little knee-dip shuffle)
 		k:Group({
 			Name = "Knee",
 			Pos = { 0, -1.95, 0 },
 			Anim = { Type = "Wiggle", Axis = "X", Amount = -SWING * 2, Speed = SPEED, Phase = phase },
 		}, function()
-			k:Part({ Name = "KneeJoint", Shape = "Ellipsoid", Size = { 0.47, 0.6, 0.5 }, Pos = { 0, 0.02, -0.02 }, Color = SKIN })
-			k:Part({ Name = "Shin", Shape = "Ellipsoid", Size = { 0.46, 2.0, 0.5 }, Pos = { 0, -0.84, 0 }, Color = SKIN })
-			k:Part({ Name = "Calf", Shape = "Ellipsoid", Size = { 0.42, 0.9, 0.4 }, Pos = { 0, -0.55, 0.09 }, Color = SKIN })
+			k:Part({ Name = "KneeCap", Shape = "Ellipsoid", Size = { 0.32, 0.38, 0.22 }, Pos = { 0, 0.02, -0.14 }, Color = SKIN })
+			k:Part({ Name = "Shin", Shape = "Ellipsoid", Size = { 0.46, 2.1, 0.48 }, Pos = { 0, -0.8, 0 }, Color = SKIN })
+			k:Part({ Name = "Calf", Shape = "Ellipsoid", Size = { 0.44, 1.3, 0.42 }, Pos = { 0.01 * side, -0.66, 0.065 }, Color = SKIN })
 
 			k:Group({
 				Name = "Ankle",
 				Pos = { 0, -1.68, 0 },
-				Rot = { 0, -8 * side, -2 * side },
+				Rot = { -stride, -8 * side, -2 * side },
 				Anim = { Type = "Wiggle", Axis = "X", Amount = SWING, Speed = SPEED, Phase = phase },
 			}, function()
-				-- ankle bones (outer one sits a bit lower, like a real ankle)
-				k:Part({ Name = "Ankle", Shape = "Ellipsoid", Size = { 0.34, 0.5, 0.4 }, Pos = { 0, 0.0, 0.03 }, Color = SKIN })
-				k:Part({ Name = "Foot", Shape = "Ellipsoid", Size = { 0.52, 0.34, 1.12 }, Pos = { 0.02 * side, -0.15, -0.3 }, Color = SKIN })
-				k:Part({ Name = "Heel", Shape = "Ball", Size = { 0.38, 0.38, 0.38 }, Pos = { 0, -0.13, 0.1 }, Color = SKIN_DARK })
+				-- ankle knob (the outer one sits a little lower, like a real ankle)
+				k:Part({ Name = "AnkleBone", Shape = "Ellipsoid", Size = { 0.33, 0.3, 0.3 }, Pos = { 0.015 * side, -0.02, 0.02 }, Color = SKIN })
+				k:Part({ Name = "Foot", Shape = "Ellipsoid", Size = { 0.56, 0.34, 1.3 }, Pos = { 0.03 * side, -0.15, -0.36 }, Color = SKIN })
+				k:Part({ Name = "Heel", Shape = "Ellipsoid", Size = { 0.38, 0.34, 0.42 }, Pos = { 0, -0.15, 0.1 }, Color = SKIN })
 
 				-- toes curl and wiggle around their base knuckle
 				k:Group({
 					Name = "Toes",
-					Pos = { 0, -0.2, -0.68 },
+					Pos = { 0, -0.2, -0.86 },
 					Anim = { Type = "Wiggle", Axis = "X", Amount = 14, Speed = 1.1, Phase = phase + 0.2 },
 				}, function()
-					-- inner (big) toe -> outer (little) toe
+					-- inner (big) toe -> outer (little) toe: {x, z, diameter}
 					local toes = {
-						{ -0.15, -0.13, 0.22 },
-						{ -0.03, -0.14, 0.16 },
-						{ 0.07, -0.11, 0.15 },
-						{ 0.155, -0.07, 0.13 },
-						{ 0.225, -0.01, 0.11 },
+						{ -0.15, -0.12, 0.25 },
+						{ -0.01, -0.1, 0.18 },
+						{ 0.1, -0.07, 0.165 },
+						{ 0.195, -0.03, 0.15 },
+						{ 0.27, 0.03, 0.13 },
 					}
 					for i, t in toes do
 						local d = t[3]
 						-- toe bottoms rest on the ground (ground is local y = -0.12 here)
-						k:Part({ Name = "Toe", Shape = "Ball", Size = { d, d, d }, Pos = { t[1] * side + 0.02 * side, -0.12 + d / 2, t[2] }, Color = if i == 1 then SKIN else SKIN_DARK })
+						k:Part({ Name = "Toe", Shape = "Ball", Size = { d, d, d }, Pos = { (t[1] + 0.03) * side, -0.12 + d / 2, t[2] }, Color = if i == 1 then SKIN else SKIN_DARK })
 					end
-					k:Part({ Name = "BigToeNail", Shape = "Ellipsoid", Size = { 0.13, 0.05, 0.1 }, Pos = { -0.13 * side, -0.01, -0.2 }, Rot = { 12, 0, 0 }, Color = NAIL })
+					k:Part({ Name = "BigToeNail", Shape = "Ellipsoid", Size = { 0.15, 0.05, 0.12 }, Pos = { -0.12 * side, 0.0, -0.19 }, Rot = { 14, 0, 0 }, Color = NAIL })
 				end)
 			end)
 		end)
@@ -330,8 +340,8 @@ return {
 
 	Build = function(k)
 		-- Legs (written separately so they shuffle out of phase)
-		buildLeg(k, 1, 0)
-		buildLeg(k, -1, 0.5)
+		buildLeg(k, 1, 0, 8)
+		buildLeg(k, -1, 0.5, -6)
 
 		-- Tyre torso + head sway together around the hips
 		k:Group({ Name = "Body", Pos = { 0, HIP_Y, 0 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 3, Speed = 0.4 } }, function()
