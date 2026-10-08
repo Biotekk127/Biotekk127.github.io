@@ -204,9 +204,9 @@ local function buildHead(k)
 	k:Mirror(function()
 		k:Part({ Name = "Cheek", Shape = "Ellipsoid", Size = { CHEEK_R[4] * 2, CHEEK_R[5] * 2, CHEEK_R[6] * 2 }, Pos = { CHEEK_R[1], CHEEK_R[2], CHEEK_R[3] }, Color = FUR })
 		-- cheek fluff tufts sticking out of the silhouette
-		for _, f in { { -0.62, -112, 0.56 }, { -0.95, -140, 0.44 } } do
-			k:Part({ Name = "CheekFluff", Shape = "Wedge", Size = { 0.12, f[3], 0.3 }, Pos = { 1.28 + f[1] * 0.1, f[1], -0.42 }, Rot = { 0, -60, f[2] }, Color = FUR_LIGHT })
-		end
+		k:Group({ Name = "CheekFluff", Pos = { 1.22, -0.78, -0.5 }, Rot = { 0, -40, -118 } }, function()
+			k:Part({ Name = "Fluff", Shape = "Wedge", Size = { 0.14, 0.6, 0.32 }, Pos = { 0, 0.3, 0 }, Rot = { 0, -90, 0 }, Color = FUR_LIGHT })
+		end)
 
 		-- eyes
 		buildEye(k)
@@ -238,7 +238,6 @@ local function buildHead(k)
 		stripe(k, { 1, -0.08, -0.5 }, { 0.52, 0.1, 0.16 }, 8)
 		stripe(k, { 1, -0.34, -0.42 }, { 0.46, 0.1, 0.16 }, -6)
 		stripe(k, { 0.42, 0.55, 0.8 }, { 0.16, 0.7, 0.18 }, -14)
-		stripe(k, { 0.85, 0.2, 0.6 }, { 0.16, 0.62, 0.18 }, -30)
 	end)
 	stripe(k, { 0, 0.78, -0.7 }, { 0.13, 0.55, 0.16 }, 0)
 	stripe(k, { 0, 0.6, 0.82 }, { 0.18, 0.8, 0.18 }, 0)
@@ -293,11 +292,6 @@ local function buildThorax(k)
 		for _, x in { -0.45, -0.85 } do
 			k:Part({ Name = "Spine", Shape = "Wedge", Size = { 0.12, 0.26, 0.28 }, Pos = { x, 0.99, 0 }, Rot = { 0, 90, 0 }, Color = SHELL_DARK })
 		end
-		for side = -1, 1, 2 do
-			-- gill-chamber groove and the pale lower edge of the side plate (body sides are +-Z)
-			k:Part({ Name = "GillGroove", Shape = "Ellipsoid", Size = { 1.2, 0.08, 0.12 }, Pos = { -0.2, 0.08, 0.77 * side }, Rot = { 0, 0, -8 }, Color = SHELL_DARK })
-			k:Part({ Name = "SidePlateRim", Shape = "Ellipsoid", Size = { 1.9, 0.22, 0.12 }, Pos = { 0, -0.48, 0.66 * side }, Color = SHELL_PALE })
-		end
 		k:Part({ Name = "Sternum", Shape = "Ellipsoid", Size = { 1.8, 0.34, 0.86 }, Pos = { 0, -0.68, 0 }, Color = SHELL_PALE })
 	end)
 end
@@ -321,8 +315,6 @@ local function buildSegment(k, i)
 		k:Part({ Name = "Shell", Shape = "Ellipsoid", Size = { s.l, s.h, s.w }, Color = SHELL, Reflectance = 0.05 })
 		-- the raised rear rim of each plate, where it overlaps the next one
 		k:Part({ Name = "Band", Shape = "Ellipsoid", Size = { 0.16, s.h * 0.84, s.w * 0.84 }, Pos = { -s.l / 2 + 0.26, 0.02, 0 }, Color = SHELL_DARK })
-		-- glossy cooked-shell highlight running along the back
-		k:Part({ Name = "Gloss", Shape = "Ellipsoid", Size = { s.l * 0.5, 0.12, s.w * 0.3 }, Pos = { 0.08, s.h / 2 - 0.05, 0 }, Color = SHELL_LIGHT })
 		for side = -1, 1, 2 do
 			if not s.bare then
 				k:Part({ Name = "Pleuron", Shape = "Ellipsoid", Size = { s.l * 0.8, s.h * 0.42, 0.12 }, Pos = { 0.02, -s.h * 0.3, side * (s.w * 0.42 + (7 - i) * 0.01) }, Color = SHELL_LIGHT })

@@ -3,8 +3,8 @@
 	Canonical look: a forest creature that is half proboscis monkey, half tree. A bark-brown
 	wooden head and trunk body wrapped in a dark-green robe of leaves, a tan monkey face with
 	tiny beady eyes under heavy brows and a HUGE pendulous pink-orange nose that hangs below
-	his chin, pale grey cheek fur, long thin branch arms with twig fingers and leaves on the
-	elbows, short legs of entwined roots growing into ENORMOUS bare human feet, and a small
+	his chin, a grey-green lichen beard (grey jaw fur + mossy chin), long thin branch arms with
+	twig fingers and leaves on the elbows, short legs of entwined roots growing into ENORMOUS bare human feet, and a small
 	hat on his leafy head ("il mio cappello e' pieno di Slim").
 
 	Coordinates: feet on y = 0, faces -Z. Parts are written in world coordinates; every
@@ -194,7 +194,7 @@ local WR = { 2.18, 2.78, -0.38 }
 
 local function buildArm(k)
 	joint(k, "Arm", SH, { Type = "Wiggle", Axis = "Z", Amount = 8, Speed = 0.45 }, function()
-		k:Part({ Name = "ShoulderKnot", Shape = "Ball", Size = { 0.48, 0.48, 0.48 }, Pos = SH, Color = BARK_DARK, Material = "Wood" })
+		k:Part({ Name = "ShoulderKnot", Shape = "Ball", Size = { 0.42, 0.42, 0.42 }, Pos = SH, Color = BARK_DARK, Material = "Wood" })
 		twig(k, "UpperArm", SH, EL, 0.26, BARK)
 		joint(k, "Forearm", EL, { Type = "Wiggle", Axis = "X", Amount = 9, Speed = 0.6, Phase = 0.3 }, function()
 			k:Part({ Name = "ElbowKnot", Shape = "Ellipsoid", Size = { 0.38, 0.4, 0.38 }, Pos = EL, Color = BARK_DARK, Material = "Wood" })
@@ -289,7 +289,6 @@ local function buildHead(k)
 				Material = "Grass",
 			})
 		end
-		leaf(k, "CrownLeaf", { 0.55, 8.0, -0.35 }, { 1.05, 8.5, -0.75 }, 0.36, LEAF)
 		leaf(k, "CrownSprig", { -0.6, 8.05, 0.2 }, { -1.25, 8.5, 0.38 }, 0.32, LEAF_LIGHT, { Type = "Wiggle", Axis = "X", Amount = 20, Speed = 0.6, Phase = 0.4 })
 		leaf(k, "CrownSprig", { 0.3, 8.1, 0.7 }, { 0.5, 8.55, 1.25 }, 0.32, LEAF, { Type = "Wiggle", Axis = "X", Amount = 20, Speed = 0.8, Phase = 0.7 }, true)
 
@@ -328,6 +327,7 @@ local ROBE_LEAVES = { -- azimuth, height, colour, roll in the robe plane
 	{ 58, 3.75, MOSS, -20 },
 	{ 138, 4.2, LEAF, 18 },
 	{ 176, 3.85, LEAF_LIGHT, -12 },
+	{ 16, 3.6, LEAF_LIGHT, 8 },
 }
 
 local function buildTrunk(k)
@@ -353,7 +353,7 @@ local function buildTrunk(k)
 		end)
 
 		-- leafy collar around the neck (open at the front for the nose)
-		for i, a in ipairs({ 70, 145, 215, 290 }) do
+		for i, a in ipairs({ 80, 180, 280 }) do
 			local ra = math.rad(a)
 			local sa, ca = math.sin(ra), math.cos(ra)
 			leaf(k, "CollarLeaf", { 0.45 * sa, 5.3, 0.1 - 0.42 * ca }, { 1.0 * sa, 5.55, 0.1 - 0.92 * ca }, 0.62, if i % 2 == 0 then LEAF_LIGHT else LEAF, nil, true)

@@ -295,8 +295,8 @@ local function buildPlanet(k)
 	local storms = {
 		{ 37, -38, 0.62, 0.34, "#fbf1dc" }, -- great white spot (north orange band)
 		{ -37, 30, 0.5, 0.28, "#fbf1dc" },
-		{ -18, -70, 0.36, 0.2, "#a8653a" },
-		{ 18, 75, 0.4, 0.22, "#a8653a" },
+		{ -18, -70, 0.36, 0.2, "#c88d58" },
+		{ 18, 75, 0.4, 0.22, "#c88d58" },
 		{ -27, 160, 0.48, 0.26, "#fbf1dc" },
 	}
 	for _, s in storms do
@@ -409,7 +409,7 @@ local function buildEye(k, s)
 		k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.13, 0.13, 0.13 }, Pos = { -s * 0.1, 0.1, -0.2 }, Color = SHINE, Material = "Neon", Anim = BLINK })
 		k:Part({ Name = "EyeShine2", Shape = "Ball", Size = { 0.07, 0.07, 0.07 }, Pos = { s * 0.06, -0.14, -0.19 }, Color = SHINE, Material = "Neon", Anim = BLINK })
 		-- sleepy-content upper lid
-		k:Part({ Name = "EyeLid", Shape = "Ellipsoid", Size = { 0.66, 0.34, 0.33 }, Pos = { 0, 0.24, -0.01 }, Rot = { 0, 0, s * -6 }, Color = if s > 0 then PATCH else COW, Anim = BLINK })
+		k:Part({ Name = "EyeLid", Shape = "Ellipsoid", Size = { 0.66, 0.22, 0.33 }, Pos = { 0, 0.34, -0.01 }, Rot = { 0, 0, s * 5 }, Color = if s > 0 then PATCH else COW, Anim = BLINK })
 		-- three lashes flicking out of the outer corner of the lid
 		for j = 0, 2 do
 			local ad = -2 + j * 20
@@ -454,18 +454,18 @@ local function buildHorn(k)
 		local a, b, c = (1 - t) * (1 - t), 2 * (1 - t) * t, t * t
 		return { a * P0[1] + b * C[1] + c * P2[1], a * P0[2] + b * C[2] + c * P2[2], a * P0[3] + b * C[3] + c * P2[3] }
 	end
-	local N = 6
-	local COLS = { HORN, HORN, HORN, HORN_MID, HORN_MID, HORN_TIP }
+	local N = 5
+	local COLS = { HORN, HORN, "#ead9b2", HORN_MID, HORN_TIP }
 	for i = 1, N do
 		local t0, t1 = (i - 1) / N, i / N
 		local a, b = at(t0), at(t1)
 		local vx, vy, vz = b[1] - a[1], b[2] - a[2], b[3] - a[3]
 		local len = math.sqrt(vx * vx + vy * vy + vz * vz)
-		local d = 0.36 - 0.24 * (i - 1) / (N - 1)
+		local d = 0.36 - 0.25 * (i - 1) / (N - 1)
 		k:Part({
 			Name = "Horn",
 			Shape = "Ellipsoid",
-			Size = { len * 1.9, d, d },
+			Size = { len * 2.7, d, d },
 			Pos = { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2 },
 			Rot = axisRot(vx, vy, vz),
 			Color = COLS[i],
@@ -481,34 +481,20 @@ local GOLD = "#e8c25a"
 local GOLD_DARK = "#a9802e"
 
 local function buildCollar(k)
-	local Y, CZ, AX, AZ = 6.4, -0.2, 0.9, 0.86
-	-- a full loop: the front arc passes under the chin, so no loose strap ends show
-	local N = 18
-	local A0, A1 = math.rad(-90), math.rad(270)
-	local function pt(a)
-		return { AX * math.cos(a), Y, CZ + AZ * math.sin(a) }
-	end
-	for i = 0, N - 1 do
-		local a0 = A0 + (A1 - A0) * i / N
-		local a1 = A0 + (A1 - A0) * (i + 1) / N
-		local p0, p1 = pt(a0), pt(a1)
-		local vx, vz = p1[1] - p0[1], p1[3] - p0[3]
-		local len = math.sqrt(vx * vx + vz * vz)
-		local mid = { (p0[1] + p1[1]) / 2, Y, (p0[3] + p1[3]) / 2 }
-		k:Part({
-			Name = "Collar",
-			Size = { len + 0.03, 0.17, 0.09 },
-			Pos = mid,
-			Rot = { 0, deg(math.atan2(-vz, vx)), 0 },
-			Color = COLLAR,
-			Material = "Leather",
-		})
-		if i % 2 == 1 then
-			-- gold stud on the outside of the strap
-			local ox, _, oz = unit(mid[1], 0, mid[3] - CZ)
-			k:Part({ Name = "CollarStud", Shape = "Ball", Size = { 0.08, 0.08, 0.08 }, Pos = { mid[1] + ox * 0.05, Y, mid[3] + oz * 0.05 }, Color = GOLD, Material = "Foil" })
+	local Y, CZ, R = 6.4, -0.2, 0.9
+	-- one leather disc hugging the neck at its widest point: reads as a strap all round
+	k:Part({ Name = "Collar", Shape = "Cylinder", Size = { 0.17, R * 2, R * 2 }, Pos = { 0, Y, CZ }, Rot = { 0, 0, 90 }, Color = COLLAR, Material = "Leather" })
+	-- gold studs everywhere except under the chin (front) and the buckle (back)
+	for j = 1, 9 do
+		local a = math.rad(-90 + j * 36)
+		if j ~= 5 then
+			k:Part({ Name = "CollarStud", Shape = "Ball", Size = { 0.08, 0.08, 0.08 }, Pos = { (R + 0.01) * math.cos(a), Y, CZ + (R + 0.01) * math.sin(a) }, Color = GOLD, Material = "Foil" })
 		end
 	end
+	-- buckle at the back of the neck
+	k:Part({ Name = "Buckle", Size = { 0.26, 0.22, 0.05 }, Pos = { 0, Y, CZ + R + 0.01 }, Color = GOLD, Material = "Foil" })
+	k:Part({ Name = "BuckleHole", Size = { 0.16, 0.12, 0.05 }, Pos = { 0, Y, CZ + R + 0.025 }, Color = COLLAR, Material = "Leather" })
+	k:Part({ Name = "BucklePin", Size = { 0.05, 0.14, 0.05 }, Pos = { 0, Y, CZ + R + 0.04 }, Color = GOLD_DARK, Material = "Foil" })
 	-- short strap dropping from under the chin to the bell loop
 	segment(k, "BellStrap", { 0, 6.3, -1.2 }, { 0, 6.15, -1.44 }, 0.08, COLLAR, "Leather")
 
@@ -542,9 +528,10 @@ local function buildHead(k)
 	capPatch(k, "ForeheadSpot", SKULL, -0.2, 0.7, -0.68, 11, 0.9, PATCH)
 
 	-- forelock tuft between the horns
-	local tuft = { { 0, 8.43, -0.56, 0 }, { 0.15, 8.4, -0.46, 25 }, { -0.15, 8.4, -0.46, -25 }, { 0, 8.45, -0.34, 0 }, { 0.06, 8.35, -0.72, 10 } }
-	for _, t in tuft do
-		k:Part({ Name = "Tuft", Shape = "Ellipsoid", Size = { 0.3, 0.2, 0.34 }, Pos = { t[1], t[2], t[3] }, Rot = { -20, 0, t[4] }, Color = PATCH })
+	local fringe = { { 0, 1, -0.42, 0.42, 0 }, { 0.3, 0.95, -0.3, 0.3, 35 }, { -0.28, 0.95, -0.34, 0.3, -30 }, { 0.08, 0.88, -0.62, 0.26, 12 } }
+	for _, f in fringe do
+		local fp, fn = surface(HEAD_VOLS, 0, 7.5, -0.3, f[1], f[2], f[3], -0.03)
+		k:Part({ Name = "Fringe", Shape = "Ellipsoid", Size = { f[4], f[4] * 1.25, 0.13 }, Pos = fp, Rot = faceRot(fn[1], fn[2], fn[3], f[5]), Color = PATCH })
 	end
 
 	-- nostrils + muzzle freckles
@@ -598,24 +585,24 @@ end
 ------------------------------------------------------------------------------------------
 local function buildTail(k)
 	-- springs from the lower back of the planet and hangs in a lazy S down to a black tuft
-	local root = onPlanet(-36, 180, -0.08)
-	local T1, T2 = { 0, 3.08, 1.98 }, { 0.03, 2.62, 2.18 }
-	local T3 = { 0.06, 2.12, 2.17 }
+	local root = onPlanet(-6, 180, -0.08)
+	local T1, T2 = { 0, 3.98, 2.42 }, { 0.03, 3.5, 2.56 }
+	local T3 = { 0.06, 3.1, 2.48 }
 	joint(k, "Tail", root, { Type = "Wiggle", Axis = "Z", Amount = 14, Speed = 0.6 }, function()
 		k:Part({ Name = "TailRoot", Shape = "Ellipsoid", Size = { 0.34, 0.3, 0.22 }, Pos = root, Color = COW_SHADE })
-		loft(k, "Tail", { { root[1], root[2], root[3], 0.1 }, { T1[1], T1[2], T1[3], 0.095 }, { T2[1], T2[2], T2[3], 0.085 } }, COW)
+		loft(k, "Tail", { { root[1], root[2], root[3], 0.12 }, { T1[1], T1[2], T1[3], 0.11 }, { T2[1], T2[2], T2[3], 0.1 } }, COW)
 		-- a Holstein tail is white with a black band near the bottom
 		joint(k, "TailTip", T2, { Type = "Wiggle", Axis = "Z", Amount = 18, Speed = 0.6, Phase = 0.2 }, function()
-			loft(k, "Tail", { { T2[1], T2[2], T2[3], 0.085 }, { T3[1], T3[2], T3[3], 0.075 } }, COW)
-			k:Part({ Name = "TailBand", Shape = "Ellipsoid", Size = { 0.17, 0.2, 0.17 }, Pos = { T3[1], T3[2] + 0.06, T3[3] }, Color = PATCH })
+			loft(k, "Tail", { { T2[1], T2[2], T2[3], 0.1 }, { T3[1], T3[2], T3[3], 0.09 } }, COW)
+			k:Part({ Name = "TailBand", Shape = "Ellipsoid", Size = { 0.2, 0.22, 0.2 }, Pos = { T3[1], T3[2] + 0.04, T3[3] }, Color = PATCH })
 			-- swishy tuft: long hair locks fanning down from the tip
 			local tuft = { { 0, 0, 0, 0, 0 }, { 0.08, 0.02, 0.03, 0, 14 }, { -0.08, 0.02, 0.03, 0, -14 }, { 0.02, 0.0, -0.08, -12, 4 }, { -0.03, 0.01, 0.09, 12, -6 } }
 			for _, t in tuft do
 				k:Part({
 					Name = "TailTuft",
 					Shape = "Ellipsoid",
-					Size = { 0.17, 0.56, 0.17 },
-					Pos = { T3[1] + t[1], T3[2] - 0.3 + t[2], T3[3] + t[3] },
+					Size = { 0.18, 0.5, 0.18 },
+					Pos = { T3[1] + t[1], T3[2] - 0.22 + t[2], T3[3] + t[3] },
 					Rot = { t[4], 0, t[5] },
 					Color = PATCH,
 				})
@@ -645,22 +632,19 @@ end
 local function buildLeg(k, s)
 	-- hip (hidden inside the planet) -> thigh -> knee -> calf -> ankle, slight knock-knee
 	loft(k, "Leg", {
-		{ s * 0.7, 3.2, 0.0, 0.42 },
-		{ s * 0.74, 2.6, -0.01, 0.4 },
-		{ s * 0.77, 2.05, -0.03, 0.33 },
-		{ s * 0.78, 1.58, -0.04, 0.265 },
-		{ s * 0.79, 1.22, -0.01, 0.255 },
-		{ s * 0.8, 0.86, 0.02, 0.205 },
-		{ s * 0.8, 0.56, 0.05, 0.17 },
+		{ s * 0.7, 3.25, 0.0, 0.37 },
+		{ s * 0.75, 2.4, -0.02, 0.35 },
+		{ s * 0.78, 1.58, -0.04, 0.255 },
+		{ s * 0.8, 0.98, 0.01, 0.235 },
+		{ s * 0.8, 0.56, 0.05, 0.16 },
 	}, SKIN)
 	-- soft secondary forms (same skin tone so the leg stays one smooth piece)
-	k:Part({ Name = "KneeCap", Shape = "Ellipsoid", Size = { 0.3, 0.34, 0.2 }, Pos = { s * 0.78, 1.55, -0.24 }, Color = SKIN })
-	k:Part({ Name = "KneeDimple", Shape = "Ellipsoid", Size = { 0.16, 0.06, 0.06 }, Pos = { s * 0.78, 1.38, -0.285 }, Color = SKIN_DARK })
-	k:Part({ Name = "KneeCrease", Shape = "Ellipsoid", Size = { 0.32, 0.05, 0.08 }, Pos = { s * 0.78, 1.56, 0.205 }, Color = SKIN_DARK })
-	k:Part({ Name = "Calf", Shape = "Ellipsoid", Size = { 0.48, 0.86, 0.42 }, Pos = { s * 0.8, 1.12, 0.08 }, Rot = { -4, 0, 0 }, Color = SKIN })
-	k:Part({ Name = "Achilles", Shape = "Ellipsoid", Size = { 0.2, 0.6, 0.2 }, Pos = { s * 0.8, 0.62, 0.15 }, Color = SKIN })
-	k:Part({ Name = "AnkleBone", Shape = "Ellipsoid", Size = { 0.1, 0.15, 0.15 }, Pos = { s * 0.96, 0.5, 0.05 }, Color = SKIN })
-	k:Part({ Name = "AnkleBone", Shape = "Ellipsoid", Size = { 0.1, 0.15, 0.15 }, Pos = { s * 0.64, 0.54, 0.05 }, Color = SKIN })
+	k:Part({ Name = "KneeCap", Shape = "Ellipsoid", Size = { 0.28, 0.32, 0.18 }, Pos = { s * 0.78, 1.56, -0.22 }, Color = SKIN })
+	k:Part({ Name = "KneeCrease", Shape = "Ellipsoid", Size = { 0.28, 0.05, 0.08 }, Pos = { s * 0.78, 1.55, 0.2 }, Color = SKIN_DARK })
+	k:Part({ Name = "Calf", Shape = "Ellipsoid", Size = { 0.44, 0.8, 0.4 }, Pos = { s * 0.8, 1.14, 0.07 }, Rot = { -4, 0, 0 }, Color = SKIN })
+	k:Part({ Name = "Achilles", Shape = "Ellipsoid", Size = { 0.18, 0.56, 0.18 }, Pos = { s * 0.8, 0.62, 0.14 }, Color = SKIN })
+	k:Part({ Name = "AnkleBone", Shape = "Ellipsoid", Size = { 0.08, 0.13, 0.13 }, Pos = { s * 0.95, 0.5, 0.05 }, Color = SKIN })
+	k:Part({ Name = "AnkleBone", Shape = "Ellipsoid", Size = { 0.08, 0.13, 0.13 }, Pos = { s * 0.65, 0.54, 0.05 }, Color = SKIN })
 	if s > 0 then
 		-- the right foot taps along to the music of the spheres (pivot behind the heel,
 		-- pre-tilted so the toes only ever lift, never dig into the ground)

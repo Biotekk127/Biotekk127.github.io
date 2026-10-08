@@ -240,7 +240,7 @@ return {
 				-- Airframe: everything above the main wheels, slowly banking
 				---------------------------------------------------------------------------------
 				k:Group({ Name = "Airframe", Pos = { 0, PIVOT_Y, 0 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 2.2, Speed = 0.35 } }, function()
-					k:Group({ Name = "World", Pos = { 0, -PIVOT_Y, 0 } }, function()
+					k:Group({ Name = "AirframeSpace", Pos = { 0, -PIVOT_Y, 0 } }, function()
 						-------------------------------------------------------------------------
 						-- Fuselage
 						-------------------------------------------------------------------------
@@ -264,18 +264,15 @@ return {
 						end
 
 						k:Mirror(function()
-							-- cockpit side windows
-							local wa = 30
-							for i, z in { -0.22 } do
-								k:Part({
-									Name = "CockpitWindow" .. i,
-									Size = { 0.05, 0.22, 0.5 },
-									Pos = { math.cos(math.rad(wa)) * FR, FY + math.sin(math.rad(wa)) * FR, z },
-									Rot = { 0, 0, wa },
-									Color = GLASS_DARK,
-									Material = "Glass",
-								})
-							end
+							-- cockpit side window (sits on the fuselage curve, 30 degrees up)
+							k:Part({
+								Name = "CockpitWindow",
+								Size = { 0.05, 0.22, 0.5 },
+								Pos = { math.cos(math.rad(30)) * FR, FY + math.sin(math.rad(30)) * FR, -0.22 },
+								Rot = { 0, 0, 30 },
+								Color = GLASS_DARK,
+								Material = "Glass",
+							})
 							-- fuselage roundel
 							roundel("FuselageRoundel", { 0.78, FY + 0.2, 0.6 }, { 0, 0, 14.5 }, 0.5)
 							-- waist gun window + gun
