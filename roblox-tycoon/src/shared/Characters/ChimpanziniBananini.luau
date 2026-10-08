@@ -15,7 +15,7 @@
 -- Palette ------------------------------------------------------------------------------
 local YEL = "#ffd83a" -- dominant: banana yellow
 local YEL_DEEP = "#efb823" -- ridges / peel edge shade
-local YEL_SHINE = "#fff4b0" -- glossy shine streaks
+local YEL_SHINE = "#fff7cc" -- glossy shine streaks
 local CREAM = "#fff3c0" -- inside of the peel
 local CREAM_DARK = "#f0d995" -- peel fibres
 local PEEL_BROWN = "#7a4b22" -- tips, sugar spots
@@ -309,14 +309,15 @@ return {
 		k:Part({ Name = "PeelInside", Shape = "Cylinder", Size = { 0.08, UP_R * 2 - 0.16, UP_R * 2 - 0.16 }, Pos = { 0, RIM_Y + 0.03, UP_Z }, Rot = { 0, 0, 90 }, Color = CREAM })
 
 		-- Ridges where the peel splits (5 like a real banana)
+		local RIDGE_Y = { 1.3, 2.3, 3.3, 4.35, 5.4 }
 		for _, phi in { 180, 108, 252, 36, 324 } do
-			local prev = nil
-			for _, y in { 1.2, 2.5, 4.0, 5.4 } do
-				local p = bananaAt(y, phi, -0.02)
-				if prev then
-					rod(prev, p, 0.11, YEL_DEEP, "PeelRidge")
-				end
-				prev = p
+			for i = 1, #RIDGE_Y - 1 do
+				local a = bananaAt(RIDGE_Y[i], phi, 0)
+				local b = bananaAt(RIDGE_Y[i + 1], phi, 0)
+				local m = bananaAt((RIDGE_Y[i] + RIDGE_Y[i + 1]) / 2, phi, 0)
+				-- slide the chord halfway toward the surface so the ridge hugs the peel
+				local off = vmul(vsub(m, vmul(vadd(a, b), 0.5)), 0.6)
+				rod(vadd(a, off), vadd(b, off), 0.1, YEL_DEEP, "PeelRidge")
 			end
 		end
 
@@ -330,9 +331,13 @@ return {
 		end
 
 		-- Glossy banana-shine streaks (screen-left, where the key light hits)
-		for _, s in { { 2.75, 0.8, 0.24 }, { 3.7, 0.66, 0.2 }, { 4.55, 0.5, 0.16 } } do
-			local p, n = bananaAt(s[1], 140, 0)
-			decal(p, n, { s[3], s[2], 0.05 }, YEL_SHINE, "BananaShine", 0, { Reflectance = 0.3 })
+		-- one long highlight stroke following the curve of the belly, plus a thin echo
+		for _, s in { { 2.45, 3.2, 136, 0.15 }, { 3.2, 4.0, 136, 0.17 }, { 4.0, 4.75, 137, 0.13 }, { 3.0, 3.75, 124, 0.08 } } do
+			local a = bananaAt(s[1], s[3], 0)
+			local b = bananaAt(s[2], s[3], 0)
+			local m, n = bananaAt((s[1] + s[2]) / 2, s[3], 0.005)
+			local len = vlen(vsub(b, a)) + 0.25
+			k:Part({ Name = "BananaShine", Shape = "Ellipsoid", Size = { s[4], len, 0.05 }, Pos = m, Rot = alongY(vsub(b, a), vmul(n, -1)), Color = YEL_SHINE, Reflectance = 0.35 })
 		end
 		-- Twinkling neon glints (Epic flair)
 		for i, g in { { 4.95, 150, 0.42 }, { 2.2, 222, 0.32 } } do
@@ -425,8 +430,8 @@ return {
 			k:Part({ Name = "Shoulder", Shape = "Ball", Size = { 0.72, 0.72, 0.72 }, Pos = { 0.96, 5.96, -0.12 }, Color = FUR, Material = "Fabric" })
 		end)
 		-- Fluffy fur ring where the chimp meets the peel
-		for i = 0, 7 do
-			local a = rad(i * 45 + 22.5)
+		for i = 0, 5 do
+			local a = rad(i * 60 + 30)
 			local dir = { math.sin(a), 0, math.cos(a) }
 			local p = { dir[1] * 1.0, RIM_Y + 0.1, -0.05 + dir[3] * 0.8 }
 			tuft(p, { dir[1], 0.9, dir[3] }, 0.36, 0.42, if i % 2 == 0 then FUR_DARK else FUR, "RimFluff")
@@ -516,8 +521,6 @@ return {
 					local p, n = frontOf(MOUTH_E, 0, 0.17, -0.01)
 					decal(p, n, { 0.4, 0.15, 0.07 }, TONGUE, "Tongue", 0)
 				end
-				local chinP, chinN = frontOf(MUZ, 0, 0.05, -0.06)
-				decal(chinP, chinN, { 0.5, 0.22, 0.2 }, SKIN_LIGHT, "Chin", 0)
 				local noseP, noseN = frontOf(MUZ, 0, 0.74, -0.04)
 				decal(noseP, noseN, { 0.4, 0.2, 0.16 }, SKIN, "Nose", 0)
 

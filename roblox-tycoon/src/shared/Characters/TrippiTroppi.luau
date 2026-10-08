@@ -360,10 +360,11 @@ return {
 
 	Build = function(k)
 		-- eight spindly walking legs (front pair reaches forward, back pair backward)
-		local legs = { { 1.35, 0.6 }, { 0.85, 0.25 }, { 0.35, -0.12 }, { -0.15, -0.5 } }
+		local legs = { { 1.35, 0.6 }, { 0.85, 0.28 }, { 0.35, -0.04 }, { -0.15, -0.3 } }
 		for i, l in legs do
 			buildLeg(k, l[1], -1, l[2], i * 0.18)
-			buildLeg(k, l[1], 1, l[2], i * 0.18 + 0.5)
+			-- far-side legs sit a touch further forward so all eight read from the front
+			buildLeg(k, l[1] + 0.16, 1, l[2], i * 0.18 + 0.5)
 		end
 
 		joint(k, "Body", { 0, 2.4, 0 }, { Type = "Bob", Axis = "Y", Amount = 0.05, Speed = 0.5 }, function()

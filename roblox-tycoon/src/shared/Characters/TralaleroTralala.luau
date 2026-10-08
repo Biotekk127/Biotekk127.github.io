@@ -298,9 +298,6 @@ return {
 					teethRow("UpperTooth", 11, UGUM_Y - 0.05, MOUTH_Z, GUM_SX * f, GUM_SZ * f, 0.16, 74, -0.005)
 					teethRow("UpperTooth2", 8, UGUM_Y - 0.03, MOUTH_Z, GUM_SX * f, GUM_SZ * f, 0.12, 62, 0.06)
 				end
-				k:Mirror(function()
-					k:Part({ Name = "MouthCorner", Shape = "Ellipsoid", Size = { 0.1, 0.12, 0.4 }, Pos = { 0.74, -0.33, -1.55 }, Rot = { 0, -30, 0 }, Color = SHARK_DEEP })
-				end)
 
 				-- Lower jaw chomps around its hinge
 				k:Group({ Name = "Jaw", Pos = { 0, -0.3, -1.2 }, Rot = { -6, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 6, Speed = 0.7 } }, function()

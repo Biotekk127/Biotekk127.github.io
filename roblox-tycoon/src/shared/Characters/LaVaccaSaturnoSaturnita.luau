@@ -364,7 +364,7 @@ local function moon(k, name, r, off, d, color, material, craterColor, speed, pha
 end
 
 ------------------------------------------------------------------------------------------
--- Cow head (world coordinates)
+-- Cow head (world coordinates at 1:1; Build scales it up by HEAD_SCALE around the neck)
 ------------------------------------------------------------------------------------------
 local HEAD_VOLS = { SKULL, FACE }
 local BLINK = { Type = "Blink", Speed = 0.24, Phase = 0.15 }
@@ -380,7 +380,7 @@ local function buildEye(k, s)
 		k:Part({ Name = "EyeShine2", Shape = "Ball", Size = { 0.07, 0.07, 0.07 }, Pos = { s * 0.06, -0.14, -0.19 }, Color = SHINE, Material = "Neon", Anim = BLINK })
 		-- sleepy-content upper lid
 		k:Part({ Name = "EyeLid", Shape = "Ellipsoid", Size = { 0.66, 0.34, 0.33 }, Pos = { 0, 0.24, -0.01 }, Rot = { 0, 0, s * -6 }, Color = if s > 0 then PATCH else COW, Anim = BLINK })
-		-- three lashes on the outer upper edge
+		-- three lashes flicking out of the outer corner of the lid
 		for j = 0, 2 do
 			local ad = -2 + j * 20
 			local a = math.rad(ad)
@@ -452,7 +452,7 @@ local GOLD_DARK = "#a9802e"
 
 local function buildCollar(k)
 	local Y, CZ, AX, AZ = 6.4, -0.2, 0.9, 0.86
-	-- a full loop: the front arc runs hidden inside the chin, so no strap ends show
+	-- a full loop: the front arc passes under the chin, so no loose strap ends show
 	local N = 18
 	local A0, A1 = math.rad(-90), math.rad(270)
 	local function pt(a)

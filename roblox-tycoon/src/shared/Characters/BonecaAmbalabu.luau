@@ -145,6 +145,7 @@ local function buildTire(k)
 	-- big forms
 	disc("Tire", TIRE_W, TIRE_R * 2, RUBBER)
 	disc("Sidewall", TIRE_W + 0.12, 3.3, RUBBER)
+	disc("SidewallGroove", TIRE_W + 0.14, 3.0, RUBBER_DARK)
 	disc("SidewallRib", TIRE_W + 0.16, 2.72, RUBBER_LIGHT)
 	disc("Bead", TIRE_W + 0.2, 2.42, RUBBER_DARK)
 	-- the wheel
