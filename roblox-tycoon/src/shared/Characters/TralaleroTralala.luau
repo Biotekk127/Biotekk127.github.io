@@ -64,7 +64,7 @@ local function offset(p, n, d)
 	return { p[1] + n[1] * d, p[2] + n[2] * d, p[3] + n[3] * d }
 end
 
--- Main shark forms (shark-local coordinates; Shark group origin is world y = 4.05)
+-- Main shark forms (shark-local coordinates; the Shark group origin sits at world y = 4.36)
 local TORSO_C, TORSO_S = { 0, 0, -0.35 }, { 2.4, 2.65, 3.8 }
 local CRANIUM_C, CRANIUM_S = { 0, 0.36, -1.6 }, { 2.15, 1.65, 2.75 } -- long cranium = smooth conical snout
 
@@ -144,22 +144,25 @@ return {
 		end
 
 		-- One running leg. hip = joint position (Runner frame), phase = gait phase.
-		-- Base pose is an athletic crouch (hip +15, knee -30, ankle +15 = foot flat).
+		-- Base pose is an athletic crouch (hip + knee + ankle = 0, so the foot is flat).
+		-- Gait amplitudes/phases were tuned so the soles never sink into the ground.
 		local L1, L2 = 1.4, 1.4
 		local HIP_Y = 3.19
-		local ANKLE_H = HIP_Y - (L1 + L2) * cos(rad(15)) -- ankle height above the ground in the base pose
+		local HB, KB = 15, -36
+		local AB = -(HB + KB)
+		local ANKLE_H = HIP_Y - L1 * cos(rad(HB)) - L2 * cos(rad(HB + KB)) -- ankle height in the base pose
 		local function leg(name, hip, phase)
-			k:Group({ Name = name .. "Hip", Pos = hip, Rot = { 15, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 22, Speed = RUN, Phase = phase } }, function()
+			k:Group({ Name = name .. "Hip", Pos = hip, Rot = { HB, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 26, Speed = RUN, Phase = phase } }, function()
 				k:Part({ Name = name .. "Haunch", Shape = "Ellipsoid", Size = { 0.95, 1.05, 0.98 }, Pos = { 0, 0.12, 0 }, Color = LEG })
 				k:Part({ Name = name .. "Thigh", Shape = "Ellipsoid", Size = { 0.8, 2.15, 0.82 }, Pos = { 0, -0.76, 0 }, Color = LEG })
 				k:Part({ Name = name .. "Quad", Shape = "Ellipsoid", Size = { 0.58, 1.15, 0.44 }, Pos = { 0, -0.62, -0.2 }, Color = LEG_LIGHT })
 				k:Part({ Name = name .. "Hamstring", Shape = "Ellipsoid", Size = { 0.58, 1.05, 0.42 }, Pos = { 0, -0.7, 0.19 }, Color = LEG })
-				k:Group({ Name = name .. "Knee", Pos = { 0, -L1, 0 }, Rot = { -30, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 18, Speed = RUN, Phase = phase + 0.75 } }, function()
+				k:Group({ Name = name .. "Knee", Pos = { 0, -L1, 0 }, Rot = { KB, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 10, Speed = RUN, Phase = phase + 0.5 } }, function()
 					k:Part({ Name = name .. "KneeJoint", Shape = "Ball", Size = { 0.58, 0.58, 0.58 }, Color = LEG })
 					k:Part({ Name = name .. "Kneecap", Shape = "Ellipsoid", Size = { 0.36, 0.34, 0.18 }, Pos = { 0, 0.02, -0.25 }, Color = LEG_LIGHT })
 					k:Part({ Name = name .. "Shin", Shape = "Ellipsoid", Size = { 0.56, 2.0, 0.6 }, Pos = { 0, -0.66, 0 }, Color = LEG })
 					k:Part({ Name = name .. "Calf", Shape = "Ellipsoid", Size = { 0.54, 0.95, 0.48 }, Pos = { 0, -0.46, 0.15 }, Color = LEG })
-					k:Group({ Name = name .. "Ankle", Pos = { 0, -L2, 0 }, Rot = { 15, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 8, Speed = RUN, Phase = phase + 0.5 } }, function()
+					k:Group({ Name = name .. "Ankle", Pos = { 0, -L2, 0 }, Rot = { AB, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 14, Speed = RUN, Phase = phase + 0.5 } }, function()
 						k:Part({ Name = name .. "AnkleJoint", Shape = "Ball", Size = { 0.4, 0.4, 0.4 }, Pos = { 0, 0.08, 0 }, Color = LEG })
 						k:Part({ Name = name .. "Sock", Shape = "Cylinder", Size = { 0.36, 0.44, 0.44 }, Pos = { 0, 0.26, 0.04 }, Rot = { 0, 0, 90 }, Color = SOCK, Material = "Fabric" })
 						k:Part({ Name = name .. "SockStripe", Shape = "Cylinder", Size = { 0.05, 0.455, 0.455 }, Pos = { 0, 0.335, 0.04 }, Rot = { 0, 0, 90 }, Color = SHOE })
@@ -209,15 +212,16 @@ return {
 		end)
 
 		----------------------------------------------------------------------------------
-		-- The runner: shark body + three legs, bobbing with the stride
+		-- The runner: three legs running in place under a bobbing shark body
 		----------------------------------------------------------------------------------
-		k:Group({ Name = "Runner", Pos = { 0, 0, 0 }, Anim = { Type = "Bob", Axis = "Y", Amount = 0.06, Speed = RUN * 2 } }, function()
+		k:Group({ Name = "Runner", Pos = { 0, 0, 0 } }, function()
 			-- Three legs: two front (where the pectoral fins sit), one rear (anal fin position)
 			leg("FrontRight", { 0.64, HIP_Y, -1.03 }, 0)
 			leg("FrontLeft", { -0.64, HIP_Y, -1.03 }, 0.5)
 			leg("Rear", { 0, HIP_Y, 0.87 }, 0.25)
 
-			k:Group({ Name = "Shark", Pos = { 0, 4.36, -0.08 }, Rot = { 6, 0, 0 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 3, Speed = RUN / 2 } }, function()
+			k:Group({ Name = "BodyBob", Pos = { 0, 4.36, -0.08 }, Anim = { Type = "Bob", Axis = "Y", Amount = 0.06, Speed = RUN * 2 } }, function()
+			k:Group({ Name = "Shark", Rot = { 6, 0, 0 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 3, Speed = RUN / 2 } }, function()
 				-- Big forms --------------------------------------------------------------
 				k:Part({ Name = "Torso", Shape = "Ellipsoid", Size = TORSO_S, Pos = TORSO_C, Color = SHARK })
 				k:Part({ Name = "Cranium", Shape = "Ellipsoid", Size = CRANIUM_S, Pos = CRANIUM_C, Color = SHARK })
@@ -332,6 +336,7 @@ return {
 						k:Part({ Name = "TailRoot", Shape = "Ellipsoid", Size = { 0.24, 0.85, 0.55 }, Pos = { 0, 0.05, 0.05 }, Color = SHARK })
 					end)
 				end)
+			end)
 			end)
 		end)
 

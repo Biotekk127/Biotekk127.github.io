@@ -17,7 +17,6 @@ local YEL = "#ffd83a" -- dominant: banana yellow
 local YEL_DEEP = "#efb823" -- ridges / peel edge shade
 local YEL_SHINE = "#fff7cc" -- glossy shine streaks
 local CREAM = "#fff3c0" -- inside of the peel
-local CREAM_DARK = "#f0d995" -- peel fibres
 local PEEL_BROWN = "#7a4b22" -- tips, sugar spots
 local PEEL_BROWN_DARK = "#43280f"
 local STEM = "#7c5f2a"
@@ -32,7 +31,6 @@ local SKIN_LIGHT = "#f3c9a4" -- muzzle
 local SKIN_DARK = "#c68865" -- brow, wrinkles, palms
 local EAR_IN = "#d98a7a"
 local BLUSH = "#f2998b"
-local NAIL = "#f7dcc6"
 
 local EYE = "#fff8ec"
 local IRIS = "#7a4519"
@@ -56,8 +54,8 @@ local NECK = { 0, 6.25, -0.15 } -- head pivot
 local CRAN = { 0, 1.0, 0.08, 1.08, 0.98, 0.98 }
 local FACE_R = { 0.31, 1.06, -0.66, 0.43, 0.43, 0.27 } -- right half of the heart-shaped face
 local MUZ = { 0, 0.44, -0.82, 0.7, 0.47, 0.5 }
-local BROW = { 0, 1.43, -0.8, 0.75, 0.16, 0.25 }
-local MOUTH_E = { 0, 0.27, -1.07, 0.45, 0.18, 0.25 }
+local BROW_R = { 0.32, 1.42, -0.8, 0.36, 0.14, 0.24 } -- right half of the arched brow ridge
+local MOUTH_E = { 0, 0.26, -1.06, 0.5, 0.17, 0.26 }
 
 -- Math helpers ---------------------------------------------------------------------------
 local function rad(d)
@@ -508,14 +506,13 @@ return {
 			k:Group({ Name = "Head", Anim = { Type = "Wiggle", Axis = "Z", Amount = 6, Speed = 0.5 } }, function()
 				k:Part({ Name = "Cranium", Shape = "Ellipsoid", Size = { CRAN[4] * 2, CRAN[5] * 2, CRAN[6] * 2 }, Pos = { CRAN[1], CRAN[2], CRAN[3] }, Color = FUR, Material = "Fabric" })
 				k:Part({ Name = "Muzzle", Shape = "Ellipsoid", Size = { MUZ[4] * 2, MUZ[5] * 2, MUZ[6] * 2 }, Pos = { MUZ[1], MUZ[2], MUZ[3] }, Color = SKIN_LIGHT })
-				k:Part({ Name = "BrowRidge", Shape = "Ellipsoid", Size = { BROW[4] * 2, BROW[5] * 2, BROW[6] * 2 }, Pos = { BROW[1], BROW[2], BROW[3] }, Color = SKIN })
 
 				-- Mouth: wide toothy chimp grin
 				k:Part({ Name = "Mouth", Shape = "Ellipsoid", Size = { MOUTH_E[4] * 2, MOUTH_E[5] * 2, MOUTH_E[6] * 2 }, Pos = { MOUTH_E[1], MOUTH_E[2], MOUTH_E[3] }, Color = MOUTH })
 				for i = -2, 2 do
-					local x = i * 0.135
-					local p, n = frontOf(MOUTH_E, x, 0.37 - math.abs(i) * 0.012, -0.01)
-					decal(p, n, { 0.125, 0.13, 0.06 }, TEETH, "Tooth", 0)
+					local x = i * 0.14
+					local p, n = frontOf(MOUTH_E, x, 0.315 + math.abs(i) * 0.014, -0.01)
+					decal(p, n, { 0.13, 0.13, 0.06 }, TEETH, "Tooth", i * 4)
 				end
 				do
 					local p, n = frontOf(MOUTH_E, 0, 0.17, -0.01)
@@ -533,18 +530,20 @@ return {
 					k:Part({ Name = "Iris", Shape = "Ellipsoid", Size = { 0.29, 0.33, 0.08 }, Pos = { 0.29, 1.06, -1.0 }, Color = IRIS, Anim = blink })
 					k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.15, 0.18, 0.06 }, Pos = { 0.29, 1.06, -1.03 }, Color = PUPIL, Anim = blink })
 					k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.08, 0.08, 0.08 }, Pos = { 0.34, 1.13, -1.06 }, Color = SHINE, Material = "Neon", Anim = blink })
-					-- arched happy eyebrows on the brow ridge
-					local bp, bn = frontOf(BROW, 0.32, 1.48, -0.02)
-					decal(bp, bn, { 0.44, 0.1, 0.08 }, FUR_DARK, "Eyebrow", -10, { Material = "Fabric" })
+					-- arched chimp brow ridge with happy raised eyebrows
+					k:Part({ Name = "BrowRidge", Shape = "Ellipsoid", Size = { BROW_R[4] * 2, BROW_R[5] * 2, BROW_R[6] * 2 }, Pos = { BROW_R[1], BROW_R[2], BROW_R[3] }, Rot = { 0, 0, 6 }, Color = SKIN })
+					local bp, bn = frontOf(BROW_R, 0.33, 1.49, -0.03)
+					decal(bp, bn, { 0.42, 0.1, 0.08 }, FUR_DARK, "Eyebrow", 12, { Material = "Fabric" })
+					-- upturned grin corners
+					local mp, mn = frontOf(MUZ, 0.43, 0.34, -0.005)
+					decal(mp, mn, { 0.17, 0.075, 0.06 }, MOUTH, "MouthCorner", 32)
 					-- nostrils, smile creases, blush, under-eye wrinkles
 					local np, nn = frontOf(MUZ, 0.1, 0.72, -0.01)
 					decal(np, nn, { 0.09, 0.065, 0.05 }, PEEL_BROWN_DARK, "Nostril", 20)
-					local cp, cn = frontOf(MUZ, 0.47, 0.36, -0.01)
-					decal(cp, cn, { 0.2, 0.05, 0.05 }, SKIN_DARK, "SmileCrease", 55)
+					local cp, cn = frontOf(MUZ, 0.53, 0.46, -0.01)
+					decal(cp, cn, { 0.18, 0.05, 0.05 }, SKIN_DARK, "SmileCrease", 60)
 					local blp, bln = frontOf(MUZ, 0.5, 0.62, -0.01)
 					decal(blp, bln, { 0.24, 0.13, 0.05 }, BLUSH, "Blush", 0)
-					local wp, wn = frontOf(FACE_R, 0.3, 0.78, -0.005)
-					decal(wp, wn, { 0.24, 0.05, 0.05 }, SKIN_DARK, "EyeWrinkle", 0)
 					-- big round chimp ears that twitch
 					k:Group({ Name = "Ear", Pos = { 1.02, 1.05, 0.12 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 8, Speed = 0.45, Phase = 0.3 } }, function()
 						k:Part({ Name = "EarOuter", Shape = "Ellipsoid", Size = { 0.24, 0.8, 0.7 }, Pos = { 0.12, 0, 0 }, Rot = { 0, 25, 0 }, Color = SKIN })

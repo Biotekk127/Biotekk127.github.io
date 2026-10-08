@@ -48,7 +48,7 @@ end
 
 -- Saguaro body: 10 fluted ribs around a darker core.
 local RIBS = 10
-local RIB_R, RIB_W, RIB_H, RIB_Y = 0.9, 0.62, 4.9, 4.15
+local RIB_R, RIB_W, RIB_H, RIB_Y = 0.9, 0.62, 4.6, 4.55
 local function ribAngle(i)
 	return i * (360 / RIBS) + 18
 end
@@ -69,6 +69,8 @@ local BODY_SPINES = {
 	{ 3, 5.35, -12 },
 	{ 2, 2.35, 8 }, -- right side   / left side
 	{ 2, 5.15, -8 },
+	{ 1, 3.45, 14 },
+	{ 4, 4.15, 10 },
 }
 
 -- One saguaro arm. side = 1 (+X, right) or -1 (-X, left). `extra` builds props in arm space.
@@ -183,29 +185,30 @@ return {
 	Build = function(k)
 		-------------------------------------------------------------------- legs + sandals
 		k:Mirror(function()
-			local x, z = 0.74, -0.05
+			local x, z = 0.66, -0.05
 			-- oversized leather sole: a rounded toe in front of a long heel slab
-			k:Part({ Name = "SandalSole", Size = { 1.42, 0.28, 1.25 }, Pos = { x, 0.14, z + 0.27 }, Color = LEATHER_D, Material = "Leather" })
-			k:Part({ Name = "SandalToe", Shape = "Cylinder", Size = { 0.28, 1.42, 1.42 }, Pos = { x, 0.14, z - 0.35 }, Rot = UP, Color = LEATHER_D, Material = "Leather" })
+			k:Part({ Name = "SandalSole", Size = { 1.32, 0.28, 1.25 }, Pos = { x, 0.14, z + 0.27 }, Color = LEATHER_D, Material = "Leather" })
+			k:Part({ Name = "SandalToe", Shape = "Cylinder", Size = { 0.28, 1.32, 1.32 }, Pos = { x, 0.14, z - 0.35 }, Rot = UP, Color = LEATHER_D, Material = "Leather" })
 			-- round elephant foot pad and a stumpy leg column
-			k:Part({ Name = "Foot", Shape = "Cylinder", Size = { 0.52, 1.3, 1.3 }, Pos = { x, 0.53, z }, Rot = UP, Color = GREY })
-			k:Part({ Name = "Leg", Shape = "Cylinder", Size = { 1.75, 1.12, 1.12 }, Pos = { x, 1.6, z + 0.02 }, Rot = UP, Color = GREY })
+			k:Part({ Name = "Foot", Shape = "Cylinder", Size = { 0.52, 1.22, 1.22 }, Pos = { x, 0.53, z }, Rot = UP, Color = GREY })
+			k:Part({ Name = "Leg", Shape = "Cylinder", Size = { 1.7, 1.05, 1.05 }, Pos = { x, 1.55, z + 0.02 }, Rot = UP, Color = GREY })
 			-- three ivory toenails resting on the sole
 			for _, th in { -40, 0, 40 } do
 				local a = math.rad(th)
-				k:Part({ Name = "Toenail", Shape = "Ellipsoid", Size = { 0.32, 0.27, 0.16 }, Pos = { x + math.sin(a) * 0.63, 0.42, z - math.cos(a) * 0.63 }, Rot = { 0, -th, 0 }, Color = IVORY })
+				k:Part({ Name = "Toenail", Shape = "Ellipsoid", Size = { 0.3, 0.26, 0.16 }, Pos = { x + math.sin(a) * 0.59, 0.42, z - math.cos(a) * 0.59 }, Rot = { 0, -th, 0 }, Color = IVORY })
 			end
 			-- straps: a slanted band over the foot (low over the toes, high at the heel),
 			-- a thin ankle band and a heel strap joining it to the sole
-			k:Part({ Name = "ToeStrap", Shape = "Cylinder", Size = { 0.24, 1.4, 1.4 }, Pos = { x, 0.8, z - 0.02 }, Rot = { -22, 0, 90 }, Color = LEATHER, Material = "Leather" })
-			k:Part({ Name = "AnkleStrap", Shape = "Cylinder", Size = { 0.16, 1.18, 1.18 }, Pos = { x, 1.22, z + 0.02 }, Rot = UP, Color = LEATHER_M, Material = "Leather" })
-			k:Part({ Name = "HeelStrap", Size = { 0.34, 1.0, 0.14 }, Pos = { x, 0.75, z + 0.62 }, Color = LEATHER_M, Material = "Leather" })
+			k:Part({ Name = "ToeStrap", Shape = "Cylinder", Size = { 0.24, 1.32, 1.32 }, Pos = { x, 0.8, z - 0.02 }, Rot = { -22, 0, 90 }, Color = LEATHER, Material = "Leather" })
+			k:Part({ Name = "AnkleStrap", Shape = "Cylinder", Size = { 0.16, 1.11, 1.11 }, Pos = { x, 1.22, z + 0.02 }, Rot = UP, Color = LEATHER_M, Material = "Leather" })
+			k:Part({ Name = "HeelStrap", Size = { 0.32, 1.0, 0.14 }, Pos = { x, 0.75, z + 0.58 }, Color = LEATHER_M, Material = "Leather" })
 		end)
 
 		-------------------------------------------------------------------- cactus body
 		k:Group({ Name = "Body", Anim = { Type = "Bob", Axis = "Y", Amount = 0.05, Speed = 0.45 } }, function()
-			k:Part({ Name = "CactusBase", Shape = "Ellipsoid", Size = { 2.3, 1.1, 2.3 }, Pos = { 0, 2.2, 0 }, Color = CACTUS })
-			k:Part({ Name = "CactusCore", Shape = "Cylinder", Size = { 4.3, 2.0, 2.0 }, Pos = { 0, 4.25, 0 }, Rot = UP, Color = CACTUS_D })
+			-- rounded bottom: the ribs grow out of a smooth green bowl (their tips hide inside it)
+			k:Part({ Name = "CactusBase", Shape = "Ellipsoid", Size = { 2.36, 1.5, 2.36 }, Pos = { 0, 2.35, 0 }, Color = CACTUS })
+			k:Part({ Name = "CactusCore", Shape = "Cylinder", Size = { 4.0, 2.0, 2.0 }, Pos = { 0, 4.6, 0 }, Rot = UP, Color = CACTUS_D })
 			for i = 0, RIBS - 1 do
 				local a = math.rad(ribAngle(i))
 				k:Part({ Name = "Rib", Shape = "Ellipsoid", Size = { RIB_W, RIB_H, RIB_W }, Pos = { math.sin(a) * RIB_R, RIB_Y, -math.cos(a) * RIB_R }, Color = CACTUS })
@@ -244,9 +247,8 @@ return {
 
 					-- big floppy ears with pink insides and a droopy lower lobe (flap at the root)
 					k:Group({ Name = "Ear", Pos = { 1.08, 1.4, 0.2 }, Rot = { 0, -22, -8 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 12, Speed = 0.5 } }, function()
-						k:Part({ Name = "EarOuter", Shape = "Ellipsoid", Size = { 2.1, 2.3, 0.22 }, Pos = { 0.94, -0.12, 0 }, Color = GREY })
-						k:Part({ Name = "EarLobe", Shape = "Ellipsoid", Size = { 1.5, 1.7, 0.2 }, Pos = { 0.74, -0.98, 0.01 }, Rot = { 0, 0, 24 }, Color = GREY })
-						k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 1.6, 2.35, 0.1 }, Pos = { 0.9, -0.44, -0.08 }, Rot = { 0, 0, 8 }, Color = PINK })
+						k:Part({ Name = "EarOuter", Shape = "Ellipsoid", Size = { 2.15, 2.75, 0.22 }, Pos = { 0.9, -0.45, 0 }, Rot = { 0, 0, 10 }, Color = GREY })
+						k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 1.62, 2.2, 0.1 }, Pos = { 0.92, -0.5, -0.08 }, Rot = { 0, 0, 10 }, Color = PINK })
 					end)
 				end)
 
@@ -269,7 +271,7 @@ return {
 			k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 0.55, 0.72, 0.06 }, Pos = { 0.8, 0.58, 0.0 }, Rot = { 0, -15, -8 }, Color = PINK })
 			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.16, 0.16, 0.16 }, Pos = { 0.27, 0.78, -0.45 }, Color = INK })
 			-- saguaro arms: rounded columns rising beside the body
-			k:Part({ Name = "CactusArm", Shape = "Ellipsoid", Size = { 0.34, 0.8, 0.34 }, Pos = { 0.66, -0.3, 0 }, Rot = { 0, 0, 0 }, Color = CACTUS })
+			k:Part({ Name = "CactusArm", Shape = "Ellipsoid", Size = { 0.36, 0.8, 0.36 }, Pos = { 0.6, -0.26, 0 }, Rot = { 0, 0, -12 }, Color = CACTUS })
 		end)
 	end,
 }

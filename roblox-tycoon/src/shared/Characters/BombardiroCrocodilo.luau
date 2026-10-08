@@ -73,6 +73,12 @@ local function topY(e, x, z)
 	return e[2] + e[5] * math.sqrt(math.max(a, 0))
 end
 
+-- y on the bottom surface of ellipsoid e at (x, z)
+local function bottomY(e, x, z)
+	local a = 1 - ((x - e[1]) / e[4]) ^ 2 - ((z - e[3]) / e[6]) ^ 2
+	return e[2] - e[5] * math.sqrt(math.max(a, 0))
+end
+
 -- half-width of ellipsoid e at its equator for a given z
 local function halfW(e, z)
 	local a = 1 - ((z - e[3]) / e[6]) ^ 2
@@ -134,23 +140,32 @@ return {
 		end
 
 		-- A bomb hanging from `pos`, swaying fore/aft around the pylon
-		local function bomb(name, pos, s, phase)
+		local function bomb(name, pos, s, phase, compact)
 			k:Group({ Name = name, Pos = pos, Anim = { Type = "Wiggle", Axis = "X", Amount = 7, Speed = 0.55, Phase = phase } }, function()
 				local cy = -0.34 * s
 				k:Part({ Name = name .. "Pylon", Size = { 0.07, 0.2 * s, 0.34 * s }, Pos = { 0, -0.07 * s, 0 }, Color = METAL_DARK, Material = "Metal" })
 				k:Part({ Name = name .. "Body", Shape = "Ellipsoid", Size = { 0.38 * s, 0.38 * s, 0.98 * s }, Pos = { 0, cy, -0.02 * s }, Color = BOMB })
-				k:Part({ Name = name .. "Fuse", Shape = "Cylinder", Size = { 0.1 * s, 0.09 * s, 0.09 * s }, Pos = { 0, cy, -0.52 * s }, Rot = { 0, 90, 0 }, Color = METAL, Material = "Metal" })
 				k:Part({ Name = name .. "Band", Shape = "Cylinder", Size = { 0.07 * s, 0.39 * s, 0.39 * s }, Pos = { 0, cy, -0.22 * s }, Rot = { 0, 90, 0 }, Color = BOMB_BAND })
-				k:Part({ Name = name .. "TailCone", Shape = "Cylinder", Size = { 0.3 * s, 0.17 * s, 0.17 * s }, Pos = { 0, cy, 0.5 * s }, Rot = { 0, 90, 0 }, Color = BOMB })
+				if not compact then
+					k:Part({ Name = name .. "Fuse", Shape = "Cylinder", Size = { 0.1 * s, 0.09 * s, 0.09 * s }, Pos = { 0, cy, -0.52 * s }, Rot = { 0, 90, 0 }, Color = METAL, Material = "Metal" })
+					k:Part({ Name = name .. "TailCone", Shape = "Cylinder", Size = { 0.3 * s, 0.17 * s, 0.17 * s }, Pos = { 0, cy, 0.5 * s }, Rot = { 0, 90, 0 }, Color = BOMB })
+				end
 				k:Part({ Name = name .. "FinH", Size = { 0.44 * s, 0.05, 0.24 * s }, Pos = { 0, cy, 0.58 * s }, Color = BOMB_FIN })
 				k:Part({ Name = name .. "FinV", Size = { 0.05, 0.44 * s, 0.24 * s }, Pos = { 0, cy, 0.58 * s }, Color = BOMB_FIN })
 			end)
 		end
 
-		-- Pointed tooth: a cube standing on its corner (body diagonal vertical), centred on
-		-- the gum line so only a 3-sided pyramid sticks out - pointy from every angle.
-		local function tooth(name, pos, s)
-			k:Part({ Name = name, Size = { s, s, s }, Pos = pos, Rot = { -35.26, 0, 45 }, Color = TOOTH })
+		-- Fang: a thin wedge whose triangle shows from the side; side teeth are turned 30
+		-- degrees toward the front so the triangle also reads from the 3/4 and front views.
+		local function tooth(name, pos, h, up, front)
+			local rot
+			if front then
+				rot = if up then { 0, 90, 0 } else { 0, 90, 180 }
+			else
+				rot = if up then { 0, 30, 0 } else { 0, 30, 180 }
+			end
+			local size = if front then { 0.13, h, 0.11 } else { 0.07, h, 0.16 }
+			k:Part({ Name = name, Shape = "Wedge", Size = size, Pos = pos, Rot = rot, Color = TOOTH })
 		end
 
 		-- One radial engine with cowl, glow, hub and a spinning 3-blade propeller.
@@ -198,7 +213,6 @@ return {
 		---------------------------------------------------------------------------------
 		k:Mirror(function()
 			k:Part({ Name = "MainTire", Shape = "Cylinder", Size = { 0.3, 0.84, 0.84 }, Pos = { GX, 0.42, GZ }, Color = RUBBER, Material = "Rubber" })
-			k:Part({ Name = "MainTread", Shape = "Cylinder", Size = { 0.16, 0.86, 0.86 }, Pos = { GX, 0.43, GZ }, Color = RUBBER_LIGHT, Material = "Rubber" })
 			k:Part({ Name = "MainHub", Shape = "Cylinder", Size = { 0.32, 0.44, 0.44 }, Pos = { GX, 0.42, GZ }, Color = METAL, Material = "Metal" })
 			k:Part({ Name = "MainHubCap", Shape = "Cylinder", Size = { 0.35, 0.16, 0.16 }, Pos = { GX, 0.42, GZ }, Color = GOLD, Material = "Foil" })
 			k:Part({ Name = "ForkIn", Size = { 0.06, 0.52, 0.12 }, Pos = { GX - 0.2, 0.68, GZ }, Color = METAL_DARK, Material = "Metal" })
@@ -221,15 +235,15 @@ return {
 				-- panel rings + rivets
 				for _, z in { 0.25, 0.95 } do
 					k:Part({ Name = "PanelRing", Shape = "Cylinder", Size = { 0.05, FR * 2 + 0.025, FR * 2 + 0.025 }, Pos = { 0, FY, z }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK })
-					for _, a in { 20, 62, 118, 160 } do
+					for _, a in { 25, 90, 155 } do
 						local r = math.rad(a)
 						k:Part({ Name = "Rivet", Shape = "Ball", Size = { 0.06, 0.06, 0.06 }, Pos = { math.cos(r) * (FR + 0.01), FY + math.sin(r) * (FR + 0.01), z - 0.08 }, Color = OLIVE_LIGHT, Material = "Metal" })
 					end
 				end
 				-- neck collar where crocodile meets bomber
 				k:Part({ Name = "NeckCollar", Shape = "Cylinder", Size = { 0.13, FR * 2 + 0.08, FR * 2 + 0.08 }, Pos = { 0, FY, -0.6 }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK, Material = "Metal" })
-				for i = 0, 7 do
-					local r = math.rad(i * 45 + 22.5)
+				for i = 0, 5 do
+					local r = math.rad(i * 60 + 30)
 					k:Part({ Name = "CollarRivet", Shape = "Ball", Size = { 0.08, 0.08, 0.08 }, Pos = { math.cos(r) * (FR + 0.045), FY + math.sin(r) * (FR + 0.045), -0.6 }, Color = METAL, Material = "Metal" })
 				end
 
@@ -257,7 +271,6 @@ return {
 				k:Group({ Name = "TopTurret", Pos = { 0, FY + FR - 0.04, -0.18 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 28, Speed = 0.25 } }, function()
 					k:Part({ Name = "TurretRing", Shape = "Cylinder", Size = { 0.12, 0.7, 0.7 }, Pos = { 0, 0.04, 0 }, Rot = { 0, 0, 90 }, Color = METAL_DARK, Material = "Metal" })
 					k:Part({ Name = "TurretDome", Shape = "Ball", Size = { 0.58, 0.58, 0.58 }, Pos = { 0, 0.12, 0 }, Color = GLASS, Material = "Glass", Transparency = 0.35 })
-					k:Part({ Name = "TurretFrame", Size = { 0.05, 0.05, 0.6 }, Pos = { 0, 0.41, 0 }, Color = METAL_DARK, Material = "Metal" })
 					k:Mirror(function()
 						rod("TurretGun", { 0.1, 0.14, -0.2 }, { 0.1, 0.16, -0.66 }, 0.06, GUNMETAL)
 					end)
@@ -278,7 +291,6 @@ return {
 				end)
 
 				-- belly bombs
-				k:Part({ Name = "BombRack", Size = { 0.9, 0.07, 0.16 }, Pos = { 0, FY - 0.84, 0.3 }, Color = METAL_DARK, Material = "Metal" })
 				bomb("BellyBombR", { 0.34, FY - 0.84, 0.3 }, 1, 0)
 				bomb("BellyBombL", { -0.34, FY - 0.84, 0.3 }, 1, 0.5)
 
@@ -312,14 +324,18 @@ return {
 						k:Part({ Name = "HeadScute" .. i, Shape = "Ellipsoid", Size = { 0.15, 0.11, 0.19 }, Pos = { 0.26, topY(SKULL, 0.26, z) - 0.01, z }, Color = CROC_DARK })
 					end
 					-- cheek scales
+					-- a row of scales along each cheek and the snout side
 					local cheeks = {
-						{ 1, 0.1, -0.1, CROC_DARK },
-						{ 1, -0.35, 0.2, CROC_LIGHT },
-						{ 0.85, 0.3, 0.45, CROC_DARK },
+						{ SKULL, 1, 0.3, -0.55, CROC_DARK },
+						{ SKULL, 1, -0.1, -0.22, CROC_LIGHT },
+						{ SKULL, 1, 0.25, 0.12, CROC_DARK },
+						{ SKULL, 1, -0.2, 0.45, CROC_LIGHT },
+						{ SNOUT, 1, 0.45, 0.05, CROC_DARK },
+						{ SNOUT, 1, 0.45, -0.4, CROC_DARK },
 					}
 					for i, c in cheeks do
-						local p = onEll(SKULL, c[1], c[2], c[3], -0.03)
-						k:Part({ Name = "CheekScale" .. i, Shape = "Ellipsoid", Size = { 0.12, 0.15, 0.17 }, Pos = p, Color = c[4] })
+						local p = onEll(c[1], c[2], c[3], c[4], -0.03)
+						k:Part({ Name = "CheekScale" .. i, Shape = "Ellipsoid", Size = { 0.12, 0.14, 0.17 }, Pos = p, Color = c[5] })
 					end
 
 					-- eye: socket, eyeball, slit pupil, highlight, angry brow
@@ -332,10 +348,11 @@ return {
 					-- upper teeth (pointing down) along the lip
 					for i = 1, 6 do
 						local z = -1.3 - (i - 1) * 0.31
-						local s = if i == 5 then 0.22 else 0.17
-						tooth("UpperTooth" .. i, { halfW(LIP, z) - 0.09, FY - 0.2, z }, s)
+						local h = if i == 5 then 0.3 else 0.22
+						local x = halfW(LIP, z) - 0.07
+						tooth("UpperTooth" .. i, { x, bottomY(LIP, x, z) + 0.03 - h / 2, z }, h, false, false)
 					end
-					tooth("UpperFrontTooth", { 0.13, FY - 0.2, -2.96 }, 0.15)
+					tooth("UpperFrontTooth", { 0.13, bottomY(LIP, 0.13, -2.94) + 0.03 - 0.1, -2.94 }, 0.2, false, true)
 				end)
 
 				-- lower jaw: hinged at the back of the mouth, open and snapping
@@ -348,10 +365,11 @@ return {
 						k:Mirror(function()
 							for i = 1, 5 do
 								local z = -1.45 - (i - 1) * 0.3
-								local s = if i == 4 then 0.2 else 0.16
-								tooth("LowerTooth" .. i, { halfW(LJAW, z) - 0.09, FY - 0.25, z }, s)
+								local h = if i == 4 then 0.26 else 0.2
+								local x = halfW(LJAW, z) - 0.07
+								tooth("LowerTooth" .. i, { x, topY(LJAW, x, z) - 0.03 + h / 2, z }, h, true, false)
 							end
-							tooth("LowerFrontTooth", { 0.13, FY - 0.25, -2.84 }, 0.14)
+							tooth("LowerFrontTooth", { 0.13, topY(LJAW, 0.13, -2.84) - 0.03 + 0.09, -2.84 }, 0.18, true, true)
 						end)
 					end)
 				end)
@@ -366,16 +384,11 @@ return {
 						k:Part({ Name = "WingTip", Shape = "Ellipsoid", Size = { 0.3, 0.15, 0.98 }, Pos = { 2.3, 0, 0.21 }, Color = OLIVE })
 						k:Part({ Name = "Flap", Size = { 1.0, 0.1, 0.2 }, Pos = { 0.55, -0.01, 0.8 }, Color = OLIVE_DARK })
 						k:Part({ Name = "Aileron", Size = { 1.1, 0.1, 0.2 }, Pos = { 1.72, -0.01, 0.8 }, Color = OLIVE_DARK })
-						k:Part({ Name = "WingPanelLine", Size = { 2.1, 0.05, 0.05 }, Pos = { 1.15, 0.07, 0.45 }, Color = OLIVE_DARK })
-						k:Part({ Name = "WingSpanLine", Size = { 0.05, 0.05, 0.95 }, Pos = { 1.29, 0.07, 0.2 }, Color = OLIVE_DARK })
-						for i = 0, 3 do
-							k:Part({ Name = "WingRivet", Shape = "Ball", Size = { 0.06, 0.06, 0.06 }, Pos = { 0.25 + i * 0.4, 0.09, 0.36 }, Color = OLIVE_LIGHT, Material = "Metal" })
-						end
 						roundel("WingRoundel", { 2.02, 0.09, 0.42 }, { 0, 0, 90 }, 0.46)
 
 						engine("InnerEngine", 0.78, 0)
 						engine("OuterEngine", 1.8, 0.31)
-						bomb("WingBomb", { 1.29, -0.09, 0.12 }, 0.75, 0.25)
+						bomb("WingBomb", { 1.29, -0.09, 0.12 }, 0.75, 0.25, true)
 
 						-- exhaust smoke from the inner engines
 						k:Particles({ Pos = { 0.98, -0.25, 0.4 }, Color = "#8c8c8c", Color2 = "#ece8df", Rate = 6, Size = 0.35, Speed = 1.4, Lifetime = 1.3, Spread = 12, Direction = "Back" })
@@ -385,7 +398,6 @@ return {
 					rod("GearPiston", { GX, 0.95, GZ }, { GX, 1.16, GZ }, 0.09, METAL, "Foil")
 					rod("GearSleeve", { GX, 1.1, GZ }, { GX, 1.46, GZ - 0.02 }, 0.15, METAL_DARK)
 					rod("GearBrace", { GX, 1.04, GZ }, { GX, 1.42, 0.42 }, 0.07, METAL_DARK)
-					k:Part({ Name = "GearDoor", Size = { 0.05, 0.38, 0.5 }, Pos = { GX + 0.25, 1.22, 0.08 }, Color = OLIVE })
 				end)
 
 				-- wingtip navigation lights (starboard green on +X, port red on -X)
@@ -407,7 +419,6 @@ return {
 				end)
 				k:Group({ Name = "Rudder", Pos = { 0, FY + 1.42, 2.23 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 12, Speed = 0.4 } }, function()
 					k:Part({ Name = "RudderPanel", Size = { 0.12, 1.95, 0.28 }, Pos = { 0, 0, 0.14 }, Color = OLIVE_DARK })
-					k:Part({ Name = "RudderTab", Size = { 0.13, 0.4, 0.08 }, Pos = { 0, -0.55, 0.29 }, Color = OLIVE })
 				end)
 				k:Mirror(function()
 					k:Part({ Name = "StabMain", Size = { 1.1, 0.1, 0.5 }, Pos = { 0.65, FY + 0.16, 1.95 }, Color = OLIVE })
@@ -447,7 +458,6 @@ return {
 				k:Mirror(function()
 					k:Part({ Name = "TailFork", Size = { 0.05, 0.34, 0.08 }, Pos = { 0.1, 0.34, 1.95 }, Color = METAL_DARK, Material = "Metal" })
 				end)
-				k:Part({ Name = "TailForkCrown", Size = { 0.24, 0.07, 0.12 }, Pos = { 0, 0.52, 1.95 }, Color = METAL_DARK, Material = "Metal" })
 				rod("TailStrut", { 0, 0.52, 1.95 }, { 0, 1.62, 1.82 }, 0.1, METAL_DARK)
 			end)
 		end)
@@ -459,16 +469,16 @@ return {
 	end,
 
 	BuildMini = function(k)
-		k:Part({ Name = "Fuselage", Shape = "Ellipsoid", Size = { 0.8, 0.78, 2.0 }, Pos = { 0, 0, 0.3 }, Color = OLIVE })
-		k:Part({ Name = "Head", Shape = "Ellipsoid", Size = { 0.78, 0.52, 1.25 }, Pos = { 0, 0.02, -0.7 }, Color = CROC })
-		k:Part({ Name = "Teeth", Size = { 0.62, 0.09, 0.75 }, Pos = { 0, -0.2, -0.82 }, Color = TOOTH })
+		k:Part({ Name = "Fuselage", Shape = "Ellipsoid", Size = { 0.74, 0.72, 1.9 }, Pos = { 0, 0.05, 0.35 }, Color = OLIVE })
+		k:Part({ Name = "Head", Shape = "Ellipsoid", Size = { 0.8, 0.42, 1.25 }, Pos = { 0, 0.05, -0.68 }, Color = CROC })
+		k:Part({ Name = "TeethRim", Shape = "Ellipsoid", Size = { 0.76, 0.09, 1.15 }, Pos = { 0, -0.13, -0.72 }, Color = TOOTH })
 		k:Mirror(function()
-			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.26, 0.26, 0.26 }, Pos = { 0.2, 0.28, -0.78 }, Color = EYE })
-			k:Part({ Name = "PropInner", Shape = "Cylinder", Size = { 0.06, 0.44, 0.44 }, Pos = { 0.64, -0.12, -0.12 }, Rot = { 0, 90, 0 }, Color = PROP, Transparency = 0.45 })
-			k:Part({ Name = "PropOuter", Shape = "Cylinder", Size = { 0.06, 0.44, 0.44 }, Pos = { 1.1, -0.12, -0.08 }, Rot = { 0, 90, 0 }, Color = PROP, Transparency = 0.45 })
+			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.24, 0.24, 0.24 }, Pos = { 0.19, 0.27, -0.72 }, Color = EYE })
+			k:Part({ Name = "PropInner", Shape = "Cylinder", Size = { 0.08, 0.38, 0.38 }, Pos = { 0.62, -0.1, -0.05 }, Rot = { 0, 90, 0 }, Color = "#3a3b42", Transparency = 0.4 })
+			k:Part({ Name = "PropOuter", Shape = "Cylinder", Size = { 0.08, 0.38, 0.38 }, Pos = { 1.08, -0.1, -0.02 }, Rot = { 0, 90, 0 }, Color = "#3a3b42", Transparency = 0.4 })
 		end)
-		k:Part({ Name = "Wing", Size = { 2.6, 0.08, 0.5 }, Pos = { 0, -0.12, 0.2 }, Color = OLIVE })
-		k:Part({ Name = "Fin", Shape = "Wedge", Size = { 0.08, 0.6, 0.55 }, Pos = { 0, 0.55, 1.0 }, Color = OLIVE })
-		k:Part({ Name = "Stabiliser", Size = { 1.1, 0.06, 0.32 }, Pos = { 0, 0.08, 1.1 }, Color = OLIVE })
+		k:Part({ Name = "Wing", Size = { 2.5, 0.08, 0.5 }, Pos = { 0, -0.1, 0.25 }, Color = OLIVE })
+		k:Part({ Name = "Fin", Shape = "Wedge", Size = { 0.08, 0.62, 0.55 }, Pos = { 0, 0.62, 1.0 }, Color = OLIVE })
+		k:Part({ Name = "Stabiliser", Size = { 1.1, 0.06, 0.3 }, Pos = { 0, 0.12, 1.1 }, Color = OLIVE })
 	end,
 }
