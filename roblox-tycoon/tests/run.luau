@@ -53,6 +53,14 @@ for _, item in Items.List do
 	lastPrice = item.Price
 end
 check("12 droppers (6 per side)", droppers, 12)
+local seenCharacters = {}
+for _, item in Items.List do
+	if item.Type == "Dropper" then
+		check("dropper has character " .. item.Id, type(item.Character), "string")
+		check("character unique " .. tostring(item.Character), seenCharacters[item.Character], nil)
+		seenCharacters[item.Character] = true
+	end
+end
 check("3 upgraders", upgraders, 3)
 check("last item price", lastPrice, 220_000_000)
 
@@ -68,6 +76,20 @@ check("income D1+Up1", Economy.PlotIncome({ D1 = true, Up1 = true }, false), 1.5
 check("income unknown id ignored", Economy.PlotIncome({ D1 = true, Removed = true }, false), 1)
 check("scaled reward floor", Economy.ScaledReward(0, 60, 500), 500)
 check("scaled reward income", Economy.ScaledReward(100, 60, 500), 6000)
+
+local variants = Economy.IndexVariants()
+check("index variants count", #variants, 1 + #Config.Mutations)
+check("index variant first", variants[1], "Normal")
+check("index variant rarest last", variants[#variants], "Rainbow")
+check("index bonus 0", Economy.IndexBonus(0), 0)
+check("index bonus all", math.floor(Economy.IndexBonus(48) * 1000 + 0.5), 240)
+
+local Rarity = load("Rarity")
+check("rarity tiers", #Rarity.Order, 7)
+check("rarity order", Rarity.Get("Mythic").Order, 6)
+check("rarity fallback", Rarity.Get("Nope").Key, "Common")
+check("secret rainbow", Rarity.Get("Secret").Rainbow, true)
+check("common not rainbow", Rarity.Get("Common").Rainbow, false)
 
 local total = 0
 for _, mutation in Config.Mutations do

@@ -33,6 +33,19 @@ function Economy.PlotIncome(owned: { [string]: boolean }, fastDroppers: boolean)
 	return perDrop / interval * multiplier
 end
 
+-- Variant names tracked by the Brainrot Index, rarest last.
+function Economy.IndexVariants(): { string }
+	local variants = { "Normal" }
+	for i = #Config.Mutations, 1, -1 do
+		table.insert(variants, Config.Mutations[i].Name)
+	end
+	return variants
+end
+
+function Economy.IndexBonus(discoveries: number): number
+	return discoveries * Config.IndexBonusPerDiscovery
+end
+
 -- Reward that scales with how far along the player is, with a floor for new players.
 function Economy.ScaledReward(incomePerSecond: number, seconds: number, minimum: number): number
 	return math.floor(math.max(minimum, incomePerSecond * seconds))

@@ -7,6 +7,7 @@ local PhysicsService = game:GetService("PhysicsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local CharacterRegistry = require(ReplicatedStorage.Shared.CharacterRegistry)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Builders = require(script.Parent.Builders)
 
@@ -51,8 +52,8 @@ local function rollMutation(owner: Player): any?
 	return nil
 end
 
-local function announce(owner: Player, item: any, mutation: any)
-	local text = `{mutation.Name:upper()} {item.Creature.Name} spawned! (x{mutation.Multiplier})`
+local function announce(owner: Player, def: any, mutation: any)
+	local text = `{mutation.Name:upper()} {def.Name} spawned! (x{mutation.Multiplier})`
 	Services.Remotes.NotifyPlayer(owner, `✨ {text}`, "rare")
 	if mutation.Name == "Rainbow" then
 		local now = os.clock()
@@ -73,7 +74,8 @@ local function spawnDrop(plot: any, dropper: any)
 	local mutation = rollMutation(owner)
 	local value = item.Value * (if mutation then mutation.Multiplier else 1)
 
-	local part = Builders.Drop(item.Creature, mutation, dropper.SpawnCF, plot.Parts.DropsFolder)
+	local def = CharacterRegistry.Get(item.Character)
+	local part = Builders.Drop(def, mutation, dropper.SpawnCF, plot.Parts.DropsFolder)
 	-- Server owns the physics so the collector can't be spoofed by clients.
 	pcall(function()
 		part:SetNetworkOwner(nil)
@@ -90,8 +92,9 @@ local function spawnDrop(plot: any, dropper: any)
 	end)
 
 	if mutation and mutation.Announce then
-		announce(owner, item, mutation)
+		announce(owner, def, mutation)
 	end
+	Services.PlayerService.Discover(owner, def, if mutation then mutation.Name else "Normal")
 end
 
 function DropService.HookUpgrader(plot: any, item: any, laser: BasePart)

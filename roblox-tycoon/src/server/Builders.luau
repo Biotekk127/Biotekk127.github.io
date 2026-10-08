@@ -11,6 +11,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local CharacterKit = require(ReplicatedStorage.Shared.CharacterKit)
+local CharacterRegistry = require(ReplicatedStorage.Shared.CharacterRegistry)
+local Rarity = require(ReplicatedStorage.Shared.Rarity)
+local RarityFX = require(script.Parent.RarityFX)
 
 local Builders = {}
 
@@ -308,13 +312,23 @@ end
 -- Droppers, upgraders, collector upgrade
 ----------------------------------------------------------------------------------------
 
--- Returns the model and the world CFrame drops spawn at.
-function Builders.Dropper(item: any, plotCF: CFrame, parent: Instance): (Model, CFrame)
-	local slot = item.Slot
+-- Droppers alternate sides of the conveyor. The back row is shifted half a slot and
+-- raised so its showcase brainrots aren't hidden behind the front row.
+function Builders.DropperLayout(slot: number): (number, number, number)
 	local pair = (slot - 1) // 2
 	local side = if slot % 2 == 1 then -1 else 1
-	local x = -30 + pair * 8
-	local color = item.Creature.Color
+	local x = -30 + pair * 8 + (if side == -1 then 4 else 0)
+	local pillarTop = if side == -1 then 14 else 11
+	return x, side, pillarTop
+end
+
+-- Returns the model and the world CFrame drops spawn at. The dropper is topped by the
+-- full-size brainrot standing on its rarity pedestal.
+function Builders.Dropper(item: any, plotCF: CFrame, parent: Instance): (Model, CFrame)
+	local def = CharacterRegistry.Get(item.Character)
+	local tier = Rarity.Get(def.Rarity)
+	local x, side, pillarTop = Builders.DropperLayout(item.Slot)
+	local accent = tier.Color
 
 	local m = model(item.Id, parent)
 	local baseBlock = part(m, plotCF, Vector3.new(4, 1, 4), Vector3.new(x, 1.5, 9 * side), {
@@ -323,35 +337,37 @@ function Builders.Dropper(item: any, plotCF: CFrame, parent: Instance): (Model, 
 		Material = Enum.Material.Metal,
 	})
 	m.PrimaryPart = baseBlock
-	part(m, plotCF, Vector3.new(2, 9, 2), Vector3.new(x, 6.5, 9 * side), {
+	local pillarHeight = pillarTop - 2
+	part(m, plotCF, Vector3.new(2, pillarHeight, 2), Vector3.new(x, 2 + pillarHeight / 2, 9 * side), {
 		Name = "Pillar",
 		Color = Color3.fromRGB(230, 230, 240),
 	})
-	part(m, plotCF, Vector3.new(2.2, 0.6, 2.2), Vector3.new(x, 7, 9 * side), {
-		Name = "Stripe",
-		Color = color,
-		Material = Enum.Material.Neon,
-	})
+	for _, y in { 4.5, pillarTop - 1.5 } do
+		part(m, plotCF, Vector3.new(2.2, 0.5, 2.2), Vector3.new(x, y, 9 * side), {
+			Name = "Stripe",
+			Color = accent,
+			Material = Enum.Material.Neon,
+		})
+	end
 	part(m, plotCF, Vector3.new(2, 2, 9), Vector3.new(x, 10, 4.5 * side), {
 		Name = "Arm",
 		Color = Color3.fromRGB(230, 230, 240),
 	})
 	part(m, plotCF, Vector3.new(3, 2.5, 3), Vector3.new(x, 8.25, 1.5 * side), {
 		Name = "Hopper",
-		Color = color,
+		Color = accent,
 	})
-	local display = part(m, plotCF, Vector3.new(3, 3, 3), Vector3.new(x, 13, 9 * side), {
-		Name = "Display",
-		Shape = Enum.PartType.Ball,
-		Color = color,
-		Material = Enum.Material.Glass,
-		Transparency = 0.3,
-	})
-	Builders.Billboard(display, item.Creature.Emoji, Vector2.new(3.5, 3.5), 0, 120)
-	local nameLabel = Builders.Billboard(display, item.Creature.Name, Vector2.new(8, 1.2), 2.6, 60)
-	nameLabel.TextColor3 = color
 
-	local spawnCF = plotCF * CFrame.new(x, 6, 1.5 * side)
+	-- Pedestal + showcase character facing the front of the plot (+Z).
+	local topCF = plotCF * CFrame.new(x, pillarTop + 0.7, 9 * side)
+	RarityFX.Pedestal(def.Rarity, topCF, m)
+	local character = CharacterKit.Build(def, "Full")
+	character:PivotTo(topCF * CFrame.Angles(0, math.pi, 0))
+	character.Parent = m
+	local height = CharacterKit.Height(character)
+	RarityFX.Nameplate(def, item.Value, topCF * CFrame.new(0, height + 2, 0), m)
+
+	local spawnCF = plotCF * CFrame.new(x, 5.5, 1.5 * side)
 	return m, spawnCF
 end
 
@@ -586,7 +602,7 @@ function Decor.Statue(plotCF: CFrame, m: Model)
 		Color = gold,
 		Material = Enum.Material.Foil,
 	})
-	Builders.Billboard(head, "🍜", Vector2.new(3, 3), 4, 120)
+	Builders.Billboard(head, "🧠", Vector2.new(3, 3), 4, 120)
 	local sparkles = Instance.new("Sparkles")
 	sparkles.SparkleColor = gold
 	sparkles.Parent = head
@@ -667,43 +683,46 @@ end
 -- Drops (the brainrot creatures riding the conveyor)
 ----------------------------------------------------------------------------------------
 
-function Builders.Drop(creature: any, mutation: any?, spawnCF: CFrame, parent: Instance): BasePart
-	local p = Instance.new("Part")
-	p.Name = "Drop"
-	p.Size = Vector3.new(1.6, 1.6, 1.6)
-	p.Shape = if creature.Shape == "Ball" then Enum.PartType.Ball else Enum.PartType.Block
-	p.Color = if mutation then mutation.Color else creature.Color
-	p.Material = if mutation then Enum.Material.Neon else Enum.Material.SmoothPlastic
-	p.TopSurface = Enum.SurfaceType.Smooth
-	p.BottomSurface = Enum.SurfaceType.Smooth
-	p.CFrame = spawnCF
-	p.CollisionGroup = "Drops"
-	p.CanQuery = false
+-- A drop is an invisible physics box carrying a welded mini model of the brainrot.
+function Builders.Drop(def: any, mutation: any?, spawnCF: CFrame, parent: Instance): BasePart
+	local root = Instance.new("Part")
+	root.Name = "Drop"
+	root.Size = Vector3.new(2.2, 2.2, 2.2)
+	root.Transparency = 1
+	root.CFrame = spawnCF * CFrame.Angles(0, -math.pi / 2, 0) -- face the way the belt moves
+	root.CollisionGroup = "Drops"
+	root.CanQuery = false
 
-	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.fromScale(2.2, 2.2)
-	gui.StudsOffsetWorldSpace = Vector3.new(0, 1.2, 0)
-	gui.MaxDistance = 70
-	gui.LightInfluence = 0
-	gui.Parent = p
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 1)
-	label.BackgroundTransparency = 1
-	label.TextScaled = true
-	label.Text = creature.Emoji
-	label.Parent = gui
+	local mini = CharacterKit.Build(def, "Mini")
+	CharacterKit.ApplyMutation(mini, if mutation then mutation.Name else nil)
+	mini:PivotTo(root.CFrame)
+	for _, descendant in mini:GetDescendants() do
+		if descendant:IsA("BasePart") then
+			descendant.Anchored = false
+			descendant.CanCollide = false
+			descendant.CanTouch = false
+			descendant.CanQuery = false
+			descendant.Massless = true
+			descendant.CollisionGroup = "Drops"
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = root
+			weld.Part1 = descendant
+			weld.Parent = descendant
+		end
+	end
+	mini.Parent = root
 
 	if mutation then
-		p:SetAttribute("Mutation", mutation.Name)
+		root:SetAttribute("Mutation", mutation.Name)
 		local sparkles = Instance.new("Sparkles")
 		sparkles.SparkleColor = mutation.Color
-		sparkles.Parent = p
+		sparkles.Parent = root
 		local tag = Instance.new("BillboardGui")
 		tag.Size = UDim2.fromScale(5, 1)
-		tag.StudsOffsetWorldSpace = Vector3.new(0, 2.6, 0)
+		tag.StudsOffsetWorldSpace = Vector3.new(0, 2.4, 0)
 		tag.MaxDistance = 90
 		tag.LightInfluence = 0
-		tag.Parent = p
+		tag.Parent = root
 		local tagLabel = Instance.new("TextLabel")
 		tagLabel.Size = UDim2.fromScale(1, 1)
 		tagLabel.BackgroundTransparency = 1
@@ -717,8 +736,8 @@ function Builders.Drop(creature: any, mutation: any?, spawnCF: CFrame, parent: I
 		stroke.Parent = tagLabel
 	end
 
-	p.Parent = parent
-	return p
+	root.Parent = parent
+	return root
 end
 
 return Builders

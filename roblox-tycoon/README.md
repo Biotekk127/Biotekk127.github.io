@@ -1,18 +1,23 @@
 # 🧠 Brainrot Factory Tycoon 🏭
 
-A complete Roblox tycoon game. Players build a factory that pumps out goofy meme creatures
-("brainrots") onto a conveyor. Rare **Gold / Diamond / Rainbow** mutations are worth up to 50x.
-When the factory is finished, they **rebirth** for a permanent cash multiplier and do it again.
+A complete Roblox tycoon game. Players build a factory where each dropper is topped by a
+hyper-detailed, animated **Italian brainrot** (Tralalero Tralala, Tung Tung Tung Sahur,
+Bombardiro Crocodilo, Ballerina Cappuccina, ...) standing on a rarity pedestal. Mini versions of
+the brainrots ride the conveyor, and rare **Gold / Diamond / Rainbow** mutations are worth up to
+50x. Every variant you spawn goes into your **Brainrot Index**. When the factory is finished,
+players **rebirth** for a permanent cash multiplier and do it all again.
 
-The whole game is built from code: plots, droppers, the lobby, scenery and all UI are generated
-when the server starts. You don't have to build anything by hand in Studio.
+The whole game is built from code: the characters, plots, droppers, lobby and all the UI are
+generated when the server starts. You don't have to build anything by hand in Studio.
 
 ## Features
 
 | | |
 |---|---|
-| 🏭 **Tycoon core** | 8 auto-assigned plots, 24 purchasable items: 12 creature droppers, 3 upgraders, a golden collector, 8 decorations |
-| ✨ **Mutations** | Gold (x3), Diamond (x10) and Rainbow (x50) drops, with server-wide shoutouts for Rainbows |
+| 🏭 **Tycoon core** | 8 auto-assigned plots, 24 purchasable items: 12 brainrot droppers, 3 upgraders, a golden collector, 8 decorations |
+| 🧠 **12 brainrots** | Hand-built 3D replicas (75–390 parts each) with idle animations, in 7 rarity tiers: Common → Uncommon → Rare → Epic → Legendary → Mythic → Secret. Rarity pedestals add auras, lights, orbiting gems and light beams |
+| ✨ **Mutations** | Gold (x3), Diamond (x10) and Rainbow (x50) drops recolour the brainrot, with server-wide shoutouts for Rainbows |
+| 📖 **Brainrot Index** | Collect all 48 character × variant combos; each one adds +0.5% cash forever. 3D animated cards with lore |
 | 🔁 **Rebirths** | +100% permanent cash per rebirth, with a rising cost curve |
 | ⚡ **Server events** | Random Gold Rush / Cash Frenzy, plus paid Rainbow Rain / Cash Frenzy that boost everyone |
 | 🎁 **Retention** | 7-day login streak, free gift every 8 min, offline earnings, promo codes |
@@ -101,6 +106,42 @@ Code alone won't make a game popular. Clicks and retention do. These matter most
 - [ ] **Group + Discord.** Set `Config.GroupId` and post codes there.
 - [ ] Watch **Analytics > Retention and Monetization** and tune prices with the sim.
 
+## The brainrots
+
+| Dropper | Character | Rarity |
+|---|---|---|
+| D1 | Lirilì Larilà | Common |
+| D2 | Boneca Ambalabu | Common |
+| D3 | Brr Brr Patapim | Uncommon |
+| D4 | Trippi Troppi | Uncommon |
+| D5 | Tung Tung Tung Sahur | Rare |
+| D6 | Cappuccino Assassino | Rare |
+| D7 | Chimpanzini Bananini | Epic |
+| D8 | Frigo Camelo | Epic |
+| D9 | Ballerina Cappuccina | Legendary |
+| D10 | Bombardiro Crocodilo | Legendary |
+| D11 | Tralalero Tralala | Mythic |
+| D12 | La Vacca Saturno Saturnita | Secret |
+
+Each character is one file in `src/shared/Characters/`, written with a small builder API
+(parts, groups, mirroring, animations, lights, particles). See
+**`tools/charlab/CHARACTER_GUIDE.md`**. To add or edit a character, preview it without
+opening Studio:
+
+```bash
+python3 tools/charlab/charlab.py src/shared/Characters/TralaleroTralala.luau --out preview.png --luau path/to/luau
+python3 tools/charlab/check_all.py --out previews/ --luau path/to/luau    # validate + render all
+```
+
+The previewer validates the model (size limits, part counts, valid shapes, colours and
+animations) and renders a contact sheet: front, 3/4, side, back, top, two animation poses,
+a close-up and the conveyor mini. It needs `numpy` and `pillow`.
+
+> **Heads-up about the meme characters:** the Italian brainrot characters are viral memes
+> created by other people. Lots of Roblox games use them, but you don't own them, and a
+> rights holder could file a takedown. Keep a plan B (for example, original characters)
+> in case that ever happens.
+
 ## Project layout
 
 ```
@@ -112,10 +153,15 @@ roblox-tycoon/
 │   │   ├── Config.luau           ← game passes, products, codes, economy settings
 │   │   ├── Items.luau            ← everything players can buy
 │   │   ├── Economy.luau          formulas shared by server & client
-│   │   └── Format.luau           $1.23M / 2:05 formatting
+│   │   ├── Format.luau           $1.23M / 2:05 formatting
+│   │   ├── Rarity.luau           the 7 rarity tiers
+│   │   ├── CharacterKit.luau     builds characters from their definitions, mutations
+│   │   ├── CharacterRegistry.luau  loads all characters
+│   │   └── Characters/           ← one file per brainrot
 │   ├── server/                   ServerScriptService.Server
 │   │   ├── init.server.luau      boots all services
-│   │   ├── Builders.luau         procedural models (plots, droppers, decor)
+│   │   ├── Builders.luau         procedural models (plots, droppers, decor, drops)
+│   │   ├── RarityFX.luau         rarity pedestals, auras and nameplates
 │   │   ├── WorldBuilder.luau     lobby, lighting, paths, boards
 │   │   ├── PlotService.luau      plots, buy buttons, purchases, bank
 │   │   ├── DropService.luau      spawning, mutations, upgraders, collector
@@ -127,11 +173,14 @@ roblox-tycoon/
 │   │   └── Remotes.luau          client ↔ server remotes
 │   └── client/                   StarterPlayerScripts.Client
 │       ├── init.client.luau      HUD, guide arrow, banners, chat tags
-│       ├── Panels.luau           Shop / Rebirth / Daily / Codes
+│       ├── Panels.luau           Shop / Index / Rebirth / Daily / Codes
+│       ├── Animator.luau         plays character animations locally
 │       ├── Effects.luau          toasts, cash popups, celebrations
 │       └── Ui.luau               UI helpers & theme
 ├── tests/                        offline unit tests for shared modules
-└── tools/economy_sim.py          pacing simulator
+└── tools/
+    ├── economy_sim.py            pacing simulator
+    └── charlab/                  character previewer, validator and guide
 ```
 
 ## Development

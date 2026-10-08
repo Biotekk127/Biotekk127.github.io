@@ -8,11 +8,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local CharacterKit = require(Shared:WaitForChild("CharacterKit"))
+local CharacterRegistry = require(Shared:WaitForChild("CharacterRegistry"))
 local Config = require(Shared:WaitForChild("Config"))
 local Economy = require(Shared:WaitForChild("Economy"))
 local Format = require(Shared:WaitForChild("Format"))
+local Items = require(Shared:WaitForChild("Items"))
+local Rarity = require(Shared:WaitForChild("Rarity"))
 local Ui = require(script.Parent.Ui)
 local Effects = require(script.Parent.Effects)
+local Animator = require(script.Parent.Animator)
 
 local Panels = {}
 
@@ -471,6 +476,268 @@ local function buildCodes(screen: ScreenGui)
 end
 
 ----------------------------------------------------------------------------------------
+-- Brainrot Index
+----------------------------------------------------------------------------------------
+
+local VARIANTS = Economy.IndexVariants()
+local VARIANT_ICONS = { Normal = "⚪", Gold = "🟡", Diamond = "💎", Rainbow = "🌈" }
+local SILHOUETTE = Color3.fromRGB(22, 18, 34)
+
+local valueByCharacter: { [string]: number } = {}
+for _, item in Items.List do
+	if item.Type == "Dropper" and item.Character then
+		valueByCharacter[item.Character] = item.Value
+	end
+end
+
+local function discovered(characterId: string, variant: string): boolean
+	return player:GetAttribute(`Idx_{characterId}_{variant}`) == true
+end
+
+-- Builds (or rebuilds) a character inside a ViewportFrame. Undiscovered = silhouette.
+local function fillViewport(viewport: ViewportFrame, def: any, known: boolean, distance: number)
+	viewport:ClearAllChildren()
+	local world = Instance.new("WorldModel")
+	world.Parent = viewport
+	local model = CharacterKit.Build(def, "Full")
+	if not known then
+		for _, descendant in model:GetDescendants() do
+			if descendant:IsA("BasePart") then
+				descendant.Color = SILHOUETTE
+				descendant.Material = Enum.Material.SmoothPlastic
+				descendant.Reflectance = 0
+			elseif descendant:IsA("ParticleEmitter") or descendant:IsA("Light") or descendant:IsA("SurfaceGui") then
+				descendant:Destroy()
+			end
+		end
+	end
+	model:PivotTo(CFrame.Angles(0, math.rad(-25), 0)) -- slight 3/4 view (characters face the camera at -Z)
+	model.Parent = world
+	if known then
+		Animator.Track(model)
+	end
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = 38
+	camera.CFrame = CFrame.lookAt(Vector3.new(0, 5.2, -distance), Vector3.new(0, 4.4, 0))
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
+	viewport:SetAttribute("Known", known)
+	viewport:SetAttribute("Spin", known)
+end
+
+local turntables: { ViewportFrame } = {}
+
+local function buildIndex(screen: ScreenGui)
+	local body = makePanel(screen, "Index", "📖 BRAINROT INDEX", Ui.Theme.Cyan)
+	local summary = Ui.label({
+		Size = UDim2.new(1, 0, 0, 30),
+		Text = "",
+		TextColor3 = Ui.Theme.SubText,
+		ZIndex = 22,
+		Parent = body,
+	})
+	local scroll = Ui.new("ScrollingFrame", {
+		Position = UDim2.fromOffset(0, 36),
+		Size = UDim2.new(1, 0, 1, -36),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ScrollBarThickness = 8,
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		CanvasSize = UDim2.new(),
+		ZIndex = 22,
+		Parent = body,
+	}, {
+		Ui.new("UIGridLayout", {
+			CellSize = UDim2.fromOffset(126, 178),
+			CellPadding = UDim2.fromOffset(8, 8),
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		}),
+	})
+
+	-- Detail view (covers the grid when a card is clicked)
+	local detail = Ui.new("Frame", {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = Ui.Theme.Panel,
+		Visible = false,
+		ZIndex = 30,
+		Parent = body,
+	})
+	local detailViewport = Ui.new("ViewportFrame", {
+		Size = UDim2.new(0, 230, 1, 0),
+		BackgroundColor3 = Ui.Theme.PanelLight,
+		Ambient = Color3.fromRGB(170, 170, 190),
+		LightColor = Color3.fromRGB(255, 255, 255),
+		LightDirection = Vector3.new(-0.4, -1, 0.6),
+		ZIndex = 31,
+		Parent = detail,
+	}, { Ui.corner(14) })
+	table.insert(turntables, detailViewport)
+	local detailName = Ui.label({
+		Position = UDim2.fromOffset(244, 0),
+		Size = UDim2.new(1, -244, 0, 40),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ZIndex = 31,
+		Parent = detail,
+	})
+	local detailRarity = Ui.label({
+		Position = UDim2.fromOffset(244, 42),
+		Size = UDim2.new(1, -244, 0, 28),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ZIndex = 31,
+		Parent = detail,
+	})
+	local detailText = Ui.label({
+		Position = UDim2.fromOffset(244, 76),
+		Size = UDim2.new(1, -244, 0, 130),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		TextWrapped = true,
+		TextScaled = false,
+		TextSize = 17,
+		TextColor3 = Ui.Theme.SubText,
+		ZIndex = 31,
+		Parent = detail,
+	})
+	local detailVariants = Ui.label({
+		Position = UDim2.fromOffset(244, 212),
+		Size = UDim2.new(1, -244, 0, 50),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextWrapped = true,
+		ZIndex = 31,
+		Parent = detail,
+	})
+	Ui.button({
+		AnchorPoint = Vector2.new(1, 1),
+		Position = UDim2.fromScale(1, 1),
+		Size = UDim2.fromOffset(140, 48),
+		Text = "◀ BACK",
+		BackgroundColor3 = Ui.Theme.PanelLight,
+		ZIndex = 32,
+		Parent = detail,
+	}, function()
+		detail.Visible = false
+	end)
+	local detailDef: any = nil
+
+	local function refreshDetail()
+		if not detailDef or not detail.Visible then
+			return
+		end
+		local def = detailDef
+		local tier = Rarity.Get(def.Rarity)
+		local known = discovered(def.Id, "Normal")
+		if detailViewport:GetAttribute("CharacterId") ~= def.Id or detailViewport:GetAttribute("Known") ~= known then
+			fillViewport(detailViewport, def, known, 13)
+			detailViewport:SetAttribute("CharacterId", def.Id)
+		end
+		detailName.Text = if known then `{def.Emoji} {def.Name}` else "??? Undiscovered"
+		detailRarity.Text = tier.Name:upper()
+		detailRarity.TextColor3 = tier.Color
+		if known then
+			detailText.Text = `"{def.Tagline}"\n\n{def.Lore}\n\nWorth {Format.Cash(valueByCharacter[def.Id] or 0)} per drop.`
+		else
+			detailText.Text = "Build its dropper to discover this brainrot!"
+		end
+		local parts = {}
+		for _, variant in VARIANTS do
+			local have = discovered(def.Id, variant)
+			table.insert(parts, `{if have then VARIANT_ICONS[variant] else "🔒"} {variant}`)
+		end
+		detailVariants.Text = table.concat(parts, "   ")
+	end
+
+	local cards = {}
+	for order, def in CharacterRegistry.Ordered do
+		local tier = Rarity.Get(def.Rarity)
+		local card = Ui.new("TextButton", {
+			Text = "",
+			AutoButtonColor = false,
+			BackgroundColor3 = Ui.Theme.PanelLight,
+			LayoutOrder = order,
+			ZIndex = 22,
+			Parent = scroll,
+		}, { Ui.corner(12), Ui.stroke(tier.Color, 3) })
+		local viewport = Ui.new("ViewportFrame", {
+			Position = UDim2.fromOffset(4, 4),
+			Size = UDim2.new(1, -8, 0, 112),
+			BackgroundTransparency = 1,
+			Ambient = Color3.fromRGB(170, 170, 190),
+			LightDirection = Vector3.new(-0.4, -1, 0.6),
+			ZIndex = 23,
+			Parent = card,
+		})
+		table.insert(turntables, viewport)
+		local name = Ui.label({
+			Position = UDim2.fromOffset(4, 116),
+			Size = UDim2.new(1, -8, 0, 20),
+			Text = "",
+			ZIndex = 23,
+			Parent = card,
+		})
+		local rarityLabel = Ui.label({
+			Position = UDim2.fromOffset(4, 136),
+			Size = UDim2.new(1, -8, 0, 16),
+			Text = tier.Name:upper(),
+			TextColor3 = tier.Color,
+			ZIndex = 23,
+			Parent = card,
+		})
+		local variants = Ui.label({
+			Position = UDim2.fromOffset(4, 154),
+			Size = UDim2.new(1, -8, 0, 18),
+			Text = "",
+			ZIndex = 23,
+			Parent = card,
+		})
+		card.Activated:Connect(function()
+			Ui.playClick()
+			detailDef = def
+			detail.Visible = true
+			refreshDetail()
+		end)
+		cards[def.Id] = { Viewport = viewport, Name = name, Rarity = rarityLabel, Variants = variants, Def = def }
+	end
+
+	table.insert(refreshers, function()
+		if not Panels.IsOpen("Index") then
+			return
+		end
+		local count = player:GetAttribute("IndexCount") or 0
+		local total = #CharacterRegistry.Ordered * #VARIANTS
+		summary.Text = `{count} / {total} discovered   •   +{Format.Short(Economy.IndexBonus(count) * 100)}% cash forever`
+		for id, card in cards do
+			local known = discovered(id, "Normal")
+			if card.Viewport:GetAttribute("Known") ~= known then
+				fillViewport(card.Viewport, card.Def, known, 15)
+			end
+			card.Name.Text = if known then card.Def.Name else "???"
+			local icons = {}
+			for _, variant in VARIANTS do
+				table.insert(icons, if discovered(id, variant) then VARIANT_ICONS[variant] else "▫️")
+			end
+			card.Variants.Text = table.concat(icons, " ")
+		end
+		refreshDetail()
+	end)
+
+	-- Slow turntable for every visible viewport.
+	game:GetService("RunService").RenderStepped:Connect(function(dt)
+		if not Panels.IsOpen("Index") then
+			return
+		end
+		for _, viewport in turntables do
+			if viewport:GetAttribute("Spin") and viewport.Visible then
+				local world = viewport:FindFirstChildOfClass("WorldModel")
+				local model = world and world:FindFirstChildOfClass("Model")
+				if model then
+					model:PivotTo(model:GetPivot() * CFrame.Angles(0, dt * 0.6, 0))
+				end
+			end
+		end
+	end)
+end
+
+----------------------------------------------------------------------------------------
 
 function Panels.Init(screen: ScreenGui, requestFn: Request)
 	request = requestFn
@@ -478,6 +745,7 @@ function Panels.Init(screen: ScreenGui, requestFn: Request)
 	buildRebirth(screen)
 	buildDaily(screen)
 	buildCodes(screen)
+	buildIndex(screen)
 end
 
 function Panels.IsOpen(name: string): boolean

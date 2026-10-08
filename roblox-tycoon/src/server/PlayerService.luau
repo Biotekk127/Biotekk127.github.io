@@ -83,6 +83,7 @@ function PlayerService.RefreshStats(player: Player)
 	end
 	local bonus = (player:GetAttribute("FriendBonus") or 0) + (if player:GetAttribute("InGroup") then Config.GroupBonus else 0)
 	multiplier *= 1 + bonus
+	multiplier *= 1 + Economy.IndexBonus((player:GetAttribute("IndexCount") or 0) :: number)
 
 	local plot = Services.PlotService.GetPlot(player)
 	local owned = if plot then plot.Owned else data.Items
@@ -134,6 +135,59 @@ local function refreshFriendBonuses()
 			end
 		end)
 	end
+end
+
+----------------------------------------------------------------------------------------
+-- Brainrot Index
+----------------------------------------------------------------------------------------
+
+local VALID_VARIANTS = {}
+for _, variant in Economy.IndexVariants() do
+	VALID_VARIANTS[variant] = true
+end
+
+local function countIndex(index: { [string]: { [string]: boolean } }): number
+	local count = 0
+	for _, variants in index do
+		for _ in variants do
+			count += 1
+		end
+	end
+	return count
+end
+
+-- Mirrors the saved Index onto attributes ("Idx_<CharacterId>_<Variant>") for the client.
+local function syncIndex(player: Player, data: any)
+	for characterId, variants in data.Index do
+		for variant in variants do
+			player:SetAttribute(`Idx_{characterId}_{variant}`, true)
+		end
+	end
+	player:SetAttribute("IndexCount", countIndex(data.Index))
+end
+
+-- Called whenever a brainrot spawns on a player's plot.
+function PlayerService.Discover(player: Player, def: any, variant: string)
+	local data = Services.DataService.Get(player)
+	if not data or not VALID_VARIANTS[variant] then
+		return
+	end
+	local entry = data.Index[def.Id]
+	if entry and entry[variant] then
+		return
+	end
+	if not entry then
+		entry = {}
+		data.Index[def.Id] = entry
+	end
+	entry[variant] = true
+	player:SetAttribute(`Idx_{def.Id}_{variant}`, true)
+	player:SetAttribute("IndexCount", countIndex(data.Index))
+	PlayerService.RefreshStats(player)
+
+	local label = if variant == "Normal" then def.Name else `{variant} {def.Name}`
+	local percent = Config.IndexBonusPerDiscovery * 100
+	Services.Remotes.NotifyPlayer(player, `📖 NEW in your Index: {label}! (+{percent}% cash forever)`, "rare")
 end
 
 ----------------------------------------------------------------------------------------
@@ -359,6 +413,7 @@ local function onPlayerAdded(player: Player)
 	end
 
 	syncCash(player, data)
+	syncIndex(player, data)
 	PlayerService.RefreshStats(player)
 	giveOfflineEarnings(player, data)
 

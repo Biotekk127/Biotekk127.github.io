@@ -26,7 +26,8 @@
     },
     "Workspace": {
       "$properties": {
-        "FallenPartsDestroyHeight": -50
+        "FallenPartsDestroyHeight": -50,
+        "StreamingEnabled": false
       },
       "Baseplate": {
         "$className": "Part",

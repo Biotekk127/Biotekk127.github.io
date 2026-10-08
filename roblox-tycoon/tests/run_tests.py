@@ -21,8 +21,9 @@ parts = [
     "  return __cache[name]",
     "end",
 ]
+ENGINE_ONLY = {"CharacterKit.luau", "CharacterRegistry.luau"}  # need Roblox Instances
 for filename in sorted(os.listdir(SHARED)):
-    if filename.endswith(".luau"):
+    if filename.endswith(".luau") and filename not in ENGINE_ONLY:
         name = filename[:-5]
         with open(os.path.join(SHARED, filename), encoding="utf-8") as f:
             source = f.read()

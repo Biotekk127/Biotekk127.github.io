@@ -53,6 +53,10 @@ Config.Mutations = {
 	{ Name = "Gold", Chance = 0.05, Multiplier = 3, Color = Color3.fromRGB(255, 205, 50), Announce = false },
 }
 
+-- Brainrot Index: every character x variant (Normal + each mutation) a player spawns is
+-- recorded forever and adds a permanent cash bonus. 12 characters x 4 variants = 48.
+Config.IndexBonusPerDiscovery = 0.005
+
 --[[
 	GAME PASSES - create them on create.roblox.com (Your game > Monetization > Passes),
 	then paste each ID below. Id = 0 means "not set up yet".

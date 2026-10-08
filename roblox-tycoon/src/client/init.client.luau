@@ -15,6 +15,7 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local Ui = require(script:WaitForChild("Ui"))
 local Effects = require(script:WaitForChild("Effects"))
 local Panels = require(script:WaitForChild("Panels"))
+local Animator = require(script:WaitForChild("Animator"))
 
 local player = Players.LocalPlayer
 local Theme = Ui.Theme
@@ -64,6 +65,7 @@ workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateS
 
 Effects.Init(screen)
 Panels.Init(screen, request)
+Animator.Start()
 
 -- Cash display
 local cashPill = Ui.new("Frame", {
@@ -102,7 +104,7 @@ local bannerHolder = Ui.new("Frame", {
 local menu = Ui.new("Frame", {
 	AnchorPoint = Vector2.new(0, 0.5),
 	Position = UDim2.new(0, 12, 0.5, 0),
-	Size = UDim2.fromOffset(90, 400),
+	Size = UDim2.fromOffset(90, 480),
 	BackgroundTransparency = 1,
 	Parent = screen,
 }, { Ui.new("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }) })
@@ -111,6 +113,7 @@ local menuButtons = {}
 for i, entry in
 	{
 		{ Panel = "Shop", Emoji = "🛒", Label = "Shop", Color = Theme.Accent },
+		{ Panel = "Index", Emoji = "📖", Label = "Index", Color = Color3.fromRGB(70, 170, 255) },
 		{ Panel = "Rebirth", Emoji = "🔁", Label = "Rebirth", Color = Theme.Gold },
 		{ Panel = "Daily", Emoji = "📅", Label = "Daily", Color = Theme.Cyan },
 		{ Panel = "Codes", Emoji = "🎟️", Label = "Codes", Color = Theme.Green },
