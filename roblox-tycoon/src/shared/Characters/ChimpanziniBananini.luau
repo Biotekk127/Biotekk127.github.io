@@ -332,7 +332,7 @@ return {
 
 		-- Glossy banana-shine streaks (screen-left, where the key light hits)
 		-- one long highlight stroke following the curve of the belly, plus a thin echo
-		for _, s in { { 2.45, 3.2, 136, 0.15 }, { 3.2, 4.0, 136, 0.17 }, { 4.0, 4.75, 137, 0.13 }, { 3.0, 3.75, 124, 0.08 } } do
+		for _, s in { { 2.45, 3.2, 148, 0.15 }, { 3.2, 4.0, 148, 0.17 }, { 4.0, 4.75, 149, 0.13 }, { 3.0, 3.75, 137, 0.08 } } do
 			local a = bananaAt(s[1], s[3], 0)
 			local b = bananaAt(s[2], s[3], 0)
 			local m, n = bananaAt((s[1] + s[2]) / 2, s[3], 0.005)

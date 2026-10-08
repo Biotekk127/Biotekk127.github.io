@@ -34,7 +34,6 @@ local FUR_LIGHT = "#e3c38f"
 local FUR_MID = "#b6864d"
 local MUZZLE = "#dcc29b"
 local LIP = "#c39a6e"
-local LIP_DARK = "#6e4a33"
 local MOUTH = "#3a2321"
 local TEETH = "#f4e9cc"
 local NOSTRIL = "#4a3022"
@@ -54,11 +53,9 @@ local SOLE = "#4a3427"
 local WELT = "#8a5f36"
 local LACE = "#a06d3c"
 local EYELET = "#c9a24f"
-local STITCH = "#f1d9a6"
 
 local RED = "#e8463e"
 local YELLOW = "#ffd23a"
-local GREEN = "#4cc36b"
 local BLUE = "#3f8cff"
 local PAPER = "#fff8ec"
 
@@ -200,8 +197,8 @@ local function buildCabinet(k)
 
 	-- kick-plate vent grille under the main door
 	k:Part({ Name = "Grille", Size = { 1.9, 0.2, 0.05 }, Pos = { 0, 2.98, FZ0 - 0.02 }, Color = DARK })
-	for i = -2, 2 do
-		k:Part({ Name = "GrilleSlat", Size = { 0.08, 0.16, 0.05 }, Pos = { i * 0.34, 2.98, FZ0 - 0.04 }, Color = CHROME_DARK, Material = "Metal" })
+	for i = 0, 3 do
+		k:Part({ Name = "GrilleSlat", Size = { 0.08, 0.16, 0.05 }, Pos = { (i - 1.5) * 0.4, 2.98, FZ0 - 0.04 }, Color = CHROME_DARK, Material = "Metal" })
 	end
 
 	-- barrel hinges on the right (+X) edge

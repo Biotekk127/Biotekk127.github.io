@@ -11,7 +11,8 @@
 
 -- Palette ------------------------------------------------------------------------------
 local GREY = "#8a96a8" -- elephant skin (blue-grey, like the meme)
-local GREY_D = "#646f82" -- wrinkles, lids, brows
+local GREY_D = "#646f82" -- lids, brows
+local GREY_W = "#77839a" -- soft skin wrinkles
 local PINK = "#f0a3b1" -- inner ears, trunk tip
 local LIP = "#b98892" -- lower lip under the trunk
 local IVORY = "#f4ead4" -- tusks, toenails
@@ -101,9 +102,8 @@ local function pocketWatch(k)
 		Anim = { Type = "Wiggle", Axis = "Z", Amount = 9, Speed = 0.5 },
 	}, function()
 		local R = 0.72 -- case radius
-		local cy = -0.7 - R -- watch centre
-		k:Part({ Name = "ChainLink", Shape = "Ellipsoid", Size = { 0.1, 0.34, 0.16 }, Pos = { 0, -0.12, 0 }, Color = GOLD, Material = "Metal" })
-		k:Part({ Name = "WatchBow", Shape = "Cylinder", Size = { 0.09, 0.36, 0.36 }, Pos = { 0, -0.4, 0 }, Rot = FWD, Color = GOLD, Material = "Metal" })
+		local cy = -0.46 - R -- watch centre
+		k:Part({ Name = "WatchBow", Shape = "Cylinder", Size = { 0.09, 0.4, 0.4 }, Pos = { 0, -0.16, 0 }, Rot = FWD, Color = GOLD, Material = "Metal" })
 		k:Part({ Name = "WatchCrown", Shape = "Cylinder", Size = { 0.18, 0.22, 0.22 }, Pos = { 0, cy + R + 0.06, 0 }, Rot = UP, Color = GOLD, Material = "Metal" })
 		k:Part({ Name = "WatchCase", Shape = "Cylinder", Size = { 0.3, R * 2, R * 2 }, Pos = { 0, cy, 0 }, Rot = FWD, Color = GOLD, Material = "Foil" })
 		k:Part({ Name = "WatchFace", Shape = "Cylinder", Size = { 0.05, R * 1.7, R * 1.7 }, Pos = { 0, cy, -0.15 }, Rot = FWD, Color = CLOCKFACE })
@@ -159,7 +159,7 @@ local function trunkSegment(k, i, offset)
 	k:Group({ Name = "Trunk" .. i, Pos = { 0, -offset, 0 }, Rot = { s.rot, 0, 0 }, Anim = anim }, function()
 		k:Part({ Name = "TrunkSeg", Shape = "Ellipsoid", Size = { s.d, s.len * 1.9, s.d }, Pos = { 0, -s.len * 0.5, 0 }, Color = GREY })
 		if s.ring then
-			k:Part({ Name = "TrunkWrinkle", Shape = "Cylinder", Size = { 0.06, s.d + 0.02, s.d + 0.02 }, Pos = { 0, -s.len * 0.5, 0 }, Rot = UP, Color = GREY_D })
+			k:Part({ Name = "TrunkWrinkle", Shape = "Cylinder", Size = { 0.06, s.d + 0.02, s.d + 0.02 }, Pos = { 0, -s.len * 0.5, 0 }, Rot = UP, Color = GREY_W })
 		end
 		if i < #TRUNK then
 			trunkSegment(k, i + 1, s.len)
@@ -204,7 +204,7 @@ return {
 
 		-------------------------------------------------------------------- cactus body
 		k:Group({ Name = "Body", Anim = { Type = "Bob", Axis = "Y", Amount = 0.05, Speed = 0.45 } }, function()
-			k:Part({ Name = "CactusBase", Shape = "Ellipsoid", Size = { 2.1, 1.1, 2.1 }, Pos = { 0, 2.2, 0 }, Color = CACTUS_D })
+			k:Part({ Name = "CactusBase", Shape = "Ellipsoid", Size = { 2.3, 1.1, 2.3 }, Pos = { 0, 2.2, 0 }, Color = CACTUS })
 			k:Part({ Name = "CactusCore", Shape = "Cylinder", Size = { 4.3, 2.0, 2.0 }, Pos = { 0, 4.25, 0 }, Rot = UP, Color = CACTUS_D })
 			for i = 0, RIBS - 1 do
 				local a = math.rad(ribAngle(i))
@@ -244,9 +244,9 @@ return {
 
 					-- big floppy ears with pink insides and a droopy lower lobe (flap at the root)
 					k:Group({ Name = "Ear", Pos = { 1.08, 1.4, 0.2 }, Rot = { 0, -22, -8 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 12, Speed = 0.5 } }, function()
-						k:Part({ Name = "EarOuter", Shape = "Ellipsoid", Size = { 2.1, 2.3, 0.22 }, Pos = { 0.92, -0.12, 0 }, Color = GREY })
-						k:Part({ Name = "EarLobe", Shape = "Ellipsoid", Size = { 1.45, 1.5, 0.2 }, Pos = { 0.95, -1.2, 0.01 }, Rot = { 0, 0, 18 }, Color = GREY })
-						k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 1.6, 2.4, 0.1 }, Pos = { 0.95, -0.48, -0.08 }, Color = PINK })
+						k:Part({ Name = "EarOuter", Shape = "Ellipsoid", Size = { 2.1, 2.3, 0.22 }, Pos = { 0.94, -0.12, 0 }, Color = GREY })
+						k:Part({ Name = "EarLobe", Shape = "Ellipsoid", Size = { 1.5, 1.7, 0.2 }, Pos = { 0.74, -0.98, 0.01 }, Rot = { 0, 0, 24 }, Color = GREY })
+						k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 1.6, 2.35, 0.1 }, Pos = { 0.9, -0.44, -0.08 }, Rot = { 0, 0, 8 }, Color = PINK })
 					end)
 				end)
 
@@ -259,17 +259,17 @@ return {
 	end,
 
 	BuildMini = function(k)
-		-- cactus body standing in sandals, elephant head on top
-		k:Part({ Name = "Sandals", Size = { 1.04, 0.16, 0.84 }, Pos = { 0, -1.18, -0.16 }, Color = LEATHER_D })
-		k:Part({ Name = "Body", Shape = "Ellipsoid", Size = { 0.95, 1.5, 0.95 }, Pos = { 0, -0.38, 0 }, Color = CACTUS })
-		k:Part({ Name = "Head", Shape = "Ellipsoid", Size = { 1.15, 1.02, 1.0 }, Pos = { 0, 0.62, 0 }, Color = GREY })
-		k:Part({ Name = "Trunk", Shape = "Ellipsoid", Size = { 0.3, 0.85, 0.3 }, Pos = { 0, 0.15, -0.55 }, Rot = { 18, 0, 0 }, Color = GREY })
+		-- saguaro column standing in big sandals, elephant head on top
+		k:Part({ Name = "Sandals", Size = { 1.12, 0.18, 0.9 }, Pos = { 0, -1.17, -0.14 }, Color = LEATHER_D })
+		k:Part({ Name = "Body", Shape = "Cylinder", Size = { 1.5, 0.92, 0.92 }, Pos = { 0, -0.36, 0 }, Rot = UP, Color = CACTUS })
+		k:Part({ Name = "Head", Shape = "Ellipsoid", Size = { 1.15, 1.02, 1.0 }, Pos = { 0, 0.64, 0 }, Color = GREY })
+		k:Part({ Name = "Trunk", Shape = "Ellipsoid", Size = { 0.3, 0.86, 0.3 }, Pos = { 0, 0.18, -0.58 }, Rot = { 22, 0, 0 }, Color = GREY })
 		k:Mirror(function()
-			k:Part({ Name = "Ear", Shape = "Ellipsoid", Size = { 0.75, 0.95, 0.12 }, Pos = { 0.8, 0.58, 0.08 }, Rot = { 0, -15, -8 }, Color = GREY })
-			k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 0.55, 0.72, 0.06 }, Pos = { 0.8, 0.56, 0.0 }, Rot = { 0, -15, -8 }, Color = PINK })
-			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.16, 0.16, 0.16 }, Pos = { 0.27, 0.76, -0.45 }, Color = INK })
-			-- saguaro arms growing out of the body and up
-			k:Part({ Name = "CactusArm", Shape = "Ellipsoid", Size = { 0.36, 0.78, 0.36 }, Pos = { 0.6, -0.22, 0 }, Rot = { 0, 0, -10 }, Color = CACTUS })
+			k:Part({ Name = "Ear", Shape = "Ellipsoid", Size = { 0.75, 0.95, 0.12 }, Pos = { 0.8, 0.6, 0.08 }, Rot = { 0, -15, -8 }, Color = GREY })
+			k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 0.55, 0.72, 0.06 }, Pos = { 0.8, 0.58, 0.0 }, Rot = { 0, -15, -8 }, Color = PINK })
+			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.16, 0.16, 0.16 }, Pos = { 0.27, 0.78, -0.45 }, Color = INK })
+			-- saguaro arms: rounded columns rising beside the body
+			k:Part({ Name = "CactusArm", Shape = "Ellipsoid", Size = { 0.34, 0.8, 0.34 }, Pos = { 0.66, -0.3, 0 }, Rot = { 0, 0, 0 }, Color = CACTUS })
 		end)
 	end,
 }

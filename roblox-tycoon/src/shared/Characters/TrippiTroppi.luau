@@ -27,7 +27,6 @@ local TONGUE = "#f07a8c"
 local TOOTH = "#fff8ec"
 local EYE_WHITE = "#fff8ec"
 local IRIS = "#8fcd3e"
-local IRIS_DARK = "#4f8f22"
 local PUPIL = "#1b1b24"
 local SHINE = "#fff8ec"
 local LINER = "#3b2318"
@@ -199,12 +198,11 @@ end
 local function buildHead(k)
 	-- big forms
 	k:Part({ Name = "Skull", Shape = "Ellipsoid", Size = { SKULL[4] * 2, SKULL[5] * 2, SKULL[6] * 2 }, Color = FUR })
-	local muzzle = {}
 	k:Mirror(function()
 		k:Part({ Name = "Cheek", Shape = "Ellipsoid", Size = { CHEEK_R[4] * 2, CHEEK_R[5] * 2, CHEEK_R[6] * 2 }, Pos = { CHEEK_R[1], CHEEK_R[2], CHEEK_R[3] }, Color = FUR })
 		-- cheek fluff tufts sticking out of the silhouette
 		k:Group({ Name = "CheekFluff", Pos = { 1.22, -0.78, -0.5 }, Rot = { 0, -40, -118 } }, function()
-			triangle(k, "Fluff", 0.5, 0.52, 0.14, FUR, { 0, 0.26, 0 })
+			triangle(k, "Fluff", 0.5, 0.52, 0.14, FUR_LIGHT, { 0, 0.26, 0 })
 		end)
 
 		-- eyes
@@ -212,7 +210,7 @@ local function buildHead(k)
 
 		-- muzzle pads (axis aligned so dots can be placed on them)
 		local pp = headSurface(0.26, -0.42, -1, -0.14)
-		muzzle = { pp[1], pp[2], pp[3], 0.36, 0.28, 0.26 }
+		local muzzle = { pp[1], pp[2], pp[3], 0.36, 0.28, 0.26 }
 		k:Part({ Name = "MuzzlePad", Shape = "Ellipsoid", Size = { 0.72, 0.56, 0.52 }, Pos = pp, Color = CREAM })
 		for _, d in { { 0.25, 0.25 }, { 0.45, -0.05 } } do
 			local dp = surfaceOf({ muzzle }, { muzzle[1], muzzle[2], muzzle[3] }, d[1], d[2], -1, -0.02)
@@ -284,7 +282,7 @@ end
 -- Shrimp body (world coordinates)
 --------------------------------------------------------------------------------------------
 local function buildThorax(k)
-	k:Group({ Name = "Carapace", Pos = { 0.45, 2.3, 0.05 }, Rot = { 0, 0, 0 } }, function()
+	k:Group({ Name = "Carapace", Pos = { 0.45, 2.3, 0.05 } }, function()
 		k:Part({ Name = "Carapace", Shape = "Ellipsoid", Size = { 2.5, 1.7, 1.8 }, Color = SHELL, Reflectance = 0.05 })
 		k:Part({ Name = "DorsalRidge", Shape = "Ellipsoid", Size = { 2.1, 0.24, 0.26 }, Pos = { -0.1, 0.84, 0 }, Color = SHELL_DARK })
 		for _, x in { -0.55, -0.95 } do
@@ -313,7 +311,7 @@ local function buildSegment(k, i)
 		k:Part({ Name = "Band", Shape = "Ellipsoid", Size = { 0.18, s.h * 0.86, s.w * 0.86 }, Pos = { -s.l / 2 + 0.24, 0.02, 0 }, Color = SHELL_DARK })
 		for side = -1, 1, 2 do
 			if s.bare then
-				break
+				break -- the last segment is too tucked in to show side plates
 			end
 			k:Part({ Name = "Pleuron", Shape = "Ellipsoid", Size = { s.l * 0.86, s.h * 0.42, 0.12 }, Pos = { 0.02, -s.h * 0.3, side * (s.w * 0.4 + (7 - i) * 0.01) }, Color = SHELL_LIGHT })
 			if s.swim then
@@ -415,7 +413,7 @@ return {
 						{ -0.1, 6.75, -0.35 },
 						{ -1.05, 6.8, 0.0 },
 						{ -1.95, 6.3, 0.35 },
-}), 0.35)
+					}), 0.35)
 				end)
 			end)
 		end)
