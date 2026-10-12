@@ -125,7 +125,9 @@ cd roblox-tycoon
 python3 tools/charlab/charlab.py src/shared/Characters/<Id>.luau --out /path/preview.png --luau <path-to-luau>
 ```
 
-Prints a validation report (fix every ERROR, consider every WARNING) and writes a contact
+Prints a validation report (fix every ERROR and every ANIM warning; consider other WARNINGs).
+It also sweeps 24 moments of the idle animation and warns if any pose sinks into the
+ground, grows above 9.5 or swings outside the -3.2..3.2 footprint. The report and writes a contact
 sheet: front, 3/4, side, back, top, two animation poses, a close-up and the mini. **Open the
 PNG and look at it** after every significant change. Blue boxes show the allowed volume.
 Iterate many times — look for gaps between parts, floating pieces, parts poking through the

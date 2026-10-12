@@ -366,6 +366,31 @@ def main():
     mini = run_mock(args.luau, args.character, "mini", None)
 
     issues = [("FULL", i) for i in base.get("issues", [])] + [("MINI", i) for i in mini.get("issues", [])]
+
+    # Sweep the idle animation: limits must hold in every pose, not just the rest pose.
+    if base.get("parts"):
+        worst_lo = [0.0, 0.0, 0.0]
+        worst_hi = [0.0, 0.0, 0.0]
+        worst_t = {}
+        for k in range(24):
+            t = 0.173 + k * 0.731  # irregular spacing covers different phases of each loop
+            st_t = run_mock(args.luau, args.character, "full", t).get("stats", {})
+            if not st_t.get("min"):
+                continue
+            for i in range(3):
+                if st_t["min"][i] < worst_lo[i]:
+                    worst_lo[i], worst_t[("lo", i)] = st_t["min"][i], t
+                if st_t["max"][i] > worst_hi[i]:
+                    worst_hi[i], worst_t[("hi", i)] = st_t["max"][i], t
+        checks = [
+            (worst_lo[1] < -0.12, f"sinks below the ground during the animation (y = {worst_lo[1]:.2f} at t = {worst_t.get(('lo', 1), 0):.2f})"),
+            (worst_hi[1] > 9.6, f"grows taller than 9.5 during the animation (top = {worst_hi[1]:.2f} at t = {worst_t.get(('hi', 1), 0):.2f})"),
+            (worst_lo[0] < -3.3 or worst_hi[0] > 3.3, f"swings wider than 3.2 in X during the animation ({worst_lo[0]:.2f}..{worst_hi[0]:.2f})"),
+            (worst_lo[2] < -3.3 or worst_hi[2] > 3.3, f"swings wider than 3.2 in Z during the animation ({worst_lo[2]:.2f}..{worst_hi[2]:.2f})"),
+        ]
+        for bad, message in checks:
+            if bad:
+                issues.append(("ANIM", {"level": "warning", "message": message}))
     st, ms = base.get("stats", {}), mini.get("stats", {})
     print(f"Full: {st.get('parts', 0)} parts, {st.get('animated', 0)} animated, {st.get('groups', 0)} groups, "
           f"{st.get('lights', 0)} lights, {st.get('particles', 0)} particle emitters")

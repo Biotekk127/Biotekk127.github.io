@@ -417,25 +417,27 @@ return function(def, mode, t)
 	end
 	local parts, lights, particles, counts = kit:_result()
 
-	-- Bounds use the corners of each part's oriented box (conservative for round shapes).
+	-- Exact world-space bounds per shape (box corners would over-estimate rotated round parts).
+	-- m = { px, py, pz, r00, r01, r02, r10, r11, r12, r20, r21, r22 }; row i of R is m[3i+1 .. 3i+3].
 	local minB, maxB = { math.huge, math.huge, math.huge }, { -math.huge, -math.huge, -math.huge }
 	for _, p in parts do
 		local m, s = p.cf, p.size
-		for _, sx in { -0.5, 0.5 } do
-			for _, sy in { -0.5, 0.5 } do
-				for _, sz in { -0.5, 0.5 } do
-					local lx, ly, lz = s[1] * sx, s[2] * sy, s[3] * sz
-					local w = {
-						m[1] + m[4] * lx + m[5] * ly + m[6] * lz,
-						m[2] + m[7] * lx + m[8] * ly + m[9] * lz,
-						m[3] + m[10] * lx + m[11] * ly + m[12] * lz,
-					}
-					for i = 1, 3 do
-						minB[i] = math.min(minB[i], w[i])
-						maxB[i] = math.max(maxB[i], w[i])
-					end
-				end
+		local hx, hy, hz = s[1] / 2, s[2] / 2, s[3] / 2
+		for i = 1, 3 do
+			local r1, r2, r3 = m[3 * i + 1], m[3 * i + 2], m[3 * i + 3]
+			local extent
+			if p.shape == "Ellipsoid" then
+				extent = math.sqrt((r1 * hx) ^ 2 + (r2 * hy) ^ 2 + (r3 * hz) ^ 2)
+			elseif p.shape == "Ball" then
+				extent = math.min(hx, hy, hz)
+			elseif p.shape == "Cylinder" then
+				local radius = math.min(hy, hz)
+				extent = math.abs(r1) * hx + radius * math.sqrt(r2 * r2 + r3 * r3)
+			else -- Block / Wedge: oriented box
+				extent = math.abs(r1) * hx + math.abs(r2) * hy + math.abs(r3) * hz
 			end
+			minB[i] = math.min(minB[i], m[i] - extent)
+			maxB[i] = math.max(maxB[i], m[i] + extent)
 		end
 	end
 
@@ -455,7 +457,9 @@ return function(def, mode, t)
 					issue("error", string.format("Mini must fit inside a 2.7 stud cube centred on the origin (axis %d spans %.2f..%.2f)", i, minB[i], maxB[i]))
 				end
 			end
-		elseif #parts > 0 then
+		elseif #parts == 0 then
+			issue("error", "Build produced no parts")
+		else
 			local minParts = RARITY_MIN_PARTS[def.Rarity] or 45
 			if counts.parts < minParts then
 				issue("error", `{def.Rarity} characters need at least {minParts} parts for the required detail (has {counts.parts})`)
