@@ -16,6 +16,8 @@ local Ui = require(script:WaitForChild("Ui"))
 local Effects = require(script:WaitForChild("Effects"))
 local Panels = require(script:WaitForChild("Panels"))
 local Animator = require(script:WaitForChild("Animator"))
+local RoomsClient = require(script:WaitForChild("RoomsClient"))
+local TitleScreen = require(script:WaitForChild("TitleScreen"))
 
 local player = Players.LocalPlayer
 local Theme = Ui.Theme
@@ -66,6 +68,8 @@ workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateS
 Effects.Init(screen)
 Panels.Init(screen, request)
 Animator.Start()
+RoomsClient.Start(screen, request)
+task.spawn(TitleScreen.Run, screen)
 
 -- Cash display
 local cashPill = Ui.new("Frame", {

@@ -70,6 +70,8 @@ local function grantProduct(player: Player, key: string)
 		Services.Remotes.NotifyPlayer(player, `{product.Emoji} +{Format.Cash(amount)}! Thanks for the support!`, "success")
 	elseif product.Kind == "Event" then
 		Services.EventService.StartEvent(product.Event, player)
+	elseif product.Kind == "Room" then
+		Services.RoomService.GrantProduct(product.Room, player, key)
 	end
 end
 

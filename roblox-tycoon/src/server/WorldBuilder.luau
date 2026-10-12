@@ -230,4 +230,15 @@ end
 WorldBuilder.LeaderboardFrame = nil :: Frame?
 WorldBuilder.BoardLine = boardLine
 
+-- Where RoomService places the mini-game room doors on the hub. CONTRACT (Phase 2):
+-- exactly 3 CFrames, positioned at floor level at the centre of each door's footprint,
+-- with LookVector pointing toward the hub centre (the side players walk in from).
+-- Keep this API when redesigning the hub.
+WorldBuilder.HubDoorSlots = {} :: { CFrame }
+for _, angleDegrees in { 112.5, 157.5, 67.5 } do
+	local angle = math.rad(angleDegrees)
+	local position = Vector3.new(math.cos(angle) * 27, 1, math.sin(angle) * 27)
+	table.insert(WorldBuilder.HubDoorSlots, CFrame.lookAt(position, Vector3.new(0, 1, 0)))
+end
+
 return WorldBuilder

@@ -20,6 +20,7 @@ Remotes.Notify = make("RemoteEvent", "Notify") :: RemoteEvent -- (text, style)
 Remotes.CashPopup = make("RemoteEvent", "CashPopup") :: RemoteEvent -- (amount, worldPosition?)
 Remotes.Celebrate = make("RemoteEvent", "Celebrate") :: RemoteEvent -- (title, subtitle)
 Remotes.Request = make("RemoteFunction", "Request") :: RemoteFunction -- (action, payload) -> result
+Remotes.RoomEvent = make("RemoteEvent", "RoomEvent") :: RemoteEvent -- (roomId, eventName, payload) server -> client
 
 folder.Parent = ReplicatedStorage
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """CharLab: validate and render a Brainrot character definition outside Roblox.
 
-    python3 tools/charlab/charlab.py src/shared/Characters/NoodleGoblin.luau --out preview.png
+    python3 tools/charlab/charlab.py src/shared/Characters/TralaleroTralala.luau --out preview.png
+    python3 tools/charlab/charlab.py src/server/Scenes/ObbyScene.luau --scene --out scene.png [--focus x,y,z,r]
 
 Runs the character file with tools/charlab/mockkit.luau (same transform/animation
 semantics as src/shared/CharacterKit.luau), prints a validation report and writes a
@@ -352,13 +353,84 @@ VIEWS = {
 }
 
 
+SCENE_VIEWS = {
+    "3/4 high (from +Z front)": ((-0.55, -0.55, -0.63), (0, 1, 0)),
+    "3/4 high (from -Z back)": ((0.55, -0.55, 0.63), (0, 1, 0)),
+    "front (from +Z)": ((0, -0.12, -1), (0, 1, 0)),
+    "side (from +X)": ((-1, -0.12, 0), (0, 1, 0)),
+    "top-down": ((0, -1, 0.0001), (0, 0, -1)),
+    "low 3/4 (eye level)": ((-0.7, -0.08, -0.7), (0, 1, 0)),
+}
+
+
+def scene_main(args):
+    """Render a scene (themed room / island) file: no size limits, auto-framed views."""
+    base = run_mock(args.luau, args.character, "scene", None)
+    pose = run_mock(args.luau, args.character, "scene", 1.13)
+    st = base.get("stats", {})
+    print(f"Scene: {st.get('parts', 0)} parts, {st.get('animated', 0)} animated, {st.get('groups', 0)} groups, "
+          f"{st.get('lights', 0)} lights, {st.get('particles', 0)} particle emitters")
+    roles = st.get("roles") or {}
+    if roles:
+        print("  roles: " + ", ".join(f"{k} x{v}" for k, v in sorted(roles.items())))
+    errors = 0
+    for i in base.get("issues", []):
+        errors += i["level"] == "error"
+        print(f"  [{i['level'].upper()}] SCENE: {i['message']}")
+    if not base.get("issues"):
+        print("  No issues.")
+    if not base["parts"]:
+        sys.exit(1)
+
+    bounds = None
+    if args.focus:
+        cx, cy, cz, r = (float(v) for v in args.focus.split(","))
+        bounds = [(cx - r, cy - r, cz - r), (cx + r, cy + r, cz + r)]
+        # Keep only parts near the focus box so the zoomed render is fast and uncluttered.
+        def near(p):
+            c = part_corners(p)
+            lo, hi = c.min(axis=0), c.max(axis=0)
+            return all(hi[k] >= bounds[0][k] and lo[k] <= bounds[1][k] for k in range(3))
+        base = dict(base, parts=[p for p in base["parts"] if near(p)])
+        pose = dict(pose, parts=[p for p in pose["parts"] if near(p)])
+
+    w = args.size
+    h = int(w * 0.75)
+    tiles = []
+    for name, (vd, up) in SCENE_VIEWS.items():
+        img, _ = render(base, vd, up, w, h, bounds=bounds)
+        tiles.append(label(img, name))
+    img, _ = render(pose, SCENE_VIEWS["3/4 high (from +Z front)"][0], (0, 1, 0), w, h, bounds=bounds)
+    tiles.append(label(img, "anim pose t=1.13"))
+    if roles:
+        # Highlight gameplay parts (Role set) in magenta on a 3/4 view.
+        marked = dict(base, parts=[dict(p, color="#ff00ff", material="Neon") if p.get("role") else p for p in base["parts"]])
+        img, _ = render(marked, SCENE_VIEWS["top-down"][0], SCENE_VIEWS["top-down"][1], w, h, bounds=bounds)
+        tiles.append(label(img, "top-down: gameplay parts (Role) in magenta"))
+    cols = 4
+    rows = math.ceil(len(tiles) / cols)
+    sheet = Image.new("RGB", (cols * w, rows * h), (20, 16, 34))
+    for i, tile in enumerate(tiles):
+        sheet.paste(tile, ((i % cols) * w, (i // cols) * h))
+    sheet.save(args.out)
+    print(f"Wrote {args.out}")
+    sys.exit(1 if errors else 0)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("character")
     ap.add_argument("--out", required=True, help="PNG contact sheet to write")
     ap.add_argument("--luau", default=shutil.which("luau") or "luau")
     ap.add_argument("--size", type=int, default=340, help="pixel width of each tile")
+    ap.add_argument("--scene", action="store_true", help="render a scene file (rooms/islands): no size limits")
+    ap.add_argument("--focus", help="scene only: zoom on a box 'x,y,z,radius'")
     args = ap.parse_args()
+    if args.scene:
+        if args.size == 340:
+            args.size = 520
+        scene_main(args)
+        return
 
     base = run_mock(args.luau, args.character, "full", None)
     pose_a = run_mock(args.luau, args.character, "full", 0.37)

@@ -249,7 +249,8 @@ local function newKit(t)
 			if
 				key ~= "Name" and key ~= "Shape" and key ~= "Size" and key ~= "Pos" and key ~= "Rot"
 				and key ~= "Color" and key ~= "Material" and key ~= "Transparency" and key ~= "Reflectance"
-				and key ~= "Anim" and key ~= "Text"
+				and key ~= "Anim" and key ~= "Text" and key ~= "CanCollide" and key ~= "CanTouch"
+				and key ~= "CanQuery" and key ~= "Role" and key ~= "RoleIndex"
 			then
 				issue("warning", `{what}: unknown field "{tostring(key)}" is ignored`)
 			end
@@ -273,6 +274,7 @@ local function newKit(t)
 		counts.parts += 1
 		table.insert(parts, {
 			name = name,
+			role = if type(spec.Role) == "string" then spec.Role else nil,
 			shape = shape,
 			size = size,
 			cf = world,
@@ -384,7 +386,50 @@ end
 local RARITY_MIN_PARTS = { Common = 45, Uncommon = 60, Rare = 80, Epic = 100, Legendary = 130, Mythic = 160, Secret = 200 }
 local RARITY_MAX_PARTS = 400
 
+local function runScene(def, t)
+	-- Scenes (themed rooms, islands) have no size limits; only the part specs are validated.
+	if type(def) ~= "table" or type(def.Build) ~= "function" then
+		issue("error", "Scene file must return a table with Build = function(k)")
+		print(encode({ issues = issues }))
+		return
+	end
+	local kit = newKit(t)
+	local ok, err = pcall(def.Build, kit)
+	if not ok then
+		issue("error", "Build crashed: " .. tostring(err))
+	end
+	local parts, lights, particles, counts = kit:_result()
+	if #parts == 0 then
+		issue("error", "Scene produced no parts")
+	end
+	if counts.parts > 3000 then
+		issue("error", `Scene has {counts.parts} parts; keep it under 3000 so it streams in quickly`)
+	end
+	if #lights > 24 then
+		issue("warning", `{#lights} lights is a lot; keep it under 24`)
+	end
+	local roles = {}
+	for _, p in parts do
+		if p.role then
+			roles[p.role] = (roles[p.role] or 0) + 1
+		end
+	end
+	print(encode({
+		mode = "scene",
+		t = t or 0,
+		parts = parts,
+		lights = lights,
+		particles = particles,
+		issues = issues,
+		stats = { parts = counts.parts, animated = counts.animated, groups = counts.groups, lights = #lights, particles = #particles, roles = roles },
+	}))
+end
+
 return function(def, mode, t)
+	if mode == "scene" then
+		runScene(def, t)
+		return
+	end
 	if type(def) ~= "table" then
 		issue("error", "Character file must return a table")
 		print(encode({ issues = issues }))

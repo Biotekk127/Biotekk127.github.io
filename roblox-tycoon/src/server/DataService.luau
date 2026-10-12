@@ -28,6 +28,7 @@ export type PlayerData = {
 	Daily: { Streak: number, Last: number },
 	Codes: { [string]: boolean },
 	Index: { [string]: { [string]: boolean } },
+	Rooms: { [string]: any }, -- per mini-game room save data, owned by each room module
 	Receipts: { string },
 	LastOnline: number,
 	Playtime: number,
@@ -51,6 +52,7 @@ local function defaultData(): PlayerData
 		Daily = { Streak = 0, Last = 0 },
 		Codes = {},
 		Index = {},
+		Rooms = {},
 		Receipts = {},
 		LastOnline = 0,
 		Playtime = 0,

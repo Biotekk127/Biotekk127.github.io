@@ -23,7 +23,7 @@ local Panels = {}
 
 local player = Players.LocalPlayer
 local PASS_ORDER = { "DoubleCash", "AutoCollect", "LuckyMutations", "FastDroppers", "VIP" }
-local PRODUCT_ORDER = { "CashSmall", "CashMedium", "CashLarge", "RainbowRain", "CashFrenzy" }
+local PRODUCT_ORDER = { "CashSmall", "CashMedium", "CashLarge", "RainbowRain", "CashFrenzy", "WheelSpin" }
 local TEST_MODE = RunService:IsStudio() and Config.StudioFreePurchases
 
 type Request = (action: string, payload: any?) -> boolean
@@ -259,7 +259,9 @@ local function buildShop(screen: ScreenGui)
 			fetchPrice(product.Id, Enum.InfoType.Product, button)
 		end
 		table.insert(refreshers, function()
-			if product.Kind == "Cash" then
+			if product.Kind == "Room" then
+				description.Text = product.Description or ""
+			elseif product.Kind == "Cash" then
 				local amount = Economy.ScaledReward(attr("IncomePerSec", 0), product.IncomeSeconds, product.Minimum)
 				description.Text = `Get {Format.Cash(amount)} instantly!`
 			else

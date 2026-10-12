@@ -139,6 +139,15 @@ Config.Products = {
 		Event = "RainbowRain",
 		SuggestedPrice = 99,
 	},
+	WheelSpin = {
+		Id = 0,
+		Name = "Extra Wheel Spin",
+		Emoji = "🎡",
+		Kind = "Room", -- handled by the room module (server/Rooms/Wheel.luau)
+		Room = "Wheel",
+		Description = "One more spin of the Venice carnival prize wheel!",
+		SuggestedPrice = 25,
+	},
 	CashFrenzy = {
 		Id = 0,
 		Name = "Cash Frenzy (Server Event)",

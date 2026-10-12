@@ -172,8 +172,19 @@ local function newBuilder(root: Model)
 		part.Transparency = spec.Transparency or 0
 		part.Reflectance = spec.Reflectance or 0
 		part.Anchored = true
-		part.CanTouch = false
-		part.CanQuery = false
+		-- Characters are pure visuals; scene parts can opt into gameplay with these flags.
+		part.CanTouch = spec.CanTouch == true
+		part.CanQuery = spec.CanQuery == true
+		if spec.CanCollide ~= nil then
+			part.CanCollide = spec.CanCollide
+		end
+		if type(spec.Role) == "string" then
+			-- Gameplay code finds parts by role (e.g. "Checkpoint", "Kill", "Exit").
+			part:SetAttribute("Role", spec.Role)
+			if spec.RoleIndex ~= nil then
+				part:SetAttribute("RoleIndex", spec.RoleIndex)
+			end
+		end
 		part.TopSurface = Enum.SurfaceType.Smooth
 		part.BottomSurface = Enum.SurfaceType.Smooth
 
