@@ -269,7 +269,10 @@ local function newBuilder(root: Model)
 		emitter.SpreadAngle = Vector2.new(spread, spread)
 		emitter.LightEmission = 0.6
 		emitter.Transparency = NumberSequence.new(0.1, 1)
-		emitter.EmissionDirection = (Enum.NormalId :: any)[spec.Direction or "Top"] or Enum.NormalId.Top
+		local okDirection, direction = pcall(function()
+			return (Enum.NormalId :: any)[spec.Direction or "Top"]
+		end)
+		emitter.EmissionDirection = if okDirection and direction then direction else Enum.NormalId.Top
 		emitter.Parent = p
 	end
 

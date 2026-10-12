@@ -118,7 +118,8 @@ function RarityFX.Pedestal(rarityKey: string, topCF: CFrame, parent: Instance): 
 		emitter.Rate = 2 + order * 1.5
 		emitter.SpreadAngle = Vector2.new(15, 15)
 		emitter.LightEmission = 0.8
-		emitter.EmissionDirection = Enum.NormalId.Top
+		-- The disc is rotated so its local +X points up; emit from that face.
+		emitter.EmissionDirection = Enum.NormalId.Right
 		emitter.Shape = Enum.ParticleEmitterShape.Disc
 		emitter.ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface
 		emitter.Parent = trim

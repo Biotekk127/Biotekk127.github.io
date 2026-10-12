@@ -501,6 +501,8 @@ local function fillViewport(viewport: ViewportFrame, def: any, known: boolean, d
 	world.Parent = viewport
 	local model = CharacterKit.Build(def, "Full")
 	if not known then
+		-- Silhouettes stay still: stop the Animator from picking this model up.
+		game:GetService("CollectionService"):RemoveTag(model, CharacterKit.AnimatedTag)
 		for _, descendant in model:GetDescendants() do
 			if descendant:IsA("BasePart") then
 				descendant.Color = SILHOUETTE

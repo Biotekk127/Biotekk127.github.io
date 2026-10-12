@@ -127,6 +127,19 @@ local function removeModel(instance: Instance)
 	rigs[instance :: Model] = nil
 end
 
+-- True only if the GUI object and every GUI ancestor are visible and its ScreenGui is
+-- enabled (GuiObject.Visible alone ignores hidden parents).
+local function guiShown(gui: Instance): boolean
+	local node: Instance? = gui
+	while node and not node:IsA("LayerCollector") do
+		if node:IsA("GuiObject") and not (node :: GuiObject).Visible then
+			return false
+		end
+		node = node.Parent
+	end
+	return node ~= nil and (node :: LayerCollector).Enabled and node:IsDescendantOf(game)
+end
+
 local function updateCulling()
 	local camera = workspace.CurrentCamera
 	local cameraPos = if camera then camera.CFrame.Position else Vector3.zero
@@ -135,7 +148,7 @@ local function updateCulling()
 			rigs[model] = nil
 		elseif rig.InViewport then
 			local viewport = model:FindFirstAncestorOfClass("ViewportFrame")
-			rig.Active = viewport ~= nil and viewport.Visible and viewport:IsDescendantOf(game)
+			rig.Active = viewport ~= nil and guiShown(viewport)
 		else
 			rig.Active = (rig.Root.Position - cameraPos).Magnitude < ACTIVE_DISTANCE
 		end
