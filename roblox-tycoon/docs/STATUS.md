@@ -1,6 +1,6 @@
 # Project status: where we left off
 
-Last updated: 2026-10-12. Branch: `claude/busy-volta-8n680m`.
+Last updated: 2026-10-13. Branch: `claude/busy-volta-8n680m`.
 
 To resume in a new session, say: **"Continue the Roblox tycoon from roblox-tycoon/docs/STATUS.md"**.
 
@@ -34,26 +34,23 @@ because they render as good or better than the pre-polish version.
 * Review fixes applied: Index viewports no longer animate while hidden, silhouettes stay
   still, pedestal aura particles rise correctly, particle Direction can't crash a build.
 
-## Next steps (in order)
+## In progress (2026-10-13)
 
-1. **Finish polish** for the 8 characters marked ❌/⚠️ above (one fresh-eyes art-director
-   agent each, accuracy to the meme first). The workflow script that did this is described in
-   the session; it is a create → polish pipeline per character.
-2. **Boss consistency pass**: one art-director agent reviews all 12 side by side and writes a
-   shared style guide (eyes/faces, colour saturation, material/glow use, animation feel,
-   detail density per rarity) plus a fix list per character → fixers apply in parallel → boss
-   signs off. Note: the Commons were capped at about 100 parts because agents treated the
-   target as a maximum; lift them to match the detail of the others.
-3. **Tooling fixes** from the review (preview tool only, not the game):
-   * `mockkit.luau`: a Build with zero parts passes validation; bounds use box corners even for
-     rotated round parts (false errors); bounds are only checked in the rest pose, not across
-     the animation.
-   * `charlab.py`: overlapping transparent parts can hide each other in previews.
-   * `CharacterKit` Mirror: face-direction features (Text faces, particle Direction) aren't
-     mirrored (low).
-4. **Phase 2**: see [`PHASE2_PLAN.md`](PHASE2_PLAN.md): rarity portals with rarity-scaled
-   spawn speed, floating islands with personal brainrot rivers, a cinematic title flyover under 3s,
-   and 3 themed lobby rooms (NYC-rooftop obby, Alaska ice fishing, Venice carnival spin wheel).
+* **Polish**: partial art-director passes landed on the 8 remaining characters (all 12 now
+  pass validation with no errors or animation warnings).
+* **Boss pass**: `tools/agents/boss-audit.js` is running. It writes `tools/charlab/STYLE_GUIDE.md`
+  and a fix list per character. Next, run `boss-fix-one.js` once per character (in parallel),
+  then `boss-signoff.js` (repeat fix + sign-off for anything not approved).
+* **Phase 2**: the framework is done (RoomService, RoomsClient, scenes, title hook, WheelSpin
+  product, contracts in [`PHASE2_CONTRACTS.md`](PHASE2_CONTRACTS.md)). Five workstreams are
+  running with `tools/agents/phase2-stream.js`: WORLD (islands/rivers/portals/economy), TITLE,
+  OBBY (NYC rooftop), FISHING (Alaska), WHEEL (Venice). After they finish, run a whole-game
+  integration review, then rebuild the place file.
+
+## Still to do afterwards
+
+* Preview-tool polish (low): overlapping transparent parts can hide each other in charlab
+  renders; `k:Mirror` doesn't mirror Text faces or particle Direction.
 
 ## Tooling setup (fresh machine)
 
