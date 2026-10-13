@@ -48,6 +48,10 @@ local GLOW = "#ff8a2a"
 local BOMB = "#3c4527"
 local BOMB_FIN = "#333b21"
 local BOMB_BAND = "#e6c040"
+local SQUAD_YELLOW = "#f0c53c" -- generic "croc squadron" roundel: yellow ring, dark ring and a
+local SQUAD_DARK = "#26302a" -- croc-green centre (deliberately not a real national insignia)
+local IRIS = "#e08a1c"
+local GUM = "#c8505c"
 local ITA_GREEN = "#1f9e4a"
 local ITA_WHITE = "#f4f1e6"
 local ITA_RED = "#d8323c"
@@ -72,6 +76,7 @@ local SKULL = { 0, FY + 0.14, -1.15, 0.86, 0.5, 0.95 }
 local SNOUT = { 0, FY + 0.04, -2.05, 0.64, 0.27, 1.12 }
 local LIP = { 0, FY - 0.1, -1.98, 0.68, 0.14, 1.1 }
 local LJAW = { 0, FY - 0.42, -1.95, 0.57, 0.19, 1.03 }
+local NECK = { 0, FY + 0.02, -0.82, 0.83, 0.78, 0.55 } -- thick croc neck plugging into the collar
 local HINGE_Y, HINGE_Z = FY - 0.16, -0.95
 
 local function deg(r)
@@ -82,6 +87,11 @@ end
 local function topY(e, x, z)
 	local a = 1 - ((x - e[1]) / e[4]) ^ 2 - ((z - e[3]) / e[6]) ^ 2
 	return e[2] + e[5] * math.sqrt(math.max(a, 0))
+end
+
+-- highest head surface (skull / neck / snout) at (x, z)
+local function headTop(x, z)
+	return math.max(topY(SKULL, x, z), topY(NECK, x, z), topY(SNOUT, x, z))
 end
 
 -- y on the bottom surface of ellipsoid e at (x, z)
@@ -131,10 +141,11 @@ return {
 			})
 		end
 
-		-- Concentric tricolore roundel. Built as cylinders along X, `rot` tilts it.
+		-- Concentric generic "croc squadron" roundel (not a real national insignia).
+		-- Built as cylinders along X, `rot` tilts it.
 		local function roundel(name, pos, rot, dia)
 			local t = 0.05
-			local parts = { { ITA_GREEN, 1 }, { ITA_WHITE, 0.66 }, { ITA_RED, 0.33 } }
+			local parts = { { SQUAD_YELLOW, 1 }, { SQUAD_DARK, 0.7 }, { CROC_LIGHT, 0.4 } }
 			for i, p in parts do
 				-- step each disc slightly outward along its local X
 				local r = math.rad(rot[3])
@@ -196,6 +207,12 @@ return {
 				Material = "Neon",
 				Anim = { Type = "Pulse", Amount = 0.08, Speed = 1.3, Phase = phase },
 			})
+			-- radial engine: dark cylinder heads silhouetted against the hot glow
+			for i = 0, 3 do
+				local a = math.rad(i * 90 + 45)
+				k:Part({ Name = name .. "CylHead", Shape = "Cylinder", Size = { 0.13, 0.08, 0.08 }, Pos = { ex + math.cos(a) * 0.15, ey + math.sin(a) * 0.15, -1.235 }, Rot = { 0, 0, i * 90 + 45 }, Color = METAL_DARK, Material = "Metal" })
+			end
+			k:Part({ Name = name .. "CowlFlaps", Shape = "Cylinder", Size = { 0.07, 0.56, 0.56 }, Pos = { ex, ey, -0.62 }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK, Material = "Metal" })
 			k:Part({ Name = name .. "Hub", Shape = "Ellipsoid", Size = { 0.17, 0.17, 0.26 }, Pos = { ex, ey, -1.3 }, Color = GOLD, Material = "Foil" })
 			k:Group({ Name = name .. "Prop", Pos = { ex, ey, -1.28 }, Anim = { Type = "Spin", Axis = "Z", Speed = 1.8, Phase = phase } }, function()
 				for i = 0, 2 do
@@ -244,17 +261,29 @@ return {
 						-------------------------------------------------------------------------
 						-- Fuselage
 						-------------------------------------------------------------------------
-						k:Part({ Name = "FuselageMid", Shape = "Cylinder", Size = { 2.0, FR * 2, FR * 2 }, Pos = { 0, FY, 0.25 }, Rot = { 0, 90, 0 }, Color = OLIVE, Material = "Metal" })
-						k:Part({ Name = "FuselageNose", Shape = "Ellipsoid", Size = { FR * 2, FR * 2, 1.2 }, Pos = { 0, FY, -0.7 }, Color = OLIVE, Material = "Metal" })
-						k:Part({ Name = "TailCone", Shape = "Ellipsoid", Size = { 1.58, 1.52, 2.7 }, Pos = { 0, FY + 0.04, 1.0 }, Color = OLIVE, Material = "Metal" })
+						k:Part({ Name = "FuselageMid", Shape = "Cylinder", Size = { 1.87, FR * 2, FR * 2 }, Pos = { 0, FY, 0.315 }, Rot = { 0, 90, 0 }, Color = OLIVE, Material = "Metal" })
+						k:Part({ Name = "TailCone", Shape = "Ellipsoid", Size = { 1.58, 1.52, 2.5 }, Pos = { 0, FY + 0.04, 0.95 }, Color = OLIVE, Material = "Metal" })
 						k:Part({ Name = "BellyPanel", Shape = "Ellipsoid", Size = { 1.36, 0.42, 2.9 }, Pos = { 0, FY - 0.64, 0.55 }, Color = BELLY_GREY })
+						-- tail-cone panel rings (diameter follows the cone)
+						for _, rz in { { 1.35, 1.52 }, { 1.75, 1.24 } } do
+							k:Part({ Name = "ConeRing", Shape = "Cylinder", Size = { 0.05, rz[2], rz[2] }, Pos = { 0, FY + 0.04, rz[1] }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK })
+						end
+						k:Mirror(function()
+							-- longitudinal rivet rows high and low on the fuselage sides
+							for _, a in { 50 } do
+							local r = math.rad(a)
+							for _, z in { -0.35, 0.02, 0.5, 1.1 } do
+									k:Part({ Name = "SideRivet", Shape = "Ball", Size = { 0.07, 0.07, 0.07 }, Pos = { math.cos(r) * (FR + 0.005), FY + math.sin(r) * (FR + 0.005), z }, Color = OLIVE_LIGHT, Material = "Metal" })
+								end
+							end
+							-- longitudinal panel seam
+							local sr = math.rad(-15)
+							k:Part({ Name = "SideSeam", Size = { 0.05, 0.05, 1.75 }, Pos = { math.cos(sr) * FR, FY + math.sin(sr) * FR, 0.33 }, Rot = { 0, 0, -15 }, Color = OLIVE_DARK })
+						end)
 						-- panel rings + rivets
 						for _, z in { 0.25, 0.95 } do
 							k:Part({ Name = "PanelRing", Shape = "Cylinder", Size = { 0.05, FR * 2 + 0.025, FR * 2 + 0.025 }, Pos = { 0, FY, z }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK })
-							for _, a in { 25, 90, 155 } do
-								local r = math.rad(a)
-								k:Part({ Name = "Rivet", Shape = "Ball", Size = { 0.06, 0.06, 0.06 }, Pos = { math.cos(r) * (FR + 0.01), FY + math.sin(r) * (FR + 0.01), z - 0.08 }, Color = OLIVE_LIGHT, Material = "Metal" })
-							end
+
 						end
 						-- neck collar where crocodile meets bomber
 						k:Part({ Name = "NeckCollar", Shape = "Cylinder", Size = { 0.13, FR * 2 + 0.08, FR * 2 + 0.08 }, Pos = { 0, FY, -0.6 }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK, Material = "Metal" })
@@ -280,8 +309,16 @@ return {
 							rod("WaistGun", { 0.66, FY + 0.12, 1.5 }, { 1.05, FY + 0.06, 1.36 }, 0.06, GUNMETAL)
 						end)
 
+						-- B-17 style framed cockpit canopy right behind the crocodile's neck
+						k:Part({ Name = "Canopy", Shape = "Ellipsoid", Size = { 0.76, 0.52, 0.84 }, Pos = { 0, FY + 0.78, -0.12 }, Color = GLASS_DARK, Material = "Glass", Reflectance = 0.15 })
+						for i, fz in { { -0.38, 0.62, 0.36 }, { -0.14, 0.74, 0.5 }, { 0.12, 0.64, 0.38 } } do
+							k:Part({ Name = "CanopyFrame" .. i, Shape = "Ellipsoid", Size = { fz[2] + 0.04, fz[3] + 0.04, 0.05 }, Pos = { 0, FY + 0.78, fz[1] }, Color = OLIVE_DARK, Material = "Metal" })
+						end
+						k:Part({ Name = "CanopySpine", Size = { 0.05, 0.05, 0.4 }, Pos = { 0, FY + 1.02, -0.12 }, Color = OLIVE_DARK, Material = "Metal" })
+						k:Part({ Name = "CanopyGlint", Shape = "Ellipsoid", Size = { 0.1, 0.05, 0.2 }, Pos = { 0.17, FY + 0.99, -0.3 }, Rot = { 0, 0, -25 }, Color = SHINE })
+
 						-- top gun turret (swivels)
-						k:Group({ Name = "TopTurret", Pos = { 0, FY + FR - 0.04, -0.18 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 28, Speed = 0.25 } }, function()
+						k:Group({ Name = "TopTurret", Pos = { 0, FY + FR - 0.04, 0.55 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 28, Speed = 0.25 } }, function()
 							k:Part({ Name = "TurretRing", Shape = "Cylinder", Size = { 0.12, 0.7, 0.7 }, Pos = { 0, 0.04, 0 }, Rot = { 0, 0, 90 }, Color = METAL_DARK, Material = "Metal" })
 							k:Part({ Name = "TurretDome", Shape = "Ball", Size = { 0.58, 0.58, 0.58 }, Pos = { 0, 0.12, 0 }, Color = GLASS, Material = "Glass", Transparency = 0.35 })
 							k:Mirror(function()
@@ -289,9 +326,9 @@ return {
 							end)
 						end)
 
-						-- antenna mast + wire to the fin
-						rod("AntennaMast", { 0, FY + FR - 0.02, 0.3 }, { 0, FY + 1.25, 0.42 }, 0.05, METAL_DARK)
-						rod("AntennaWire", { 0, FY + 1.25, 0.42 }, { 0, FY + 2.55, 1.76 }, 0.05, METAL_DARK)
+						-- antenna mast on the canopy + wire to the fin top
+						rod("AntennaMast", { 0, FY + 0.98, 0.12 }, { 0, FY + 1.36, 0.22 }, 0.05, METAL_DARK)
+						rod("AntennaWire", { 0, FY + 1.36, 0.22 }, { 0, FY + 2.48, 1.56 }, 0.05, METAL_DARK)
 
 						-- ball turret under the belly (swivels)
 						k:Group({ Name = "BallTurret", Pos = { 0, FY - 0.7, 1.45 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 40, Speed = 0.2, Phase = 0.5 } }, function()
@@ -310,6 +347,7 @@ return {
 						-------------------------------------------------------------------------
 						-- Crocodile head
 						-------------------------------------------------------------------------
+						k:Part({ Name = "Neck", Shape = "Ellipsoid", Size = { NECK[4] * 2, NECK[5] * 2, NECK[6] * 2 }, Pos = { NECK[1], NECK[2], NECK[3] }, Color = CROC })
 						k:Part({ Name = "Skull", Shape = "Ellipsoid", Size = { SKULL[4] * 2, SKULL[5] * 2, SKULL[6] * 2 }, Pos = { SKULL[1], SKULL[2], SKULL[3] }, Color = CROC })
 						k:Part({ Name = "Snout", Shape = "Ellipsoid", Size = { SNOUT[4] * 2, SNOUT[5] * 2, SNOUT[6] * 2 }, Pos = { SNOUT[1], SNOUT[2], SNOUT[3] }, Color = CROC })
 						k:Part({ Name = "UpperLip", Shape = "Ellipsoid", Size = { LIP[4] * 2, LIP[5] * 2, LIP[6] * 2 }, Pos = { LIP[1], LIP[2], LIP[3] }, Color = CROC_DARK })
@@ -320,21 +358,24 @@ return {
 						local ny = topY(SNOUT, 0, -2.85)
 						k:Part({ Name = "NostrilMound", Shape = "Ellipsoid", Size = { 0.46, 0.2, 0.4 }, Pos = { 0, ny - 0.02, -2.85 }, Color = CROC })
 
-						-- center scute row on the skull
-						for i, z in { -0.95, -0.68 } do
-							k:Part({ Name = "HeadScuteMid" .. i, Shape = "Ellipsoid", Size = { 0.16, 0.12, 0.2 }, Pos = { 0, topY(SKULL, 0, z) - 0.01, z }, Color = CROC_DARK })
+						-- osteoderm scutes: a centre row from between the eyes back over the neck
+						for i, z in { -1.42, -1.18, -0.95, -0.74 } do
+							local w = 0.13 + i * 0.015
+							k:Part({ Name = "HeadScuteMid" .. i, Shape = "Ellipsoid", Size = { w, 0.13, 0.2 }, Pos = { 0, headTop(0, z) - 0.02, z }, Color = CROC_DARK })
 						end
 
 						k:Mirror(function()
 							-- nostrils
 							k:Part({ Name = "Nostril", Shape = "Ellipsoid", Size = { 0.1, 0.06, 0.12 }, Pos = { 0.1, ny + 0.07, -2.9 }, Color = PUPIL })
-							-- snout bumps
-							for i, z in { -1.6, -2.0, -2.4 } do
-								k:Part({ Name = "SnoutBump" .. i, Shape = "Ellipsoid", Size = { 0.14, 0.09, 0.18 }, Pos = { 0.24, topY(SNOUT, 0.24, z) - 0.01, z }, Color = CROC_DARK })
+							-- lumpy snout: two staggered rows of warty bumps
+							local bumps = { { 0.15, -2.1 }, { 0.15, -2.45 }, { 0.35, -1.98 }, { 0.35, -2.3 }, { 0.32, -2.62 } }
+							for i, b in bumps do
+								local col = if i <= 2 then CROC_LIGHT else CROC_DARK
+								k:Part({ Name = "SnoutBump" .. i, Shape = "Ellipsoid", Size = { 0.13, 0.08, 0.15 }, Pos = { b[1], topY(SNOUT, b[1], b[2]) - 0.015, b[2] }, Color = col })
 							end
-							-- skull scutes behind the eyes
-							for i, z in { -0.95, -0.68 } do
-								k:Part({ Name = "HeadScute" .. i, Shape = "Ellipsoid", Size = { 0.15, 0.11, 0.19 }, Pos = { 0.26, topY(SKULL, 0.26, z) - 0.01, z }, Color = CROC_DARK })
+							-- paired scute rows behind the eyes and over the neck
+							for i, sc in { { 0.27, -1.08 }, { 0.25, -0.86 }, { 0.5, -0.86 } } do
+								k:Part({ Name = "HeadScute" .. i, Shape = "Ellipsoid", Size = { 0.16, 0.12, 0.19 }, Pos = { sc[1], headTop(sc[1], sc[2]) - 0.02, sc[2] }, Color = CROC_DARK })
 							end
 							-- cheek scales
 							-- a row of scales along each cheek and the snout side
@@ -345,6 +386,7 @@ return {
 								{ SKULL, 1, -0.2, 0.45, CROC_LIGHT },
 								{ SNOUT, 1, 0.45, 0.05, CROC_DARK },
 								{ SNOUT, 1, 0.45, -0.4, CROC_DARK },
+								{ NECK, 1, 0.3, 0.15, CROC_DARK },
 							}
 							for i, c in cheeks do
 								local p = onEll(c[1], c[2], c[3], c[4], -0.035)
@@ -354,6 +396,7 @@ return {
 							-- eye: socket, eyeball, slit pupil, highlight, angry brow
 							k:Part({ Name = "EyeSocket", Shape = "Ellipsoid", Size = { 0.52, 0.4, 0.56 }, Pos = { 0.4, FY + 0.55, -1.55 }, Color = CROC })
 							k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.44, 0.44, 0.44 }, Pos = { 0.41, FY + 0.66, -1.66 }, Color = EYE, Anim = { Type = "Blink", Speed = 0.22 } })
+							k:Part({ Name = "Iris", Shape = "Cylinder", Size = { 0.05, 0.3, 0.3 }, Pos = { 0.478, FY + 0.652, -1.845 }, Rot = { 0, 70, 0 }, Color = IRIS, Anim = { Type = "Blink", Speed = 0.22 } })
 							k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.08, 0.3, 0.06 }, Pos = { 0.485, FY + 0.65, -1.865 }, Rot = { 0, -20, 0 }, Color = PUPIL, Anim = { Type = "Blink", Speed = 0.22 } })
 							k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.09, 0.09, 0.09 }, Pos = { 0.36, FY + 0.7, -1.86 }, Color = SHINE, Anim = { Type = "Blink", Speed = 0.22 } })
 							-- heavy upper lid wrapping the top of the eyeball, slanted down toward the
@@ -400,6 +443,7 @@ return {
 								k:Part({ Name = "Flap", Size = { 1.0, 0.1, 0.2 }, Pos = { 0.55, -0.01, 0.8 }, Color = OLIVE_DARK })
 								k:Part({ Name = "Aileron", Size = { 1.1, 0.1, 0.2 }, Pos = { 1.72, -0.01, 0.8 }, Color = OLIVE_DARK })
 								roundel("WingRoundel", { 2.02, 0.09, 0.42 }, { 0, 0, 90 }, 0.46)
+								k:Part({ Name = "WingSeam", Size = { 2.2, 0.05, 0.05 }, Pos = { 1.15, 0.075, 0.02 }, Color = OLIVE_DARK })
 
 								engine("InnerEngine", 0.78, 0)
 								engine("OuterEngine", 1.8, 0.31)
@@ -424,45 +468,60 @@ return {
 						-------------------------------------------------------------------------
 						-- Tail: swept fin with tricolore flash, rudder, stabilisers, croc tail
 						-------------------------------------------------------------------------
-						k:Part({ Name = "FinFront", Shape = "Wedge", Size = { 0.14, 2.45, 1.35 }, Pos = { 0, FY + 0.2 + 1.225, 1.005 }, Color = OLIVE, Material = "Metal" })
-						k:Part({ Name = "FinRear", Size = { 0.14, 2.45, 0.55 }, Pos = { 0, FY + 0.2 + 1.225, 1.955 }, Color = OLIVE, Material = "Metal" })
-						k:Part({ Name = "FinCap", Shape = "Ellipsoid", Size = { 0.15, 0.24, 0.8 }, Pos = { 0, FY + 2.65, 1.9 }, Color = OLIVE, Material = "Metal" })
+						local TZ = -0.15 -- tail surfaces moved forward to leave room for the croc tail
+						k:Part({ Name = "FinFront", Shape = "Wedge", Size = { 0.14, 2.55, 1.35 }, Pos = { 0, FY + 0.1 + 1.275, 1.005 + TZ }, Color = OLIVE, Material = "Metal" })
+						k:Part({ Name = "FinRear", Size = { 0.14, 2.55, 0.55 }, Pos = { 0, FY + 0.1 + 1.275, 1.955 + TZ }, Color = OLIVE, Material = "Metal" })
+						k:Part({ Name = "FinCap", Shape = "Ellipsoid", Size = { 0.15, 0.24, 0.8 }, Pos = { 0, FY + 2.65, 1.9 + TZ }, Color = OLIVE, Material = "Metal" })
 						k:Mirror(function()
 							for i, c in { ITA_GREEN, ITA_WHITE, ITA_RED } do
-								k:Part({ Name = "FinFlash" .. i, Size = { 0.05, 1.0, 0.18 }, Pos = { 0.07, FY + 1.85, 1.77 + (i - 1) * 0.18 }, Color = c })
+								k:Part({ Name = "FinFlash" .. i, Size = { 0.05, 1.0, 0.18 }, Pos = { 0.07, FY + 1.85, 1.77 + TZ + (i - 1) * 0.18 }, Color = c })
 							end
-						end)
-						k:Group({ Name = "Rudder", Pos = { 0, FY + 1.5, 2.23 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 12, Speed = 0.4 } }, function()
+													end)
+						k:Group({ Name = "Rudder", Pos = { 0, FY + 1.5, 2.23 + TZ }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 12, Speed = 0.4 } }, function()
 							k:Part({ Name = "RudderPanel", Size = { 0.12, 2.1, 0.28 }, Pos = { 0, 0, 0.14 }, Color = OLIVE_DARK })
+							k:Part({ Name = "RudderTrim", Size = { 0.13, 0.5, 0.05 }, Pos = { 0, -0.6, 0.26 }, Color = METAL_DARK, Material = "Metal" })
 						end)
 						k:Mirror(function()
-							k:Part({ Name = "StabMain", Size = { 1.1, 0.1, 0.5 }, Pos = { 0.65, FY + 0.16, 1.95 }, Color = OLIVE, Material = "Metal" })
-							k:Part({ Name = "StabLeadingEdge", Shape = "Wedge", Size = { 0.1, 1.1, 0.3 }, Pos = { 0.65, FY + 0.16, 1.55 }, Rot = { 0, 0, -90 }, Color = OLIVE, Material = "Metal" })
-							k:Part({ Name = "StabTip", Shape = "Ellipsoid", Size = { 0.2, 0.1, 0.5 }, Pos = { 1.2, FY + 0.16, 1.95 }, Color = OLIVE, Material = "Metal" })
-							k:Group({ Name = "Elevator", Pos = { 0, FY + 0.16, 2.2 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 8, Speed = 0.4, Phase = 0.25 } }, function()
-								k:Part({ Name = "ElevatorPanel", Size = { 1.05, 0.07, 0.2 }, Pos = { 0.65, 0, 0.1 }, Color = OLIVE_DARK })
+							k:Part({ Name = "StabMain", Size = { 1.1, 0.1, 0.5 }, Pos = { 0.65, FY + 0.16, 1.95 + TZ }, Color = OLIVE, Material = "Metal" })
+							k:Part({ Name = "StabLeadingEdge", Shape = "Wedge", Size = { 0.1, 1.1, 0.3 }, Pos = { 0.65, FY + 0.16, 1.55 + TZ }, Rot = { 0, 0, -90 }, Color = OLIVE, Material = "Metal" })
+							k:Part({ Name = "StabTip", Shape = "Ellipsoid", Size = { 0.2, 0.1, 0.5 }, Pos = { 1.2, FY + 0.16, 1.95 + TZ }, Color = OLIVE, Material = "Metal" })
+							k:Group({ Name = "Elevator", Pos = { 0, FY + 0.16, 2.2 + TZ }, Anim = { Type = "Wiggle", Axis = "X", Amount = 8, Speed = 0.4, Phase = 0.25 } }, function()
+								k:Part({ Name = "ElevatorPanel", Size = { 0.88, 0.07, 0.2 }, Pos = { 0.76, 0, 0.1 }, Color = OLIVE_DARK })
 							end)
 						end)
 
-						-- tail cone collar + the crocodile's own tail
-						k:Part({ Name = "TailCollar", Shape = "Cylinder", Size = { 0.07, 0.64, 0.64 }, Pos = { 0, FY - 0.02, 2.2 }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK, Material = "Metal" })
-						k:Group({ Name = "CrocTail", Pos = { 0, FY - 0.04, 2.12 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 14, Speed = 0.5 } }, function()
-							local segs = {
-								{ 0.56, 0.5, 0.62, 0, 0.12 },
-								{ 0.44, 0.4, 0.52, 0.04, 0.42 },
-								{ 0.34, 0.3, 0.44, 0.1, 0.66 },
-								{ 0.22, 0.2, 0.28, 0.16, 0.8 },
-							}
-							for i, s in segs do
-								k:Part({ Name = "TailSeg" .. i, Shape = "Ellipsoid", Size = { s[1], s[2], s[3] }, Pos = { 0, s[4], s[5] }, Color = CROC })
-								if i < 4 then
-									k:Part({ Name = "TailSpike" .. i, Shape = "Wedge", Size = { 0.07, 0.16 - i * 0.02, 0.18 }, Pos = { 0, s[4] + s[2] / 2 + 0.03, s[5] }, Color = CROC_DARK })
-								end
-							end
+						-- tail cone collar + the crocodile's own tail (laterally flat, scute crest, pale belly),
+						-- two jointed sections that swish with a delay
+						k:Part({ Name = "TailCollar", Shape = "Cylinder", Size = { 0.08, 0.84, 0.84 }, Pos = { 0, FY + 0.03, 2.02 }, Rot = { 0, 90, 0 }, Color = OLIVE_DARK, Material = "Metal" })
+
+						local TB = { 0, 0, 0.18, 0.28, 0.29, 0.31 } -- tail base ellipsoid (CrocTail group space)
+						local TM = { 0, -0.03, 0.47, 0.22, 0.23, 0.25 }
+						k:Group({ Name = "CrocTail", Pos = { 0, FY - 0.03, 1.95 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 9, Speed = 0.5 } }, function()
+							k:Part({ Name = "TailBase", Shape = "Ellipsoid", Size = { TB[4] * 2, TB[5] * 2, TB[6] * 2 }, Pos = { TB[1], TB[2], TB[3] }, Color = CROC })
+							k:Part({ Name = "TailMid", Shape = "Ellipsoid", Size = { TM[4] * 2, TM[5] * 2, TM[6] * 2 }, Pos = { TM[1], TM[2], TM[3] }, Color = CROC })
+							k:Part({ Name = "TailBelly", Shape = "Ellipsoid", Size = { 0.4, 0.26, 0.78 }, Pos = { 0, -0.17, 0.32 }, Color = CROC_BELLY })
 							k:Mirror(function()
-								for i = 1, 2 do
-									local s = segs[i]
-									k:Part({ Name = "TailSideSpike" .. i, Shape = "Wedge", Size = { 0.06, 0.12, 0.15 }, Pos = { s[1] * 0.28, s[4] + s[2] * 0.4, s[5] }, Rot = { 0, 0, -25 }, Color = CROC_DARK })
+								-- double crest of upright scutes
+								for i, z in { 0.04, 0.2, 0.36, 0.52 } do
+									local top = math.max(topY(TB, 0.08, z), topY(TM, 0.08, z))
+									local h = 0.17 - i * 0.015
+									k:Part({ Name = "TailScute" .. i, Shape = "Wedge", Size = { 0.05, h, 0.14 }, Pos = { 0.08, top + h / 2 - 0.05, z }, Color = CROC_DARK })
+								end
+								-- side scale rows
+								for i, sc in { { TB, 0.06, 0.18 }, { TB, -0.1, 0.22 }, { TM, 0.02, 0.45 } } do
+									local e = sc[1]
+									k:Part({ Name = "TailSideScale" .. i, Shape = "Ellipsoid", Size = { 0.06, 0.12, 0.15 }, Pos = { halfW(e, sc[3]) - 0.015, e[2] + sc[2], sc[3] }, Color = if i == 2 then CROC_LIGHT else CROC_DARK })
+								end
+							end)
+							k:Group({ Name = "TailTip", Pos = { 0, -0.04, 0.68 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 16, Speed = 0.5, Phase = 0.18 } }, function()
+								local TE1 = { 0, 0, 0.1, 0.17, 0.18, 0.21 }
+								local TE2 = { 0, 0.01, 0.28, 0.1, 0.12, 0.18 }
+								k:Part({ Name = "TailEnd1", Shape = "Ellipsoid", Size = { TE1[4] * 2, TE1[5] * 2, TE1[6] * 2 }, Pos = { TE1[1], TE1[2], TE1[3] }, Color = CROC })
+								k:Part({ Name = "TailEnd2", Shape = "Ellipsoid", Size = { TE2[4] * 2, TE2[5] * 2, TE2[6] * 2 }, Pos = { TE2[1], TE2[2], TE2[3] }, Color = CROC })
+								for i, z in { 0.0, 0.14, 0.28 } do
+									local h = 0.15 - i * 0.02
+									local top = math.max(topY(TE1, 0, z), topY(TE2, 0, z))
+									k:Part({ Name = "TailTipScute" .. i, Shape = "Wedge", Size = { 0.05, h, 0.13 }, Pos = { 0, top + h / 2 - 0.05, z }, Color = CROC_DARK })
 								end
 							end)
 						end)
@@ -490,9 +549,9 @@ return {
 		k:Part({ Name = "TeethRim", Shape = "Ellipsoid", Size = { 0.74, 0.1, 1.12 }, Pos = { 0, -0.06, -0.72 }, Color = TOOTH })
 		k:Part({ Name = "LowerJaw", Shape = "Ellipsoid", Size = { 0.62, 0.22, 1.0 }, Pos = { 0, -0.2, -0.66 }, Rot = { -12, 0, 0 }, Color = CROC })
 		k:Mirror(function()
-			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.24, 0.24, 0.24 }, Pos = { 0.19, 0.3, -0.7 }, Color = EYE })
-			k:Part({ Name = "PropInner", Shape = "Cylinder", Size = { 0.08, 0.38, 0.38 }, Pos = { 0.62, -0.1, -0.05 }, Rot = { 0, 90, 0 }, Color = "#3a3b42", Transparency = 0.4 })
-			k:Part({ Name = "PropOuter", Shape = "Cylinder", Size = { 0.08, 0.38, 0.38 }, Pos = { 1.08, -0.1, -0.02 }, Rot = { 0, 90, 0 }, Color = "#3a3b42", Transparency = 0.4 })
+			k:Part({ Name = "Eye", Shape = "Ball", Size = { 0.26, 0.26, 0.26 }, Pos = { 0.2, 0.3, -0.72 }, Color = EYE })
+			k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.06, 0.2, 0.06 }, Pos = { 0.215, 0.3, -0.85 }, Color = PUPIL })
+			k:Part({ Name = "Prop", Shape = "Cylinder", Size = { 0.06, 0.5, 0.5 }, Pos = { 0.86, -0.1, -0.1 }, Rot = { 0, 90, 0 }, Color = "#3a3b42", Transparency = 0.35 })
 		end)
 		k:Part({ Name = "Wing", Size = { 2.5, 0.08, 0.5 }, Pos = { 0, -0.1, 0.25 }, Color = OLIVE })
 		k:Part({ Name = "Fin", Shape = "Wedge", Size = { 0.08, 0.62, 0.55 }, Pos = { 0, 0.62, 1.0 }, Color = OLIVE })

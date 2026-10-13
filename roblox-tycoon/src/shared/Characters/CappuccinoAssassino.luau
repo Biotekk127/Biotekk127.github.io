@@ -23,7 +23,7 @@ local FOAM_CREAM = "#ecd8b8" -- foam bubbles
 
 local NINJA = "#25252f" -- dominant body: tinted black
 local NINJA_DARK = "#191920"
-local NINJA_LIGHT = "#363645" -- lapels, knee pads, folds
+local NINJA_LIGHT = "#424257" -- lapels, knee pads, folds
 local SCARF = "#2c2c38"
 local WRAP = "#4b4b5a" -- bandage wraps
 local WRAP_LIGHT = "#62627a"
@@ -47,15 +47,15 @@ local PUPIL = "#121217"
 local SHINE = "#ffffff"
 local STEAM = "#ffffff"
 
-local CHAIN = "#565b69" -- kusari mesh undershirt
+local CHAIN = "#4d5260" -- kusari mesh undershirt
 local ENGRAVE = "#2b2f3a" -- swirl engraved in the forehead plate
 
 -- Layout (world studs) -------------------------------------------------------------------
 -- The upper body is written upright and then dropped + leaned forward as a whole (Stance),
 -- which turns the pose into a low crouched assassin stance.
 local HIPC = { 0, 3.35, 0 } -- upper-body pivot (before the stance drop)
-local DROP = 0.38 -- how far the whole upper body sinks into the crouch
-local LEAN = -7 -- forward lean of the upper body (degrees about X)
+local DROP = 0.44 -- how far the whole upper body sinks into the crouch
+local LEAN = -10 -- forward lean of the upper body (degrees about X)
 local NECK = { 0, 5.62, -0.06 } -- head pivot
 local CZ = -0.08 -- cup axis z
 local CUP_R = 1.35 -- cup radius (straight upper wall)
@@ -66,26 +66,29 @@ local BAND_Y = 8.1 -- ninja cloth tied around the cup
 local BAND_H = 0.44
 
 -- Torso volumes {cx, cy, cz, ax, ay, az}
-local CHEST = { 0, 4.72, -0.04, 0.7, 0.675, 0.45 }
-local UPCHEST = { 0, 5.02, -0.04, 0.81, 0.39, 0.42 }
-local WAIST = { 0, 3.95, 0, 0.5, 0.375, 0.36 }
-local PELVIS = { 0, 3.4, 0.02, 0.575, 0.31, 0.41 }
+-- athletic V-shaped ninja torso: broad pec/shoulder block tapering to a slim waist
+local CHEST = { 0, 4.66, -0.03, 0.6, 0.6, 0.41 }
+local UPCHEST = { 0, 5.0, -0.04, 0.8, 0.38, 0.41 }
+local WAIST = { 0, 4.04, 0, 0.5, 0.46, 0.34 }
+local PELVIS = { 0, 3.42, 0.02, 0.55, 0.31, 0.39 }
 
--- Limb joints (right side; legs are mirrored)
+-- Limb joints
 local R_SHOULDER = { 0.72, 5.12, -0.05 }
 local R_ELBOW = { 1.38, 4.55, -0.42 }
-local R_HAND = { 1.78, 5.15, -0.92 }
-local R_BLADE = { 0.41, 0.9, 0.14 } -- raised katana direction
+local R_HAND = { 1.74, 5.15, -0.92 }
+local R_BLADE = { 0.27, 0.93, 0.16 } -- raised katana direction (kept inside the footprint)
 
 local L_SHOULDER = { -0.72, 5.12, -0.05 }
-local L_ELBOW = { -1.36, 4.42, 0.0 }
-local L_HAND = { -1.55, 4.32, -0.76 }
-local L_BLADE = { -0.45, -0.82, -0.35 } -- low-guard katana direction
+local L_ELBOW = { -1.34, 4.42, -0.02 }
+local L_HAND = { -1.52, 4.32, -0.78 }
+local L_BLADE = { -0.36, -0.84, -0.4 } -- low-guard katana direction
 
--- legs are built in final (crouched) coordinates
-local HIP = { 0.42, 2.93, 0.02 }
-local KNEE = { 1.14, 1.72, -0.58 }
-local ANKLE = { 1.2, 0.58, -0.04 }
+-- legs are built in final (crouched) coordinates: a staggered assassin crouch with the
+-- left foot leading and the right leg braced behind
+local LEGS = {
+	{ side = 1, hip = { 0.42, 2.86, 0.06 }, knee = { 1.08, 1.6, -0.22 }, ankle = { 1.16, 0.56, 0.62 }, yaw = -12 },
+	{ side = -1, hip = { -0.42, 2.86, -0.04 }, knee = { -1.02, 1.86, -0.98 }, ankle = { -1.1, 0.56, -0.74 }, yaw = 16 },
+}
 
 -- Helpers --------------------------------------------------------------------------------
 local function deg(r)
@@ -216,16 +219,27 @@ local function katana(k, glintPhase, sparkle)
 	-- guard (tsuba): gold rim around a dark iron centre
 	k:Part({ Name = "Tsuba", Shape = "Cylinder", Size = { 0.05, 0.54, 0.54 }, Pos = { 0, 0.4, 0 }, Rot = { 0, 0, 90 }, Color = GOLD, Material = "Foil" })
 	k:Part({ Name = "TsubaIron", Shape = "Cylinder", Size = { 0.08, 0.42, 0.42 }, Pos = { 0, 0.4, 0 }, Rot = { 0, 0, 90 }, Color = IRON, Material = "Metal" })
-	-- blade: steel body, gleaming Neon cutting edge, dark fuller groove, wedge tip
-	k:Part({ Name = "Blade", Size = { 0.22, 2.3, 0.06 }, Pos = { 0, 1.6, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
-	k:Part({ Name = "BladeTip", Shape = "Wedge", Size = { 0.06, 0.4, 0.22 }, Pos = { 0, 2.95, 0 }, Rot = { 0, 90, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
-	k:Part({ Name = "EdgeGleam", Size = { 0.05, 2.3, 0.07 }, Pos = { -0.095, 1.6, 0 }, Color = GLEAM, Material = "Neon" })
-	k:Part({ Name = "Bohi", Size = { 0.05, 1.8, 0.07 }, Pos = { 0.05, 1.35, 0 }, Color = STEEL_DARK, Material = "Metal" })
-	-- pulsing glint near the tip + a sparkle emitter on the raised blade (Rare flair)
-	if sparkle then
-		k:Particles({ Pos = { 0, 1.9, 0 }, Color = GLEAM, Color2 = "#ffffff", Rate = 2, Size = 0.14, Speed = 0.25, Lifetime = 0.7, Spread = 180 })
-		k:Part({ Name = "Glint", Shape = "Ball", Size = { 0.12, 0.12, 0.12 }, Pos = { -0.07, 2.62, 0 }, Color = SHINE, Material = "Neon", Anim = { Type = "Pulse", Amount = 0.35, Speed = 0.7, Phase = glintPhase } })
-	end
+	-- habaki: gold collar locking the blade into the guard
+	k:Part({ Name = "Habaki", Size = { 0.29, 0.13, 0.11 }, Pos = { 0.01, 0.5, 0 }, Color = GOLD, Material = "Foil" })
+	-- blade: steel body, gleaming Neon cutting edge (-X), dark fuller groove, in two
+	-- segments so it carries the katana's gentle curve (sori) back toward the spine (+X)
+	local W = 0.25
+	k:Part({ Name = "Blade", Size = { W, 1.24, 0.06 }, Pos = { 0, 1.15, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
+	k:Part({ Name = "EdgeGleam", Size = { 0.05, 1.24, 0.07 }, Pos = { -W / 2 + 0.02, 1.15, 0 }, Color = GLEAM, Material = "Neon" })
+	k:Part({ Name = "Bohi", Size = { 0.05, 1.12, 0.07 }, Pos = { 0.05, 1.2, 0 }, Color = STEEL_DARK, Material = "Metal" })
+	k:Group({ Name = "BladeUpper", Pos = { 0, 1.74, 0 }, Rot = { 0, 0, -5 } }, function()
+		k:Part({ Name = "Blade", Size = { W, 1.2, 0.06 }, Pos = { 0, 0.58, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
+		k:Part({ Name = "BladeTip", Shape = "Wedge", Size = { 0.06, 0.42, W }, Pos = { 0, 1.39, 0 }, Rot = { 0, 90, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.3 })
+		k:Part({ Name = "EdgeGleam", Size = { 0.05, 1.2, 0.07 }, Pos = { -W / 2 + 0.02, 0.58, 0 }, Color = GLEAM, Material = "Neon" })
+		k:Part({ Name = "Bohi", Size = { 0.05, 0.7, 0.07 }, Pos = { 0.05, 0.3, 0 }, Color = STEEL_DARK, Material = "Metal" })
+		-- pulsing glint near the tip (steel gleam)
+		k:Part({ Name = "Glint", Shape = "Ball", Size = { 0.13, 0.13, 0.13 }, Pos = { -0.08, 0.95, 0 }, Color = SHINE, Material = "Neon", Anim = { Type = "Pulse", Amount = 0.35, Speed = 0.7, Phase = glintPhase } })
+		-- sparkle emitter + a cool steel light on the raised blade (Rare flair)
+		if sparkle then
+			k:Particles({ Pos = { 0, 0.4, 0 }, Color = GLEAM, Color2 = "#ffffff", Rate = 2, Size = 0.14, Speed = 0.25, Lifetime = 0.7, Spread = 180 })
+			k:Light({ Pos = { 0, 0.5, 0 }, Color = "#d2e8ff", Range = 6, Brightness = 0.55 })
+		end
+	end)
 	-- gloved fist around the handle
 	k:Part({ Name = "Fist", Shape = "Ellipsoid", Size = { 0.38, 0.44, 0.36 }, Pos = { 0, 0.11, 0 }, Color = NINJA, Material = "Fabric" })
 	k:Part({ Name = "Thumb", Shape = "Ball", Size = { 0.15, 0.15, 0.15 }, Pos = { 0.08, 0.3, -0.12 }, Color = NINJA, Material = "Fabric" })
@@ -273,10 +287,9 @@ local function cupHead(k)
 	k:Part({ Name = "Crema", Shape = "Ellipsoid", Size = { 2.6, 0.28, 2.6 }, Pos = { 0, 8.41, CZ }, Color = CREMA })
 	k:Part({ Name = "CremaRing", Shape = "Ellipsoid", Size = { 2.0, 0.26, 2.0 }, Pos = { 0, 8.425, CZ }, Color = "#c58552" })
 	k:Mirror(function()
-		k:Part({ Name = "HeartLobe", Shape = "Cylinder", Size = { 0.05, 0.76, 0.76 }, Pos = { 0.27, 8.56, CZ + 0.18 }, Rot = { 0, 0, 90 }, Color = FOAM })
+		k:Part({ Name = "HeartLobe", Shape = "Cylinder", Size = { 0.05, 0.9, 0.9 }, Pos = { 0.31, 8.56, CZ + 0.24 }, Rot = { 0, 0, 90 }, Color = FOAM })
 	end)
-	k:Part({ Name = "HeartPoint", Size = { 0.72, 0.05, 0.72 }, Pos = { 0, 8.56, CZ - 0.08 }, Rot = { 0, 45, 0 }, Color = FOAM })
-	k:Part({ Name = "HeartPull", Size = { 0.05, 0.05, 0.9 }, Pos = { 0, 8.585, CZ - 0.1 }, Color = "#d29a68" })
+	k:Part({ Name = "HeartPoint", Size = { 0.86, 0.05, 0.86 }, Pos = { 0, 8.56, CZ - 0.06 }, Rot = { 0, 45, 0 }, Color = FOAM })
 	for _, a in ipairs({ 65, 235 }) do
 		local ar = math.rad(a)
 		k:Part({ Name = "FoamBubble", Shape = "Ball", Size = { 0.13, 0.13, 0.13 }, Pos = { math.sin(ar) * 1.02, 8.48, CZ - math.cos(ar) * 1.02 }, Color = FOAM_CREAM })
@@ -288,6 +301,10 @@ local function cupHead(k)
 	for i = 0, 5 do
 		local m = math.rad(105 + i * 30)
 		k:Part({ Name = "Handle", Shape = "Cylinder", Size = { segLen, 0.23, 0.23 }, Pos = { HCX + math.cos(m) * HR, HCY + math.sin(m) * HR, CZ }, Rot = { 0, 0, deg(m) + 90 }, Color = CUP, Reflectance = 0.06 })
+		if i > 0 then
+			local j = math.rad(90 + i * 30)
+			k:Part({ Name = "HandleJoint", Shape = "Ball", Size = { 0.23, 0.23, 0.23 }, Pos = { HCX + math.cos(j) * HR * 0.97, HCY + math.sin(j) * HR * 0.97, CZ }, Color = CUP, Reflectance = 0.06 })
+		end
 	end
 	k:Part({ Name = "HandlePadTop", Shape = "Ellipsoid", Size = { 0.26, 0.28, 0.32 }, Pos = { -cupRadius(HCY + HR) - 0.04, HCY + HR, CZ }, Color = CUP_SHADE })
 	k:Part({ Name = "HandlePadLow", Shape = "Ellipsoid", Size = { 0.26, 0.28, 0.32 }, Pos = { -cupRadius(HCY - HR) - 0.04, HCY - HR, CZ }, Color = CUP_SHADE })
@@ -297,7 +314,7 @@ local function cupHead(k)
 	k:Part({ Name = "BandFold", Shape = "Cylinder", Size = { 0.12, CUP_R * 2 + 0.12, CUP_R * 2 + 0.12 }, Pos = { 0, BAND_Y - 0.1, CZ }, Rot = { 5, 0, 90 }, Color = NINJA, Material = "Fabric" })
 	for _, a in ipairs({ -17, 0, 17 }) do
 		local p, r = cupFrame(BAND_Y, a, 0.07)
-		k:Part({ Name = "BandPlate", Size = { if a == 0 then 0.44 else 0.42, 0.36, 0.05 }, Pos = p, Rot = r, Color = STEEL, Material = "Metal", Reflectance = 0.25 })
+		k:Part({ Name = "BandPlate", Size = { if a == 0 then 0.48 else 0.42, if a == 0 then 0.42 else 0.36, 0.05 }, Pos = p, Rot = r, Color = STEEL, Material = "Metal", Reflectance = 0.25 })
 	end
 	k:Mirror(function()
 		for _, y in ipairs({ BAND_Y + 0.12, BAND_Y - 0.12 }) do
@@ -309,8 +326,8 @@ local function cupHead(k)
 		-- engraved spiral (equal-length strokes along r = a + b*t)
 		local p, r = cupFrame(BAND_Y, 0, 0.1)
 		k:Group({ Name = "Swirl", Pos = p, Rot = r }, function()
-			local a, tmax, n = 0.02, 7.85, 7
-			local b = 0.13 / tmax
+			local a, tmax, n = 0.01, 9.6, 12
+			local b = 0.14 / tmax
 			local total = a * tmax + b * tmax * tmax / 2
 			local function at(s)
 				local t = (-a + math.sqrt(a * a + 2 * b * total * s)) / b
@@ -321,8 +338,11 @@ local function cupHead(k)
 				local x1, y1 = at((i - 1) / n)
 				local x2, y2 = at(i / n)
 				local dx, dy = x2 - x1, y2 - y1
-				k:Part({ Name = "SwirlStroke", Size = { math.sqrt(dx * dx + dy * dy) + 0.04, 0.05, 0.05 }, Pos = { (x1 + x2) / 2, (y1 + y2) / 2, 0 }, Rot = { 0, 0, deg(math.atan2(dy, dx)) }, Color = ENGRAVE, Material = "Metal" })
+				k:Part({ Name = "SwirlStroke", Size = { math.sqrt(dx * dx + dy * dy) + 0.035, 0.05, 0.05 }, Pos = { (x1 + x2) / 2, (y1 + y2) / 2, 0 }, Rot = { 0, 0, deg(math.atan2(dy, dx)) }, Color = ENGRAVE, Material = "Metal" })
 			end
+			-- outer tail flicking off the spiral
+			local ex, ey = at(1)
+			k:Part({ Name = "SwirlTail", Size = { 0.11, 0.05, 0.05 }, Pos = { ex + 0.04, ey - 0.02, 0 }, Rot = { 0, 0, -35 }, Color = ENGRAVE, Material = "Metal" })
 		end)
 	end
 	-- knot at the back
@@ -334,14 +354,14 @@ local function cupHead(k)
 	-- fluttering tails
 	joint(k, "BandTails", knot, { Type = "Wiggle", Axis = "Y", Amount = 14, Speed = 0.55, Phase = 0.1 }, function()
 		joint(k, "TailA", knot, { Type = "Wiggle", Axis = "X", Amount = 10, Speed = 0.8, Phase = 0 }, function()
-			local a1 = { knot[1] + 0.25, knot[2] - 0.4, knot[3] + 0.6 }
-			local a2 = { knot[1] + 0.5, knot[2] - 0.85, knot[3] + 1.05 }
+			local a1 = { knot[1] + 0.22, knot[2] - 0.5, knot[3] + 0.48 }
+			local a2 = { knot[1] + 0.42, knot[2] - 1.08, knot[3] + 0.78 }
 			ribbon(k, "BandTail", knot, a1, 0.25, NINJA_DARK, 40, 0.1)
 			ribbon(k, "BandTailEnd", a1, a2, 0.23, NINJA_DARK, 60, 0.06)
 		end)
 		joint(k, "TailB", knot, { Type = "Wiggle", Axis = "X", Amount = 12, Speed = 0.8, Phase = 0.35 }, function()
-			local b1 = { knot[1] - 0.15, knot[2] - 0.55, knot[3] + 0.5 }
-			local b2 = { knot[1] - 0.35, knot[2] - 1.05, knot[3] + 0.82 }
+			local b1 = { knot[1] - 0.15, knot[2] - 0.62, knot[3] + 0.4 }
+			local b2 = { knot[1] - 0.3, knot[2] - 1.22, knot[3] + 0.62 }
 			ribbon(k, "BandTail", knot, b1, 0.25, NINJA_DARK, -40, 0.1)
 			ribbon(k, "BandTailEnd", b1, b2, 0.23, NINJA_DARK, -60, 0.06)
 		end)
@@ -365,39 +385,30 @@ local function cupHead(k)
 	do
 		local p, r = cupFrame(6.6, 0, 0)
 		k:Group({ Name = "Mouth", Pos = p, Rot = r }, function()
-			k:Part({ Name = "MouthMid", Size = { 0.24, 0.08, 0.07 }, Pos = { 0, 0.02, 0 }, Color = LINE })
+			-- clenched, snarling scowl: dark mouth, a strip of gritted teeth, corners pulled down
+			k:Part({ Name = "MouthMid", Shape = "Ellipsoid", Size = { 0.56, 0.21, 0.07 }, Pos = { 0, 0.02, 0 }, Color = LINE })
+			k:Part({ Name = "Teeth", Size = { 0.42, 0.1, 0.06 }, Pos = { 0, 0.035, -0.025 }, Color = EYE_WHITE })
 			k:Mirror(function()
-				k:Part({ Name = "MouthSide", Size = { 0.22, 0.08, 0.07 }, Pos = { 0.19, -0.015, 0.005 }, Rot = { 0, 0, -24 }, Color = LINE })
+				k:Part({ Name = "ToothGap", Size = { 0.05, 0.1, 0.06 }, Pos = { 0.08, 0.035, -0.035 }, Color = LINE })
+				k:Part({ Name = "MouthSide", Size = { 0.16, 0.07, 0.07 }, Pos = { 0.3, -0.04, 0.005 }, Rot = { 0, 0, -30 }, Color = LINE })
 			end)
 		end)
 	end
 
 	-- steam: two thin curling wisps (overlapping translucent ellipsoids along an S-curve),
 	-- steam particles and a warm light (Rare flair)
-	local function wisp(x0, z0, y0, dir, phase)
-		local pts = {}
-		for i = 0, 4 do
-			local t = i / 4
-			pts[i + 1] = { x0 + dir * 0.13 * math.sin(t * math.pi * 1.6), y0 + t * 0.85, z0 + 0.06 * t }
-		end
-		for i = 1, 4 do
-			local a, b = pts[i], pts[i + 1]
-			local v = sub(b, a)
-			local w = 0.17 - i * 0.022
-			k:Part({
-				Name = "SteamWisp",
-				Shape = "Ellipsoid",
-				Size = { w, vlen(v) + 0.12, w },
-				Pos = lerp(a, b, 0.5),
-				Rot = aimY(v),
-				Color = STEAM,
-				Transparency = 0.4 + i * 0.09,
-				Anim = { Type = "Bob", Axis = "Y", Amount = 0.06, Speed = 0.5, Phase = phase + i * 0.1 },
-			})
-		end
+	-- (cartoon steam: soft translucent puffs rising off the foam; each column drifts and sways)
+	local function steam(x0, z0, scale, phase)
+		k:Group({ Name = "Steam", Pos = { x0, 8.62, z0 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 7, Speed = 0.35, Phase = phase } }, function()
+			local puffs = { { 0, 0.14, 0, 0.34 }, { 0.09, 0.4, 0.03, 0.27 }, { -0.02, 0.62, 0.06, 0.2 }, { 0.07, 0.8, 0.08, 0.13 } }
+			for i, p in ipairs(puffs) do
+				local d = p[4] * scale
+				k:Part({ Name = "SteamPuff", Shape = "Ball", Size = { d, d, d }, Pos = { p[1] * scale, p[2] * scale, p[3] }, Color = STEAM, Transparency = 0.5 + i * 0.08, Anim = { Type = "Bob", Axis = "Y", Amount = 0.05, Speed = 0.5, Phase = phase + i * 0.08 } })
+			end
+		end)
 	end
-	wisp(-0.45, CZ + 0.35, 8.66, 1, 0)
-	wisp(0.48, CZ + 0.25, 8.64, -1, 0.5)
+	steam(-0.45, CZ + 0.4, 1, 0)
+	steam(0.42, CZ + 0.55, 0.8, 0.5)
 	k:Particles({ Pos = { 0, 8.7, CZ }, Color = "#ffffff", Color2 = "#f1e4cf", Rate = 3, Size = 0.35, Speed = 0.8, Lifetime = 1.8, Spread = 18, Direction = "Top" })
 	k:Light({ Pos = { 0, 9.0, CZ - 0.4 }, Color = "#ffe2b8", Range = 9, Brightness = 0.8 })
 end
@@ -423,7 +434,10 @@ local function torso(k)
 	end)
 
 	-- kusari mesh undershirt in the V of the crossed gi lapels
-	k:Part({ Name = "Undershirt", Shape = "Ellipsoid", Size = { 0.46, 0.62, 0.08 }, Pos = { 0, 5.0, torsoZ(0, 5.0, -1) + 0.02 }, Color = CHAIN, Material = "DiamondPlate" })
+	-- (two mirrored wedges make a downward-pointing triangle that fills the V)
+	k:Mirror(function()
+		k:Part({ Name = "Undershirt", Shape = "Wedge", Size = { 0.05, 0.66, 0.3 }, Pos = { 0.15, 5.0, torsoZ(0.12, 5.0, -1) + 0.025 }, Rot = { 0, -90, 180 }, Color = CHAIN, Material = "DiamondPlate" })
+	end)
 	k:Mirror(function()
 		strap(k, "Lapel", { { 0.36, 5.3 }, { 0.17, 4.98 }, { -0.04, 4.6 } }, -1, 0.015, 0.18, NINJA_LIGHT)
 	end)
@@ -484,14 +498,31 @@ end
 -- Leg (right side, mirrored; final crouched coords): baggy pants gathered under the knee,
 -- wrapped shin (kyahan), split-toe tabi boot
 --------------------------------------------------------------------------------------------
-local function leg(k)
-	bone(k, "Thigh", HIP, KNEE, 0.6, 0.6, NINJA, "Fabric", "Ellipsoid", 0.3)
+local function leg(k, cfg)
+	local s, HIP, KNEE, ANKLE = cfg.side, cfg.hip, cfg.knee, cfg.ankle
+	bone(k, "Thigh", HIP, KNEE, 0.58, 0.58, NINJA, "Fabric", "Ellipsoid", 0.3)
 	local kd = sub(ANKLE, KNEE)
 	local kl = vlen(kd)
 	local below = { KNEE[1] + kd[1] / kl * 0.2, KNEE[2] + kd[2] / kl * 0.2, KNEE[3] + kd[3] / kl * 0.2 }
-	bone(k, "PantsBalloon", lerp(HIP, KNEE, 0.5), below, 0.72, 0.72, NINJA, "Fabric", "Ellipsoid", 0.12)
-	k:Part({ Name = "Knee", Shape = "Ball", Size = { 0.48, 0.48, 0.48 }, Pos = KNEE, Color = NINJA, Material = "Fabric" })
-	k:Part({ Name = "KneePad", Shape = "Ellipsoid", Size = { 0.42, 0.46, 0.18 }, Pos = { KNEE[1] + 0.03, KNEE[2] + 0.04, KNEE[3] - 0.25 }, Rot = { -12, -18, 0 }, Color = NINJA_LIGHT, Material = "Fabric" })
+	bone(k, "PantsBalloon", lerp(HIP, KNEE, 0.5), below, 0.66, 0.66, NINJA, "Fabric", "Ellipsoid", 0.12)
+	if s == 1 then
+		seg(k, "Holster", HIP, KNEE, function(L)
+			k:Part({ Name = "HolsterStrap", Shape = "Cylinder", Size = { 0.1, 0.62, 0.62 }, Pos = { 0, L * 0.52, 0 }, Rot = { 0, 0, 90 }, Color = LEATHER, Material = "Leather" })
+			k:Part({ Name = "HolsterBuckle", Size = { 0.12, 0.12, 0.05 }, Pos = { 0, L * 0.52, -0.31 }, Color = GOLD, Material = "Foil" })
+			k:Group({ Name = "HolsterSide", Pos = { 0.3, L * 0.5, 0 }, Rot = { 0, 0, 0 } }, function()
+				k:Part({ Name = "HolsterPouch", Size = { 0.08, 0.36, 0.24 }, Pos = { 0.02, 0, 0 }, Color = LEATHER, Material = "Leather" })
+				-- kunai: steel blade sheathed, wrapped grip and ring pommel sticking out
+				k:Part({ Name = "KunaiGrip", Shape = "Cylinder", Size = { 0.3, 0.07, 0.07 }, Pos = { 0.06, -0.3, 0 }, Rot = { 0, 0, 90 }, Color = ITO, Material = "Fabric" })
+				k:Part({ Name = "KunaiRing", Shape = "Cylinder", Size = { 0.05, 0.16, 0.16 }, Pos = { 0.06, -0.5, 0 }, Rot = { 0, 90, 0 }, Color = STEEL, Material = "Metal", Reflectance = 0.2 })
+			end)
+		end)
+	end
+	k:Part({ Name = "Knee", Shape = "Ball", Size = { 0.46, 0.46, 0.46 }, Pos = KNEE, Color = NINJA, Material = "Fabric" })
+	-- knee pad faces along the thigh's forward direction
+	local td = sub(KNEE, HIP)
+	local fwd = { td[1] * 0.3, 0, td[3] - 0.6 }
+	local fl = vlen(fwd)
+	k:Part({ Name = "KneePad", Shape = "Ellipsoid", Size = { 0.4, 0.44, 0.17 }, Pos = { KNEE[1] + fwd[1] / fl * 0.22, KNEE[2] + 0.05, KNEE[3] + fwd[3] / fl * 0.22 }, Rot = { -12, deg(math.atan2(-fwd[1], -fwd[3])), 0 }, Color = NINJA_LIGHT, Material = "Fabric" })
 	seg(k, "Shin", KNEE, ANKLE, function(L)
 		k:Part({ Name = "ShinCore", Shape = "Cylinder", Size = { L, 0.4, 0.4 }, Pos = { 0, L / 2, 0 }, Rot = { 0, 0, 90 }, Color = NINJA, Material = "Fabric" })
 		for i, f in ipairs({ 0.3, 0.52, 0.74 }) do
@@ -499,11 +530,11 @@ local function leg(k)
 			k:Part({ Name = "ShinWrap", Shape = "Cylinder", Size = { 0.13, 0.47, 0.47 }, Pos = { 0, L * f, 0 }, Rot = { tilt, 0, 90 }, Color = if i % 2 == 0 then WRAP_LIGHT else WRAP, Material = "Fabric" })
 		end
 	end)
-	k:Part({ Name = "TabiAnkle", Shape = "Cylinder", Size = { 0.34, 0.46, 0.46 }, Pos = { ANKLE[1] + 0.02, 0.5, ANKLE[3] - 0.03 }, Rot = { 0, 0, 90 }, Color = NINJA_DARK, Material = "Fabric" })
-	k:Group({ Name = "Boot", Pos = { 1.24, 0.22, -0.28 }, Rot = { 0, -14, 0 } }, function()
-		k:Part({ Name = "Tabi", Shape = "Ellipsoid", Size = { 0.54, 0.44, 1.0 }, Pos = { 0.02, 0, 0.02 }, Color = NINJA_DARK, Material = "Fabric" })
-		k:Part({ Name = "BigToe", Shape = "Ellipsoid", Size = { 0.2, 0.26, 0.36 }, Pos = { -0.16, -0.06, -0.38 }, Color = NINJA_DARK, Material = "Fabric" })
-		k:Part({ Name = "ToeSplit", Size = { 0.05, 0.18, 0.22 }, Pos = { -0.06, -0.06, -0.42 }, Color = LINE })
+	k:Part({ Name = "TabiAnkle", Shape = "Cylinder", Size = { 0.34, 0.46, 0.46 }, Pos = { ANKLE[1] + 0.02 * s, 0.5, ANKLE[3] - 0.03 }, Rot = { 0, 0, 90 }, Color = NINJA_DARK, Material = "Fabric" })
+	k:Group({ Name = "Boot", Pos = { ANKLE[1] + 0.04 * s, 0.22, ANKLE[3] - 0.24 }, Rot = { 0, cfg.yaw, 0 } }, function()
+		k:Part({ Name = "Tabi", Shape = "Ellipsoid", Size = { 0.54, 0.44, 1.0 }, Pos = { 0.02 * s, 0, 0.02 }, Color = NINJA_DARK, Material = "Fabric" })
+		k:Part({ Name = "BigToe", Shape = "Ellipsoid", Size = { 0.2, 0.26, 0.36 }, Pos = { -0.16 * s, -0.06, -0.38 }, Color = NINJA_DARK, Material = "Fabric" })
+		k:Part({ Name = "ToeSplit", Size = { 0.05, 0.18, 0.22 }, Pos = { -0.06 * s, -0.06, -0.42 }, Color = LINE })
 		k:Part({ Name = "Sole", Shape = "Ellipsoid", Size = { 0.58, 0.1, 1.06 }, Pos = { 0.0, -0.17, 0.0 }, Color = SOLE, Material = "Rubber" })
 	end)
 end
@@ -518,10 +549,10 @@ return {
 	Lore = "Cappuccino Assassino strikes before your coffee gets cold. He trained for years in a hidden cafe and only fights for the last biscotto. If you hear a faint hiss of steam behind you, it is already too late.",
 
 	Build = function(k)
-		-- legs stay planted in a wide crouch
-		k:Mirror(function()
-			leg(k)
-		end)
+		-- legs stay planted in a staggered crouch
+		for _, cfg in ipairs(LEGS) do
+			leg(k, cfg)
+		end
 
 		-- the whole upper body sinks into the crouch and leans forward, then bobs in a ready stance
 		pivot(k, "Stance", HIPC, { LEAN, 0, 0 }, { 0, -DROP, 0 }, function()
@@ -530,13 +561,14 @@ return {
 
 				arm(k, "RightArm", 1, R_SHOULDER, R_ELBOW, R_HAND, R_BLADE,
 					{ Type = "Wiggle", Axis = "X", Amount = 6, Speed = 0.5, Phase = 0 },
-					{ Type = "Wiggle", Axis = "Z", Amount = 6, Speed = 0.5, Phase = 0.2 },
-					{ Type = "Wiggle", Axis = "Z", Amount = 16, Speed = 0.6, Phase = 0.1 },
+					{ Type = "Wiggle", Axis = "Z", Amount = 4, Speed = 0.5, Phase = 0.2 },
+					-- katana flourish: the raised blade rocks fore/aft (never sideways out of the footprint)
+					{ Type = "Wiggle", Axis = "X", Amount = 16, Speed = 0.5, Phase = 0.1 },
 					0)
 				arm(k, "LeftArm", -1, L_SHOULDER, L_ELBOW, L_HAND, L_BLADE,
 					{ Type = "Wiggle", Axis = "X", Amount = 5, Speed = 0.5, Phase = 0.5 },
-					{ Type = "Wiggle", Axis = "Y", Amount = 6, Speed = 0.5, Phase = 0.7 },
-					{ Type = "Wiggle", Axis = "Y", Amount = 12, Speed = 0.6, Phase = 0.6 },
+					{ Type = "Wiggle", Axis = "Y", Amount = 5, Speed = 0.5, Phase = 0.7 },
+					{ Type = "Wiggle", Axis = "Y", Amount = 10, Speed = 0.6, Phase = 0.6 },
 					0.5)
 
 				joint(k, "Head", NECK, { Type = "Wiggle", Axis = "Z", Amount = 3.5, Speed = 0.45, Phase = 0.2 }, function()
@@ -547,22 +579,21 @@ return {
 	end,
 
 	BuildMini = function(k)
-		-- cappuccino cup head with the ninja cloth and angry eyes
-		k:Part({ Name = "CupBowl", Shape = "Ellipsoid", Size = { 1.44, 1.1, 1.44 }, Pos = { 0, 0.55, 0 }, Color = CUP })
-		k:Part({ Name = "CupWall", Shape = "Cylinder", Size = { 0.55, 1.44, 1.44 }, Pos = { 0, 0.825, 0 }, Rot = { 0, 0, 90 }, Color = CUP })
-		k:Part({ Name = "Crema", Shape = "Ellipsoid", Size = { 1.34, 0.18, 1.34 }, Pos = { 0, 1.1, 0 }, Color = CREMA })
-		k:Part({ Name = "NinjaBand", Shape = "Cylinder", Size = { 0.2, 1.5, 1.5 }, Pos = { 0, 0.96, 0 }, Rot = { 0, 0, 90 }, Color = NINJA_DARK, Material = "Fabric" })
-		k:Part({ Name = "Handle", Shape = "Cylinder", Size = { 0.14, 0.52, 0.52 }, Pos = { -0.76, 0.66, 0 }, Rot = { 0, 90, 0 }, Color = CUP })
+		-- cappuccino cup head: round ceramic bowl, coffee top, ninja band, side handle
+		k:Part({ Name = "CupBowl", Shape = "Ellipsoid", Size = { 1.42, 1.0, 1.42 }, Pos = { 0, 0.42, 0 }, Color = CUP })
+		k:Part({ Name = "CupWall", Shape = "Cylinder", Size = { 0.5, 1.42, 1.42 }, Pos = { 0, 0.67, 0 }, Rot = { 0, 0, 90 }, Color = CUP })
+		k:Part({ Name = "Crema", Shape = "Cylinder", Size = { 0.08, 1.3, 1.3 }, Pos = { 0, 0.92, 0 }, Rot = { 0, 0, 90 }, Color = CREMA })
+		k:Part({ Name = "NinjaBand", Shape = "Cylinder", Size = { 0.22, 1.48, 1.48 }, Pos = { 0, 0.8, 0 }, Rot = { 0, 0, 90 }, Color = NINJA_DARK, Material = "Fabric" })
+		k:Part({ Name = "Handle", Shape = "Cylinder", Size = { 0.12, 0.5, 0.5 }, Pos = { -0.77, 0.52, 0 }, Rot = { 0, 90, 0 }, Color = CUP })
+		-- angry face: dark eyes under thick V brows
 		k:Mirror(function()
-			k:Part({ Name = "AngryEye", Shape = "Ellipsoid", Size = { 0.34, 0.17, 0.1 }, Pos = { 0.25, 0.66, -0.68 }, Rot = { 0, -20, 22 }, Color = LINE })
+			k:Part({ Name = "Eye", Shape = "Ellipsoid", Size = { 0.24, 0.27, 0.1 }, Pos = { 0.24, 0.42, -0.66 }, Rot = { 0, -20, 0 }, Color = LINE })
+			k:Part({ Name = "Brow", Size = { 0.36, 0.11, 0.1 }, Pos = { 0.25, 0.6, -0.66 }, Rot = { 0, -20, 24 }, Color = LINE })
 		end)
-		-- slim ninja body on crouched legs
-		k:Part({ Name = "Body", Shape = "Ellipsoid", Size = { 0.78, 0.92, 0.62 }, Pos = { 0, -0.38, 0 }, Color = NINJA, Material = "Fabric" })
-		k:Mirror(function()
-			k:Part({ Name = "Leg", Shape = "Ellipsoid", Size = { 0.28, 0.66, 0.32 }, Pos = { 0.3, -0.97, -0.02 }, Rot = { 0, 0, 16 }, Color = NINJA_DARK, Material = "Fabric" })
-		end)
+		-- slim crouched ninja body
+		k:Part({ Name = "Body", Shape = "Ellipsoid", Size = { 0.82, 1.3, 0.62 }, Pos = { 0, -0.62, 0 }, Color = NINJA, Material = "Fabric" })
 		-- two katanas: one raised, one held low
-		k:Part({ Name = "KatanaR", Size = { 0.11, 1.57, 0.06 }, Pos = { 0.75, 0.28, -0.22 }, Rot = { 0, 0, -30.6 }, Color = "#e2e9f1", Material = "Metal", Reflectance = 0.35 })
-		k:Part({ Name = "KatanaL", Size = { 0.11, 1.24, 0.06 }, Pos = { -0.78, -0.85, -0.26 }, Rot = { 0, 0, -50 }, Color = "#e2e9f1", Material = "Metal", Reflectance = 0.35 })
+		k:Part({ Name = "KatanaR", Size = { 0.13, 1.6, 0.06 }, Pos = { 0.76, 0.12, -0.24 }, Rot = { 0, 0, -22 }, Color = "#e2e9f1", Material = "Metal", Reflectance = 0.35 })
+		k:Part({ Name = "KatanaL", Size = { 0.13, 1.3, 0.06 }, Pos = { -0.72, -0.78, -0.26 }, Rot = { 0, 0, -42 }, Color = "#e2e9f1", Material = "Metal", Reflectance = 0.35 })
 	end,
 }

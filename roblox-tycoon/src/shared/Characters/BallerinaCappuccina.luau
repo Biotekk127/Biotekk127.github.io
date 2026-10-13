@@ -5,21 +5,21 @@
 	left side). The cup is brimming with a white milk-foam ring, a domed brown crema and a
 	white latte-art heart, with steam curling up. A cute face is painted on the cup: big
 	coffee-brown eyes with long lashes, rosy cheeks and a sweet open smile. She wears a
-	fitted sparkly pink bodice with a sweetheart neckline, a fluffy layered pink tutu, pink
-	tights and satin pointe shoes with crossed ribbons.
+	fitted sparkly pink bodice with a sweetheart neckline, a fluffy layered pink tutu with a
+	jewelled top plate, pink tights and satin pointe shoes with crossed ribbons.
 
 	Pose: en pointe on her right leg (toe on y = 0, on the spin axis) with the left leg in
 	passe (knee out to the side, toe at the standing knee) and both arms en couronne
 	(a rounded oval above the cup, hands almost touching). Animation: the whole dancer
 	slowly PIROUETTES, the tutu tiers flutter, the arms sway (port de bras), the cup
-	tilts, steam rises, eyes blink. Legendary flair: orbiting sparkles, gold accents,
+	tilts, steam rises, eyes blink. Legendary flair: twinkling star sparkles, gold accents,
 	sequins, a soft pink light and glitter.
 
 	Faces -Z. Feet on y = 0. Built only through the CharacterKit builder `k`.
 ]]
 
 -- Palette ------------------------------------------------------------------------------
-local CUP = "#fff8f2" -- warm white glazed ceramic
+local CUP = "#fffaf4" -- warm white glazed ceramic
 local CUP_SHADE = "#efe2d8" -- foot ring
 local GOLD = "#f2c25a" -- rim bands, sequins
 local CREMA = "#c98d5c" -- crema surface
@@ -29,17 +29,17 @@ local STEAM = "#fffaf4"
 
 local SKIN = "#ffdcc8" -- arms, shoulders, neck
 local SKIN_D = "#f3c2aa" -- thumbs / shading
-local TIGHTS = "#ffbdd3" -- ballet tights (pink)
-local SHOE = "#f06fa8" -- satin pointe shoes
-local RIBBON = "#dc5a93" -- shoe ribbons
+local TIGHTS = "#ffc2d7" -- ballet tights (pink)
+local SHOE = "#f584b4" -- satin pointe shoes
+local RIBBON = "#e2639c" -- shoe ribbons
 local SOLE = "#c98f72" -- leather sole strip
 
-local BODICE = "#ec5c9a" -- sparkly leotard bodice
-local BODICE_D = "#c9437f" -- seams, trims
+local BODICE = "#f0679f" -- sparkly leotard bodice
+local BODICE_D = "#cc4a84" -- seams, trims
 local TUTU_1 = "#f27fb2" -- under layer
 local TUTU_2 = "#fb93c4"
 local TUTU_3 = "#ffa6d0"
-local TUTU_4 = "#ffb9db" -- top, lightest layer
+local TUTU_4 = "#ffbadb" -- top, lightest layer
 local SPARK = "#ffe3f1" -- sequins (neon)
 local GEM = "#ff4fa3"
 
@@ -52,6 +52,7 @@ local MOUTH = "#7a2238"
 local TONGUE = "#ff86a6"
 
 local UP = { 0, 0, 90 } -- stands a Cylinder upright (axis along Y)
+local HEAD_S = 0.86 -- the cup head is modelled at 1.0 and built at this scale
 
 -- Helpers --------------------------------------------------------------------------------
 local function lerp(a, b, t)
@@ -97,6 +98,34 @@ local function softLimb(k, name, a, b, dCore, dBulge, at, span, color, back)
 	limb(k, name .. "Muscle", m1, m2, dBulge, color, { shape = "Ellipsoid", stretch = 1.15 })
 end
 
+-- A builder proxy that scales every Pos and Size by s around the current group origin
+-- (rotations are unchanged), so a sub-assembly can be modelled at 1.0 and built smaller.
+local function scaledKit(k, s)
+	local function sc(v, minimum)
+		if v == nil then
+			return nil
+		end
+		if minimum then
+			return { math.max(minimum, v[1] * s), math.max(minimum, v[2] * s), math.max(minimum, v[3] * s) }
+		end
+		return { v[1] * s, v[2] * s, v[3] * s }
+	end
+	local h = {}
+	function h:Part(spec)
+		spec.Size = sc(spec.Size, 0.05)
+		spec.Pos = sc(spec.Pos)
+		return k:Part(spec)
+	end
+	function h:Group(spec, fn)
+		spec.Pos = sc(spec.Pos)
+		return k:Group(spec, fn)
+	end
+	function h:Mirror(fn)
+		return k:Mirror(fn)
+	end
+	return h
+end
+
 -- Front (or back) surface z of a set of ellipsoids at (x, y).
 local function surf(shapes, x, y, back)
 	local best = 0
@@ -117,8 +146,8 @@ local function surf(shapes, x, y, back)
 	return bz
 end
 
--- The cappuccino cup profile (head-local): a rounded bowl below BOWL_Y, a straight glazed
--- wall above it and a slightly flared rim. cupR(y) is the outer radius at height y.
+-- The cappuccino cup profile (head-local, unscaled): a rounded bowl below BOWL_Y, a
+-- straight glazed wall above it and a slightly flared rim. cupR(y) is the outer radius.
 local WALL_R = 0.98
 local BOWL_Y = 0.72
 local BOWL_H = 0.65
@@ -189,15 +218,15 @@ local TORSO_SHAPES = {
 	{ c = { 0, 4.6, 0.01 }, s = { 0.84, 0.84, 0.56 } },
 	{ c = { 0, 4.86, 0.0 }, s = { 0.9, 0.36, 0.6 } },
 }
-local BUST_CUP = { c = { 0.19, 5.0, -0.13 }, s = { 0.4, 0.34, 0.3 } }
-local CHEST = { c = { 0, 5.1, 0.03 }, s = { 0.8, 0.5, 0.48 } }
-local SHOULDERS = { c = { 0, 5.24, 0.03 }, s = { 1.02, 0.3, 0.44 } }
+local BUST_CUP = { c = { 0.18, 4.99, -0.12 }, s = { 0.37, 0.29, 0.26 } }
+local CHEST = { c = { 0, 5.09, 0.03 }, s = { 0.82, 0.54, 0.48 } }
+local SHOULDERS = { c = { 0, 5.22, 0.04 }, s = { 0.98, 0.32, 0.42 } }
 local BODY_SHAPES = {
 	TORSO_SHAPES[1],
 	TORSO_SHAPES[2],
 	TORSO_SHAPES[3],
 	BUST_CUP,
-	{ c = { -0.19, 5.0, -0.13 }, s = BUST_CUP.s },
+	{ c = { -0.18, 4.99, -0.12 }, s = BUST_CUP.s },
 	CHEST,
 	SHOULDERS,
 }
@@ -234,21 +263,16 @@ local function leg(k, name, hip, knee, ankle, footRot)
 	end)
 end
 
--- A four-point sparkle (three crossed neon bars) that pulses.
+-- A twinkling four-point star: a glowing core and three long tapered rays (so it reads
+-- as a star from every side), gently bobbing and pulsing.
 local function sparkle(k, pos, size, color, phase)
-	for i = 1, 3 do
-		local s = { 0.07, 0.07, 0.07 }
-		s[i] = size
-		k:Part({
-			Name = "Sparkle",
-			Size = s,
-			Pos = pos,
-			Rot = { 0, 45, 0 },
-			Color = color,
-			Material = "Neon",
-			Anim = { Type = "Pulse", Amount = 0.35, Speed = 0.9, Phase = phase },
-		})
-	end
+	k:Group({ Name = "Sparkle", Pos = pos, Anim = { Type = "Bob", Axis = "Y", Amount = 0.12, Speed = 0.5, Phase = phase } }, function()
+		local pulse = { Type = "Pulse", Amount = 0.3, Speed = 0.9, Phase = phase }
+		k:Part({ Name = "SparkleCore", Shape = "Ball", Size = { size * 0.3, size * 0.3, size * 0.3 }, Color = "#fffaf0", Material = "Neon", Anim = pulse })
+		k:Part({ Name = "SparkleRay", Shape = "Ellipsoid", Size = { 0.08, size, 0.08 }, Color = color, Material = "Neon", Anim = pulse })
+		k:Part({ Name = "SparkleRay", Shape = "Ellipsoid", Size = { size * 0.7, 0.08, 0.08 }, Color = color, Material = "Neon", Anim = pulse })
+		k:Part({ Name = "SparkleRay", Shape = "Ellipsoid", Size = { 0.08, 0.08, size * 0.7 }, Color = color, Material = "Neon", Anim = pulse })
+	end)
 end
 
 -- Character ------------------------------------------------------------------------------
@@ -274,6 +298,19 @@ return {
 			k:Part({ Name = "Pelvis", Shape = "Ellipsoid", Size = { 0.86, 0.56, 0.62 }, Pos = { 0, 3.8, 0.02 }, Color = BODICE })
 			k:Part({ Name = "Waistband", Shape = "Ellipsoid", Size = { 0.69, 0.1, 0.52 }, Pos = { 0, 4.07, 0.01 }, Color = BODICE_D, Reflectance = 0.1 })
 			k:Part({ Name = "WaistGem", Shape = "Ball", Size = { 0.11, 0.11, 0.11 }, Pos = { 0, 4.07, -0.25 }, Color = GEM, Material = "Neon" })
+			-- rhinestones set all around the waistband
+			for i = 1, 11 do
+				local a = math.rad(i * 30)
+				local gold = i % 2 == 0
+				k:Part({
+					Name = "Rhinestone",
+					Shape = "Ball",
+					Size = { 0.07, 0.07, 0.07 },
+					Pos = { 0.345 * math.sin(a), 4.07, 0.01 - 0.26 * math.cos(a) },
+					Color = if gold then GOLD else SPARK,
+					Material = if gold then "Foil" else "Neon",
+				})
+			end
 
 			-- satin bow at the back of the waist
 			k:Group({ Name = "BackBow", Pos = { 0, 4.26, surf(TORSO_SHAPES, 0, 4.26, true) + 0.03 } }, function()
@@ -303,6 +340,17 @@ return {
 			end)
 			k:Group({ Name = "TutuTop", Pos = { 0, 3.97, 0 }, Anim = { Type = "Bob", Axis = "Y", Amount = 0.025, Speed = 0.5, Phase = 0.15 } }, function()
 				tutuTier(k, 10, 0.66, { 0.92, 0.24, 0.74 }, 4, TUTU_4, 18)
+				-- the jewelled top plate of a classical tutu: a ring of bodice-pink petal panels
+				-- edged in gold, each tipped with a gem
+				for i = 0, 8 do
+					local a = 20 + i * 40
+					local ra = math.rad(a)
+					k:Group({ Name = "PlatePanel", Pos = { 0.8 * math.cos(ra), 0.135, -0.8 * math.sin(ra) }, Rot = { 0, a, -11 } }, function()
+						k:Part({ Name = "PlateGold", Shape = "Ellipsoid", Size = { 0.52, 0.06, 0.3 }, Color = GOLD, Material = "Foil" })
+						k:Part({ Name = "PlatePanel", Shape = "Ellipsoid", Size = { 0.46, 0.07, 0.24 }, Pos = { -0.01, 0.012, 0 }, Color = BODICE, Reflectance = 0.06 })
+						k:Part({ Name = "PlateGem", Shape = "Ball", Size = { 0.09, 0.09, 0.09 }, Pos = { 0.25, 0.02, 0 }, Color = if i % 2 == 0 then GEM else SPARK, Material = "Neon" })
+					end)
+				end
 			end)
 
 			---------------------------------------------------------------- torso
@@ -312,12 +360,14 @@ return {
 			k:Part({ Name = "Chest", Shape = "Ellipsoid", Size = CHEST.s, Pos = CHEST.c, Color = SKIN })
 			k:Part({ Name = "Shoulders", Shape = "Ellipsoid", Size = SHOULDERS.s, Pos = SHOULDERS.c, Color = SKIN })
 			k:Mirror(function()
+				-- sloping trapezius from the neck to the shoulder (no flat yoke)
+				limb(k, "Trapezius", { 0.06, 5.4, 0.06 }, { 0.42, 5.25, 0.05 }, 0.22, SKIN, { shape = "Ellipsoid", stretch = 1.2 })
 				-- sweetheart neckline cups
 				k:Part({ Name = "BustCup", Shape = "Ellipsoid", Size = BUST_CUP.s, Pos = BUST_CUP.c, Color = BODICE, Reflectance = 0.05 })
 				k:Part({ Name = "ShoulderCap", Shape = "Ball", Size = { 0.28, 0.28, 0.28 }, Pos = { 0.5, 5.24, 0.03 }, Color = SKIN })
 				-- thin straps over the shoulders
 				local f = { 0.3, 5.12, surf(BODY_SHAPES, 0.3, 5.12) + 0.01 }
-				local t = { 0.33, 5.36, 0.03 }
+				local t = { 0.33, 5.37, 0.04 }
 				local b = { 0.3, 5.12, surf(BODY_SHAPES, 0.3, 5.12, true) - 0.01 }
 				limb(k, "Strap", f, t, 0.06, BODICE_D)
 				limb(k, "Strap", t, b, 0.06, BODICE_D)
@@ -328,11 +378,11 @@ return {
 				limb(k, "Seam", s1, s2, 0.05, BODICE_D)
 				limb(k, "Seam", s2, s3, 0.05, BODICE_D)
 				-- a few neon sparkles sewn on the bodice
-				for _, p in { { 0.16, 5.06 }, { 0.3, 4.62 }, { 0.09, 4.36 } } do
+				for _, p in { { 0.16, 5.04 }, { 0.3, 4.62 }, { 0.09, 4.36 } } do
 					k:Part({ Name = "BodiceSparkle", Shape = "Ball", Size = { 0.07, 0.07, 0.07 }, Pos = { p[1], p[2], surf(BODY_SHAPES, p[1], p[2]) }, Color = SPARK, Material = "Neon" })
 				end
 				-- pearl trim along the sweetheart neckline
-				for _, x in { 0.06, 0.15, 0.24, 0.33 } do
+				for _, x in { 0.06, 0.15, 0.24, 0.32 } do
 					local u = (x - BUST_CUP.c[1]) / (BUST_CUP.s[1] / 2)
 					local y = BUST_CUP.c[2] + BUST_CUP.s[2] / 2 * math.sqrt(math.max(0, 1 - u * u)) - 0.04
 					k:Part({ Name = "Pearl", Shape = "Ball", Size = { 0.075, 0.075, 0.075 }, Pos = { x, y, surf(BODY_SHAPES, x, y) }, Color = EYE_W, Reflectance = 0.15 })
@@ -340,7 +390,7 @@ return {
 			end)
 			-- centre-front seam and a heart-shaped brooch at the neckline
 			limb(k, "Seam", { 0, 4.9, surf(BODY_SHAPES, 0, 4.9) - 0.005 }, { 0, 4.12, surf(BODY_SHAPES, 0, 4.12) - 0.005 }, 0.05, BODICE_D)
-			k:Part({ Name = "Brooch", Shape = "Ball", Size = { 0.13, 0.13, 0.13 }, Pos = { 0, 4.97, surf(BODY_SHAPES, 0, 4.97) - 0.01 }, Color = GEM, Material = "Neon" })
+			k:Part({ Name = "Brooch", Shape = "Ball", Size = { 0.13, 0.13, 0.13 }, Pos = { 0, 4.96, surf(BODY_SHAPES, 0, 4.96) - 0.01 }, Color = GEM, Material = "Neon" })
 			-- criss-cross lacing on the back of the bodice
 			for j = 0, 2 do
 				local y = 4.46 + j * 0.2
@@ -356,26 +406,28 @@ return {
 
 			---------------------------------------------------------------- arms en couronne
 			k:Mirror(function()
-				k:Group({ Name = "Arm", Pos = { 0.5, 5.24, 0.03 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 4, Speed = 0.4 } }, function()
-					local E = { 1.1, 1.62, -0.34 }
-					softLimb(k, "UpperArm", { 0.0, 0.0, 0.0 }, E, 0.21, 0.28, 0.34, 0.28, SKIN)
-					k:Part({ Name = "Elbow", Shape = "Ball", Size = { 0.2, 0.2, 0.2 }, Pos = E, Color = SKIN })
-					k:Group({ Name = "Forearm", Pos = E, Anim = { Type = "Wiggle", Axis = "Z", Amount = 5, Speed = 0.4, Phase = 0.12 } }, function()
-						local W = { -1.0, 1.2, 0.14 }
-						softLimb(k, "Forearm", { 0, 0, 0 }, W, 0.17, 0.23, 0.32, 0.26, SKIN)
-						k:Part({ Name = "Wrist", Shape = "Ball", Size = { 0.155, 0.155, 0.155 }, Pos = W, Color = SKIN })
-						limb(k, "WristRibbon", lerp({ 0, 0, 0 }, W, 0.85), lerp({ 0, 0, 0 }, W, 0.9), 0.19, RIBBON)
-						k:Group({ Name = "Hand", Pos = W, Anim = { Type = "Wiggle", Axis = "Z", Amount = 7, Speed = 0.4, Phase = 0.25 } }, function()
-							limb(k, "Palm", { 0.02, -0.01, 0 }, { -0.3, 0.08, 0.0 }, 0.13, SKIN, { shape = "Ellipsoid", dz = 0.2, stretch = 1.1 })
-							limb(k, "Fingers", { -0.24, 0.07, 0 }, { -0.5, 0.06, 0.0 }, 0.09, SKIN, { shape = "Ellipsoid", dz = 0.17, stretch = 1.1 })
-							limb(k, "Thumb", { -0.1, 0.0, -0.08 }, { -0.26, 0.05, -0.12 }, 0.07, SKIN_D, { shape = "Ellipsoid", stretch = 1.15 })
+				k:Group({ Name = "Arm", Pos = { 0.5, 5.24, 0.03 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 3, Speed = 0.4 } }, function()
+					local E = { 0.93, 1.4, -0.26 }
+					softLimb(k, "UpperArm", { 0.0, 0.0, 0.0 }, E, 0.23, 0.32, 0.34, 0.28, SKIN)
+					k:Part({ Name = "Elbow", Shape = "Ball", Size = { 0.22, 0.22, 0.22 }, Pos = E, Color = SKIN })
+					k:Group({ Name = "Forearm", Pos = E, Anim = { Type = "Wiggle", Axis = "Z", Amount = 5, Speed = 0.4, Phase = 0.55 } }, function()
+						local W = { -0.86, 0.92, 0.04 }
+						softLimb(k, "Forearm", { 0, 0, 0 }, W, 0.19, 0.26, 0.32, 0.26, SKIN)
+						k:Part({ Name = "Wrist", Shape = "Ball", Size = { 0.165, 0.165, 0.165 }, Pos = W, Color = SKIN })
+						limb(k, "WristRibbon", lerp({ 0, 0, 0 }, W, 0.84), lerp({ 0, 0, 0 }, W, 0.9), 0.2, RIBBON)
+						k:Group({ Name = "Hand", Pos = W, Anim = { Type = "Wiggle", Axis = "Z", Amount = 6, Speed = 0.4, Phase = 0.25 } }, function()
+							limb(k, "Palm", { 0.02, -0.01, 0 }, { -0.28, 0.06, 0.0 }, 0.13, SKIN, { shape = "Ellipsoid", dz = 0.2, stretch = 1.1 })
+							limb(k, "Fingers", { -0.22, 0.05, 0 }, { -0.46, 0.03, 0.0 }, 0.09, SKIN, { shape = "Ellipsoid", dz = 0.17, stretch = 1.1 })
+							limb(k, "Thumb", { -0.1, 0.0, -0.08 }, { -0.25, 0.04, -0.12 }, 0.07, SKIN_D, { shape = "Ellipsoid", stretch = 1.15 })
 						end)
 					end)
 				end)
 			end)
 
 			---------------------------------------------------------------- the cappuccino cup head
-			k:Group({ Name = "Head", Pos = { 0, 5.58, 0.03 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 3, Speed = 0.4, Phase = 0.4 } }, function()
+			k:Group({ Name = "Head", Pos = { 0, 5.58, 0.03 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 2.5, Speed = 0.4, Phase = 0.4 } }, function()
+				local kk = k
+				local k = scaledKit(kk, HEAD_S)
 				-- cup body: foot ring, rounded bowl, glazed wall, flared rim, rolled lip
 				k:Part({ Name = "FootRing", Shape = "Cylinder", Size = { 0.08, 0.96, 0.96 }, Pos = { 0, 0.04, 0 }, Rot = UP, Color = CUP_SHADE })
 				k:Part({ Name = "CupBowl", Shape = "Ellipsoid", Size = { WALL_R * 2, BOWL_H * 2, WALL_R * 2 }, Pos = { 0, BOWL_Y, 0 }, Color = CUP, Reflectance = 0.1 })
@@ -389,10 +441,11 @@ return {
 				k:Part({ Name = "FoamRim", Shape = "Ellipsoid", Size = { 2.0, 0.26, 2.0 }, Pos = { 0, 1.67, 0 }, Color = FOAM })
 				k:Part({ Name = "Crema", Shape = "Ellipsoid", Size = { 1.66, 0.34, 1.66 }, Pos = { 0, 1.69, 0 }, Color = CREMA })
 				k:Part({ Name = "CremaInner", Shape = "Ellipsoid", Size = { 1.2, 0.34, 1.2 }, Pos = { 0, 1.7, 0 }, Color = CREMA_D })
+				-- latte-art heart (lobes towards the back, point towards the face)
 				k:Mirror(function()
-					k:Part({ Name = "HeartLobe", Shape = "Ellipsoid", Size = { 0.38, 0.07, 0.38 }, Pos = { 0.17, 1.855, 0.08 }, Color = FOAM })
+					k:Part({ Name = "HeartLobe", Shape = "Ellipsoid", Size = { 0.42, 0.07, 0.42 }, Pos = { 0.15, 1.855, 0.12 }, Color = FOAM })
 				end)
-				k:Part({ Name = "HeartPoint", Size = { 0.34, 0.07, 0.34 }, Pos = { 0, 1.855, -0.1 }, Rot = { 0, 45, 0 }, Color = FOAM })
+				k:Part({ Name = "HeartPoint", Size = { 0.42, 0.07, 0.42 }, Pos = { 0, 1.85, -0.03 }, Rot = { 0, 45, 0 }, Color = FOAM })
 				-- little foam bubbles around the rim (not over the heart)
 				for i = 0, 5 do
 					local a = math.rad(30 + i * 60)
@@ -405,38 +458,44 @@ return {
 					k:Part({ Name = "GlazeShine", Shape = "Ellipsoid", Size = { 0.08, 0.62, 0.05 }, Color = "#ffffff", Reflectance = 0.3, Transparency = 0.3 })
 				end)
 
-				-- handle on her left (-X) side, turned slightly back: a smooth ear-shaped loop
+				-- handle on her left (-X) side, turned slightly back: a smooth round loop
+				-- (cylinder segments with ball joints) with a thumb rest on top
 				k:Group({ Name = "Handle", Rot = { 0, 15, 0 } }, function()
 					local pts = {}
 					for i = 0, 8 do
 						local phi = math.rad(90 - i * 22.5)
-						table.insert(pts, { -0.9 - 0.46 * math.cos(phi), 1.0 + 0.38 * math.sin(phi), 0 })
+						table.insert(pts, { -0.88 - 0.48 * math.cos(phi), 1.02 + 0.4 * math.sin(phi), 0 })
 					end
 					for i = 1, 8 do
-						limb(k, "HandleLoop", pts[i], pts[i + 1], 0.17, CUP, { shape = "Ellipsoid", stretch = 1.45, dz = 0.15, reflectance = 0.1 })
+						limb(k, "HandleLoop", pts[i], pts[i + 1], 0.17, CUP, { reflectance = 0.1 })
+						if i > 1 then
+							k:Part({ Name = "HandleJoint", Shape = "Ball", Size = { 0.17, 0.17, 0.17 }, Pos = pts[i], Color = CUP, Reflectance = 0.1 })
+						end
 					end
-					k:Part({ Name = "ThumbRest", Shape = "Ellipsoid", Size = { 0.26, 0.09, 0.14 }, Pos = { -1.14, 1.42, 0 }, Rot = { 0, 0, -12 }, Color = CUP, Reflectance = 0.1 })
+					k:Part({ Name = "ThumbRest", Shape = "Ellipsoid", Size = { 0.3, 0.1, 0.17 }, Pos = { -1.12, 1.44, 0 }, Rot = { 0, 0, -14 }, Color = CUP, Reflectance = 0.1 })
+					k:Part({ Name = "HandleGold", Shape = "Ellipsoid", Size = { 0.2, 0.06, 0.18 }, Pos = { -1.37, 1.0, 0 }, Rot = { 0, 0, 90 }, Color = GOLD, Material = "Foil" })
 				end)
 
 				-- little pink heart painted on the back of the cup
 				k:Group({ Pos = onCup(180, 1.0, 0), Rot = { 0, 180, 0 } }, function()
 					k:Mirror(function()
-						k:Part({ Name = "BackHeartLobe", Shape = "Ellipsoid", Size = { 0.22, 0.22, 0.06 }, Pos = { 0.08, 0.04, 0 }, Color = TUTU_2 })
+						k:Part({ Name = "BackHeartLobe", Shape = "Ellipsoid", Size = { 0.24, 0.24, 0.06 }, Pos = { 0.085, 0.05, 0 }, Color = TUTU_2 })
 					end)
-					k:Part({ Name = "BackHeartPoint", Size = { 0.21, 0.21, 0.05 }, Pos = { 0, -0.05, 0 }, Rot = { 0, 0, 45 }, Color = TUTU_2 })
+					k:Part({ Name = "BackHeartPoint", Size = { 0.24, 0.24, 0.05 }, Pos = { 0, -0.035, 0 }, Rot = { 0, 0, 45 }, Color = TUTU_2 })
 				end)
 
 				-- face ---------------------------------------------------------------
 				k:Mirror(function()
 					k:Group({ Name = "Eye", Pos = onCup(25, 1.03, 0), Rot = { 0, -25, 0 } }, function()
+						local k = scaledKit(k, 1.08)
 						local blink = { Type = "Blink", Speed = 0.22, Phase = 0.1 }
 						k:Part({ Name = "EyeWhite", Shape = "Ellipsoid", Size = { 0.44, 0.54, 0.14 }, Color = EYE_W, Anim = blink })
 						k:Part({ Name = "Iris", Shape = "Ellipsoid", Size = { 0.31, 0.39, 0.1 }, Pos = { -0.02, -0.03, -0.04 }, Color = IRIS, Anim = blink })
 						k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.16, 0.22, 0.08 }, Pos = { -0.02, -0.04, -0.07 }, Color = INK, Anim = blink })
 						k:Part({ Name = "Shine", Shape = "Ball", Size = { 0.11, 0.11, 0.11 }, Pos = { 0.04, 0.07, -0.1 }, Color = EYE_W, Anim = blink })
-						k:Part({ Name = "Shine2", Shape = "Ball", Size = { 0.05, 0.05, 0.05 }, Pos = { -0.08, -0.1, -0.095 }, Color = EYE_W, Anim = blink })
+						k:Part({ Name = "Shine2", Shape = "Ball", Size = { 0.06, 0.06, 0.06 }, Pos = { -0.08, -0.1, -0.095 }, Color = EYE_W, Anim = blink })
 						-- thin eyeliner that flicks out at the outer corner
-						k:Part({ Name = "Liner", Shape = "Ellipsoid", Size = { 0.46, 0.055, 0.08 }, Pos = { 0.0, 0.255, -0.03 }, Rot = { 0, 0, -4 }, Color = INK })
+						k:Part({ Name = "Liner", Shape = "Ellipsoid", Size = { 0.46, 0.06, 0.08 }, Pos = { 0.0, 0.255, -0.03 }, Rot = { 0, 0, -4 }, Color = INK })
 						for j, phi in { 12, 36, 60 } do
 							local a = math.rad(phi)
 							local len = 0.15 - j * 0.017
@@ -452,17 +511,17 @@ return {
 							local a = math.rad(phi)
 							k:Part({ Name = "LowerLash", Size = { 0.05, 0.08, 0.05 }, Pos = { 0.26 * math.cos(a), 0.31 * math.sin(a), -0.02 }, Rot = { 0, 0, phi - 90 }, Color = INK })
 						end
-						k:Part({ Name = "Brow", Shape = "Ellipsoid", Size = { 0.28, 0.05, 0.05 }, Pos = { 0.03, 0.4, -0.01 }, Rot = { 0, 0, -10 }, Color = BROW })
+						k:Part({ Name = "Brow", Shape = "Ellipsoid", Size = { 0.28, 0.06, 0.05 }, Pos = { 0.03, 0.4, -0.01 }, Rot = { 0, 0, -10 }, Color = BROW })
 					end)
 					k:Group({ Name = "Cheek", Pos = onCup(44, 0.8, 0), Rot = { 0, -44, 0 } }, function()
-						k:Part({ Name = "Blush", Shape = "Ellipsoid", Size = { 0.28, 0.15, 0.05 }, Color = BLUSH })
+						k:Part({ Name = "Blush", Shape = "Ellipsoid", Size = { 0.3, 0.16, 0.05 }, Color = BLUSH })
 					end)
 				end)
 				k:Group({ Name = "Mouth", Pos = onCup(0, 0.78, 0) }, function()
-					k:Part({ Name = "MouthOpen", Shape = "Ellipsoid", Size = { 0.38, 0.22, 0.06 }, Color = MOUTH })
-					k:Part({ Name = "Tongue", Shape = "Ellipsoid", Size = { 0.19, 0.08, 0.05 }, Pos = { 0, -0.055, -0.02 }, Color = TONGUE })
-					k:Part({ Name = "Teeth", Shape = "Ellipsoid", Size = { 0.24, 0.05, 0.05 }, Pos = { 0, 0.03, -0.018 }, Color = EYE_W })
-					k:Part({ Name = "UpperLipCover", Shape = "Ellipsoid", Size = { 0.46, 0.15, 0.07 }, Pos = { 0, 0.085, -0.002 }, Color = CUP })
+					k:Part({ Name = "MouthOpen", Shape = "Ellipsoid", Size = { 0.42, 0.25, 0.06 }, Color = MOUTH })
+					k:Part({ Name = "Tongue", Shape = "Ellipsoid", Size = { 0.21, 0.09, 0.05 }, Pos = { 0, -0.065, -0.02 }, Color = TONGUE })
+					k:Part({ Name = "Teeth", Shape = "Ellipsoid", Size = { 0.26, 0.055, 0.05 }, Pos = { 0, 0.035, -0.018 }, Color = EYE_W })
+					k:Part({ Name = "UpperLipCover", Shape = "Ellipsoid", Size = { 0.5, 0.16, 0.07 }, Pos = { 0, 0.1, -0.002 }, Color = CUP })
 				end)
 
 				-- steam wisps curling up from the crema
@@ -483,44 +542,43 @@ return {
 					end)
 				end
 				-- an S-curl: each puff leans the other way and overlaps the last
-				wisp("SteamMid", { 0, 1.92, 0.32 }, { { 0.04, 0.12, 0.13, 0.32, -30 }, { 0.06, 0.36, 0.12, 0.3, 30 }, { -0.02, 0.6, 0.11, 0.28, -30 }, { 0.0, 0.83, 0.09, 0.24, 26 } }, 0)
+				wisp("SteamMid", { 0, 1.92, 0.32 }, { { 0.05, 0.12, 0.2, 0.32, -28 }, { 0.09, 0.36, 0.18, 0.3, 26 }, { -0.01, 0.6, 0.16, 0.27, -26 }, { 0.03, 0.82, 0.13, 0.22, 22 } }, 0)
 				k:Mirror(function()
-					wisp("SteamSide", { 0.42, 1.88, 0.14 }, { { 0.03, 0.12, 0.12, 0.28, -30 }, { 0.05, 0.35, 0.1, 0.26, 30 }, { -0.01, 0.56, 0.08, 0.22, -26 } }, 0.35)
+					wisp("SteamSide", { 0.42, 1.88, 0.14 }, { { 0.03, 0.12, 0.17, 0.28, -28 }, { 0.07, 0.34, 0.15, 0.25, 26 }, { 0.0, 0.55, 0.12, 0.21, -24 } }, 0.35)
 				end)
 			end)
 		end)
 
 		---------------------------------------------------------------- legendary flair
-		k:Group({ Name = "SparkleOrbit", Anim = { Type = "Spin", Axis = "Y", Speed = 0.3 } }, function()
+		k:Group({ Name = "SparkleOrbit", Anim = { Type = "Spin", Axis = "Y", Speed = 0.12 } }, function()
 			local orbit = {
-				{ 0, 1.1, GEM }, { 72, 5.2, GOLD }, { 144, 2.4, SPARK }, { 216, 6.8, GEM }, { 288, 8.2, GOLD },
+				{ 0, 1.2, GEM }, { 72, 5.2, GOLD }, { 144, 2.5, SPARK }, { 216, 6.8, GEM }, { 288, 8.3, GOLD },
 			}
 			for i, o in orbit do
 				local a = math.rad(o[1])
-				sparkle(k, { 2.7 * math.sin(a), o[2], -2.7 * math.cos(a) }, 0.38, o[3], i * 0.2)
+				sparkle(k, { 2.6 * math.sin(a), o[2], -2.6 * math.cos(a) }, 0.46, o[3], i * 0.2)
 			end
 		end)
 		k:Light({ Pos = { 0, 4.6, -1.2 }, Color = "#ff8cc6", Range = 11, Brightness = 1.2 })
 		k:Light({ Pos = { 0, 8.0, -0.6 }, Color = "#ffd9a0", Range = 8, Brightness = 0.8 })
-		k:Particles({ Pos = { 0, 7.6, 0.1 }, Color = STEAM, Color2 = "#ffe6d6", Rate = 3, Size = 0.4, Speed = 0.7, Lifetime = 1.6, Spread = 18, Direction = "Top" })
+		k:Particles({ Pos = { 0, 7.4, 0.1 }, Color = STEAM, Color2 = "#ffe6d6", Rate = 3, Size = 0.4, Speed = 0.7, Lifetime = 1.6, Spread = 18, Direction = "Top" })
 		k:Particles({ Pos = { 0, 3.8, 0 }, Color = "#ff7fbf", Color2 = "#fff1a8", Rate = 5, Size = 0.18, Speed = 1.8, Lifetime = 1.1, Spread = 90, Direction = "Top" })
 		k:Particles({ Pos = { 0, 0.12, 0 }, Color = GOLD, Color2 = "#ff9fd0", Rate = 4, Size = 0.16, Speed = 1.2, Lifetime = 1.0, Spread = 70, Direction = "Top" })
 	end,
 
 	BuildMini = function(k)
-		-- one pink leg en pointe under a puffy two-layer tutu, pink bodice, a rounded cup
-		-- head with handle, crema top and big eyes, and both arms raised beside the cup
+		-- one pink leg en pointe under a puffy tutu, pink bodice, a white cappuccino mug head
+		-- with handle, brown crema and big eyes, and both arms rounded en couronne over it
 		k:Part({ Name = "Leg", Shape = "Ellipsoid", Size = { 0.17, 0.92, 0.17 }, Pos = { 0, -0.86, 0 }, Color = SHOE })
-		k:Part({ Name = "Tutu", Shape = "Ellipsoid", Size = { 1.95, 0.42, 1.95 }, Pos = { 0, -0.38, 0 }, Color = TUTU_1 })
-		k:Part({ Name = "TutuTop", Shape = "Ellipsoid", Size = { 1.4, 0.38, 1.4 }, Pos = { 0, -0.24, 0 }, Color = TUTU_4 })
-		k:Part({ Name = "Torso", Shape = "Ellipsoid", Size = { 0.38, 0.58, 0.3 }, Pos = { 0, 0.0, 0 }, Color = BODICE })
-		k:Part({ Name = "CupBowl", Shape = "Ellipsoid", Size = { 0.92, 0.46, 0.92 }, Pos = { 0, 0.5, 0 }, Color = CUP })
-		k:Part({ Name = "Cup", Shape = "Cylinder", Size = { 0.5, 0.92, 0.92 }, Pos = { 0, 0.77, 0 }, Rot = UP, Color = CUP })
-		k:Part({ Name = "Crema", Shape = "Ellipsoid", Size = { 0.88, 0.2, 0.88 }, Pos = { 0, 1.03, 0 }, Color = CREMA })
-		k:Part({ Name = "Handle", Shape = "Cylinder", Size = { 0.1, 0.42, 0.42 }, Pos = { -0.5, 0.74, 0.06 }, Rot = { 0, 90, 0 }, Color = CUP })
+		k:Part({ Name = "Tutu", Shape = "Ellipsoid", Size = { 2.05, 0.46, 2.05 }, Pos = { 0, -0.4, 0 }, Color = TUTU_2 })
+		k:Part({ Name = "Torso", Shape = "Ellipsoid", Size = { 0.44, 0.66, 0.34 }, Pos = { 0, -0.02, 0 }, Color = BODICE })
+		k:Part({ Name = "Cup", Shape = "Cylinder", Size = { 0.76, 0.9, 0.9 }, Pos = { 0, 0.68, 0 }, Rot = UP, Color = CUP })
+		k:Part({ Name = "Crema", Shape = "Ellipsoid", Size = { 0.84, 0.18, 0.84 }, Pos = { 0, 1.06, 0 }, Color = CREMA })
+		k:Part({ Name = "Handle", Shape = "Cylinder", Size = { 0.1, 0.42, 0.42 }, Pos = { -0.5, 0.7, 0.06 }, Rot = { 0, 90, 0 }, Color = CUP })
 		k:Mirror(function()
-			k:Part({ Name = "Eye", Shape = "Ellipsoid", Size = { 0.16, 0.21, 0.1 }, Pos = { 0.16, 0.78, -0.44 }, Color = INK })
-			limb(k, "Arm", { 0.17, 0.16, -0.02 }, { 0.68, 1.2, -0.06 }, 0.13, SKIN, { shape = "Ellipsoid", stretch = 1.08 })
+			k:Part({ Name = "Eye", Shape = "Ellipsoid", Size = { 0.17, 0.23, 0.1 }, Pos = { 0.16, 0.72, -0.43 }, Color = INK })
+			limb(k, "UpperArm", { 0.2, 0.08, -0.02 }, { 0.66, 0.92, -0.08 }, 0.13, SKIN)
+			limb(k, "Forearm", { 0.66, 0.92, -0.08 }, { 0.1, 1.3, -0.08 }, 0.12, SKIN)
 		end)
 	end,
 }

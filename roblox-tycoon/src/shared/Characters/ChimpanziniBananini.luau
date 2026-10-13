@@ -49,7 +49,7 @@ local RIM_Y = 5.45 -- top of the banana where the peel splits
 local UP_R = 1.37 -- radius of the upper (cylindrical) banana section
 local UP_Z = -0.04
 local UP_BOT = 3.3
-local TILT = 7 -- banana curve: the lower belly leans so its tip swings forward
+local TILT = 10 -- banana curve: the lower belly leans so its tip swings forward
 -- Banana body volume { cx, cy, cz, semiX, semiY, semiZ, tiltX }: one smooth, glossy belly
 -- that tapers down into the brown flower-end tip; above UP_BOT it becomes a cylinder.
 local BELLY = { 0, 3.3, 0.02, 1.46, 2.42, 1.42, TILT }
@@ -300,14 +300,15 @@ return {
 			end
 			k:Part(spec)
 		end
-		-- Fur tuft sticking out of a surface along direction dir
-		local function tuft(p, dir, w, h, color, name)
+		-- Fur clump sticking out of a surface along dir. `flat` (< 1) squashes it across
+		-- `across` so it lies on the surface like a lock of fur instead of a bean.
+		local function tuft(p, dir, w, h, color, name, flat, across)
 			k:Part({
 				Name = name or "FurTuft",
 				Shape = "Ellipsoid",
-				Size = { w, h, w },
+				Size = { w, h, w * (flat or 1) },
 				Pos = vadd(p, vmul(vunit(dir), h * 0.3)),
-				Rot = alongY(dir),
+				Rot = alongY(dir, across),
 				Color = color,
 				Material = "Fabric",
 			})
@@ -320,14 +321,14 @@ return {
 			local hip = { 0.56, 1.3, -0.02 }
 			local knee = { 0.8, 0.8, -0.14 }
 			local ankle = { 0.76, 0.42, -0.04 }
-			limb(hip, knee, 0.58, FUR, "Thigh")
-			limb(knee, ankle, 0.5, FUR, "Shin")
-			tuft(vadd(knee, { 0.12, 0.02, -0.12 }), { 0.5, 0.3, -0.6 }, 0.22, 0.34, FUR_LIGHT, "KneeTuft")
+			limb(hip, knee, 0.6, FUR, "Thigh")
+			limb(knee, ankle, 0.52, FUR, "Shin")
+			tuft(vadd(knee, { 0.14, 0.02, -0.1 }), { 0.6, 0.2, -0.6 }, 0.22, 0.36, FUR_LIGHT, "KneeTuft", 0.55, { 0.6, 0, -0.6 })
 			-- shaggy fur fringe where the leg meets the bare chimp foot
-			k:Part({ Name = "AnkleFur", Shape = "Ellipsoid", Size = { 0.6, 0.22, 0.6 }, Pos = { 0.76, 0.5, -0.06 }, Color = FUR_DARK, Material = "Fabric" })
-			tuft({ 0.98, 0.46, -0.16 }, { 0.6, -0.5, -0.4 }, 0.16, 0.26, FUR_DARK, "AnkleTuft")
-			k:Part({ Name = "Foot", Shape = "Ellipsoid", Size = { 0.62, 0.36, 0.98 }, Pos = { 0.77, 0.24, -0.18 }, Color = SKIN_DARK })
-			k:Part({ Name = "Sole", Shape = "Ellipsoid", Size = { 0.66, 0.14, 1.06 }, Pos = { 0.77, 0.08, -0.2 }, Color = SOLE })
+			k:Part({ Name = "AnkleFur", Shape = "Ellipsoid", Size = { 0.62, 0.22, 0.62 }, Pos = { 0.76, 0.5, -0.06 }, Color = FUR_DARK, Material = "Fabric" })
+			tuft({ 0.98, 0.46, -0.16 }, { 0.6, -0.5, -0.4 }, 0.18, 0.28, FUR_DARK, "AnkleTuft", 0.6, { 0.6, 0, -0.4 })
+			k:Part({ Name = "Foot", Shape = "Ellipsoid", Size = { 0.64, 0.36, 1.0 }, Pos = { 0.77, 0.24, -0.18 }, Color = SKIN_DARK })
+			k:Part({ Name = "Sole", Shape = "Ellipsoid", Size = { 0.68, 0.14, 1.08 }, Pos = { 0.77, 0.08, -0.2 }, Color = SOLE })
 			k:Part({ Name = "Heel", Shape = "Ellipsoid", Size = { 0.5, 0.3, 0.4 }, Pos = { 0.77, 0.16, 0.22 }, Color = SKIN_DARK })
 			-- Toes on a little tapping joint
 			k:Group({ Name = "Toes", Pos = { 0.77, 0.09, -0.64 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 7, Speed = 0.7, Phase = 0.2 } }, function()
@@ -347,14 +348,15 @@ return {
 				------------------------------------------------------------------------
 				-- Banana body
 				------------------------------------------------------------------------
-				local GLOSS = 0.08
+				local GLOSS = 0.12
 				k:Part({ Name = "BananaBelly", Shape = "Ellipsoid", Size = { BELLY[4] * 2, BELLY[5] * 2, BELLY[6] * 2 }, Pos = { BELLY[1], BELLY[2], BELLY[3] }, Rot = { TILT, 0, 0 }, Color = YEL, Reflectance = GLOSS })
 				k:Part({ Name = "BananaUpper", Shape = "Cylinder", Size = { RIM_Y - UP_BOT, UP_R * 2, UP_R * 2 }, Pos = { 0, (RIM_Y + UP_BOT) / 2, UP_Z }, Rot = { 0, 0, 90 }, Color = YEL, Reflectance = GLOSS })
-				-- The brown flower-end tip of the banana, at the bottom of the curve
+				-- The brown flower-end tip of the banana, poking forward at the bottom of the curve
 				do
-					local p, n = onEll(BELLY, { 0, -1, 0.12 }, -0.05)
-					k:Part({ Name = "TipNub", Shape = "Ellipsoid", Size = { 0.46, 0.46, 0.3 }, Pos = p, Rot = facing(n, 0), Color = PEEL_BROWN })
-					k:Part({ Name = "TipEnd", Shape = "Ellipsoid", Size = { 0.24, 0.24, 0.2 }, Pos = vadd(p, vmul(n, 0.12)), Rot = facing(n, 0), Color = PEEL_BROWN_DARK })
+					local p, n = onEll(BELLY, { 0, -1, -0.34 }, -0.04)
+					k:Part({ Name = "TipNeck", Shape = "Ellipsoid", Size = { 0.66, 0.66, 0.3 }, Pos = p, Rot = facing(n, 0), Color = YEL_DEEP })
+					k:Part({ Name = "TipNub", Shape = "Ellipsoid", Size = { 0.46, 0.46, 0.34 }, Pos = vadd(p, vmul(n, 0.11)), Rot = facing(n, 0), Color = PEEL_BROWN })
+					k:Part({ Name = "TipEnd", Shape = "Ellipsoid", Size = { 0.26, 0.26, 0.2 }, Pos = vadd(p, vmul(n, 0.24)), Rot = facing(n, 0), Color = PEEL_BROWN_DARK })
 				end
 				-- Peel lip and the cream inside of the opening
 				k:Part({ Name = "PeelLip", Shape = "Cylinder", Size = { 0.12, UP_R * 2 + 0.08, UP_R * 2 + 0.08 }, Pos = { 0, RIM_Y - 0.02, UP_Z }, Rot = { 0, 0, 90 }, Color = YEL_DEEP })
@@ -374,159 +376,183 @@ return {
 					end
 				end
 
-				-- Sugar spots (little brown freckles a ripe banana has)
+				-- Sugar spots (little brown freckles a ripe banana has), all the way round
 				for _, s in {
-					{ 205, 2.2, 0.2 }, { 172, 3.95, 0.14 }, { 120, 2.7, 0.17 }, { 196, 4.8, 0.12 },
+					{ 205, 2.2, 0.2 }, { 172, 3.95, 0.14 }, { 120, 2.7, 0.17 }, { 196, 4.75, 0.12 },
 					{ 300, 2.45, 0.18 }, { 20, 4.05, 0.15 }, { 345, 3.0, 0.2 }, { 70, 1.85, 0.14 },
+					{ 250, 3.7, 0.16 }, { 30, 2.3, 0.13 }, { 330, 4.6, 0.12 }, { 100, 4.4, 0.15 },
 				} do
 					local p, n = bananaAt(s[2], s[1], 0)
 					decal(p, n, { s[3], s[3] * 0.8, 0.06 }, PEEL_BROWN, "SugarSpot", s[1] * 0.3)
 				end
 
-				-- Glossy banana-shine: one long highlight following the curve of the belly
-				-- (screen-left, where the key light hits) plus a short echo.
-				for _, s in { { 1.95, 2.95, 163, 0.14 }, { 2.85, 3.95, 164, 0.18 }, { 3.85, 4.95, 165, 0.14 }, { 2.5, 3.4, 153, 0.07 } } do
-					local a = bananaAt(s[1], s[3], 0)
-					local b = bananaAt(s[2], s[3], 0)
-					local m, n = bananaAt((s[1] + s[2]) / 2, s[3], 0.005)
-					local len = vlen(vsub(b, a)) + 0.25
-					k:Part({ Name = "BananaShine", Shape = "Ellipsoid", Size = { s[4], len, 0.05 }, Pos = m, Rot = alongY(vsub(b, a), vmul(n, -1)), Color = YEL_SHINE, Reflectance = 0.35 })
+				-- Glossy banana-shine: one long, soft, unbroken streak following the curve of
+				-- the belly on the lit side, and a round sparkle dot above it.
+				for _, s in { { 1.85, 2.6, 0.09 }, { 2.4, 3.45, 0.16 }, { 3.25, 4.3, 0.18 }, { 4.1, 4.85, 0.1 } } do
+					local a = bananaAt(s[1], 164, 0)
+					local b = bananaAt(s[2], 164, 0)
+					local m, n = bananaAt((s[1] + s[2]) / 2, 164, 0.005)
+					local len = vlen(vsub(b, a)) + 0.2
+					k:Part({ Name = "BananaShine", Shape = "Ellipsoid", Size = { s[3], len, 0.05 }, Pos = m, Rot = alongY(vsub(b, a), vmul(n, -1)), Color = YEL_SHINE, Reflectance = 0.35 })
 				end
-				-- Twinkling neon glints (Epic flair)
-				for i, g in { { 4.75, 172, 0.44 }, { 2.25, 212, 0.32 }, { 3.6, 330, 0.34 } } do
+				do
+					local p, n = bananaAt(5.08, 164, 0.005)
+					decal(p, n, { 0.13, 0.13, 0.05 }, YEL_SHINE, "ShineDot", 0, { Reflectance = 0.35 })
+				end
+				-- Twinkling neon star glints (Epic flair)
+				for i, g in { { 4.55, 186, 0.5 }, { 2.3, 214, 0.4 }, { 3.5, 330, 0.44 } } do
 					local p, n = bananaAt(g[1], g[2], 0.03)
 					k:Group({ Name = "Glint", Pos = p, Rot = facing(n, 0) }, function()
-						for _, r in { 0, 90 } do
-							k:Part({
-								Name = "GlintRay",
-								Shape = "Ellipsoid",
-								Size = { g[3], 0.07, 0.05 },
-								Rot = { 0, 0, r },
-								Color = GLINT,
-								Material = "Neon",
-								Anim = { Type = "Pulse", Amount = 0.35, Speed = 0.8, Phase = i * 0.37 },
-							})
-						end
+						local pulse = { Type = "Pulse", Amount = 0.35, Speed = 0.8, Phase = i * 0.37 }
+						k:Part({ Name = "GlintRay", Shape = "Ellipsoid", Size = { g[3], 0.06, 0.05 }, Color = GLINT, Material = "Neon", Anim = pulse })
+						k:Part({ Name = "GlintRay", Shape = "Ellipsoid", Size = { 0.06, g[3] * 1.3, 0.05 }, Color = GLINT, Material = "Neon", Anim = pulse })
+						k:Part({ Name = "GlintCore", Shape = "Ball", Size = { 0.11, 0.11, 0.11 }, Color = GLINT, Material = "Neon", Anim = pulse })
 					end)
 				end
 
 				------------------------------------------------------------------------
-				-- Peel strips: hinged on the rim, folded over and drooping outward with
-				-- the cream inside showing, yellow edges, brown curled tips.
+				-- Peel strips: hinged on the rim, they arch up, fold over and droop
+				-- OUTWARD like a skirt (the classic peeled-banana silhouette). Yellow skin
+				-- on the outside, a cream inner layer that shows along the torn edges,
+				-- sugar spots, and brown tips that flick outward.
 				------------------------------------------------------------------------
-				-- each segment: { alpha (deg from straight up, + = outward), length, width }
-				local PETAL = {
-					{ 30, 0.26, 1.16 },
-					{ 100, 0.3, 1.14 },
-					{ 150, 0.55, 1.04 },
-					{ 168, 0.8, 0.84 },
-					{ 176, 0.7, 0.56 },
+				local FOLD_R = 0.2 -- radius of the rolled-over fold at the top of each strip
+				-- hanging part of a strip, one entry per segment:
+				-- { alpha (deg from straight up, + = outward), length, width }
+				local DROOP = {
+					{ 148, 0.62, 1.06 },
+					{ 159, 0.72, 0.94 },
+					{ 167, 0.56, 0.8 },
 				}
 				local function peelFlap(phi, phase, scale, withStem)
 					local hinge = { 1.3 * math.sin(rad(phi)), RIM_Y - 0.05, UP_Z + 1.3 * math.cos(rad(phi)) }
 					k:Group({ Name = "PeelFlap", Pos = hinge, Rot = { 0, phi, 0 } }, function()
-						k:Group({ Name = "PeelSway", Anim = { Type = "Wiggle", Axis = "X", Amount = 6, Speed = 0.55, Phase = phase } }, function()
-							local y, z = 0, 0
-							local th = 0.15
+						k:Group({ Name = "PeelSway", Anim = { Type = "Wiggle", Axis = "X", Amount = 5, Speed = 0.55, Phase = phase } }, function()
+							local W = 1.12 * scale
+							-- 1) the strip rises off the rim ...
+							local riseA, riseL = 14, 0.3
+							local ry, rz = math.cos(rad(riseA)) * riseL, math.sin(rad(riseA)) * riseL
+							local rmid = { 0, ry / 2, rz / 2 }
+							local rIn = { 0, -math.sin(rad(riseA)), math.cos(rad(riseA)) }
+							k:Part({ Name = "PeelOuter", Size = { W * 0.86, riseL + 0.06, 0.1 }, Pos = vadd(rmid, vmul(rIn, 0.03)), Rot = { riseA, 0, 0 }, Color = YEL, Reflectance = 0.06 })
+							k:Part({ Name = "PeelInner", Size = { W, riseL + 0.04, 0.07 }, Pos = vadd(rmid, vmul(rIn, -0.045)), Rot = { riseA, 0, 0 }, Color = CREAM })
+							-- 2) ... rolls over a rounded fold (cream edges peek out of the roll) ...
+							local fc = { 0, ry, rz + FOLD_R }
+							k:Part({ Name = "PeelFold", Shape = "Cylinder", Size = { W * 0.86, FOLD_R * 2 + 0.1, FOLD_R * 2 + 0.1 }, Pos = fc, Color = YEL, Reflectance = 0.06 })
+							k:Part({ Name = "PeelFoldEdge", Shape = "Cylinder", Size = { W, FOLD_R * 2 + 0.03, FOLD_R * 2 + 0.03 }, Pos = fc, Color = CREAM })
+							-- 3) ... and hangs down and OUTWARD like a skirt
+							local y, z = ry, rz + FOLD_R * 2
 							local lastA = 0
-							for _, seg in PETAL do
+							for i, seg in DROOP do
 								local a, L, w = seg[1], seg[2] * scale, seg[3] * scale
 								local dy, dz = math.cos(rad(a)), math.sin(rad(a))
 								local mid = { 0, y + dy * L / 2, z + dz * L / 2 }
-								local nc = { 0, math.sin(rad(a)), -math.cos(rad(a)) } -- cream (inner) side
-								local over = if L > 0.4 then 0.45 else 0.3
-								k:Part({ Name = "PeelOuter", Shape = "Ellipsoid", Size = { w, L + over, th }, Pos = mid, Rot = { a, 0, 0 }, Color = YEL, Reflectance = 0.06 })
-								k:Part({ Name = "PeelInner", Shape = "Ellipsoid", Size = { w * 0.8, L + over - 0.06, th * 0.6 }, Pos = vadd(mid, vmul(nc, th * 0.32)), Rot = { a, 0, 0 }, Color = CREAM })
+								local nIn = { 0, -dz, dy } -- the strip's concave side (faces the banana)
+								k:Part({ Name = "PeelOuter", Size = { w * 0.86, L + 0.08, 0.1 }, Pos = vadd(mid, vmul(nIn, -0.03)), Rot = { a, 0, 0 }, Color = YEL, Reflectance = 0.06 })
+								k:Part({ Name = "PeelInner", Size = { w, L + 0.06, 0.07 }, Pos = vadd(mid, vmul(nIn, 0.045)), Rot = { a, 0, 0 }, Color = CREAM })
+								if i <= 2 then
+									-- a sugar spot on the outside of the hanging strip
+									local sx = if i == 1 then 0.2 else -0.16
+									k:Part({ Name = "PeelSpot", Shape = "Ellipsoid", Size = { 0.14, 0.12, 0.05 }, Pos = vadd(vadd(mid, { sx * scale, 0.05, 0 }), vmul(nIn, -0.09)), Rot = { a, 0, i * 25 }, Color = PEEL_BROWN })
+								end
 								y, z = y + dy * L, z + dz * L
 								lastA = a
 							end
 							if withStem then
 								-- this strip kept the banana's stem: a yellow collar and a woody stalk
-								local sa = lastA - 14
+								local sa = lastA - 12
 								local sd = { 0, math.cos(rad(sa)), math.sin(rad(sa)) }
-								local base = { 0, y + 0.06, z }
-								k:Part({ Name = "StemCollar", Shape = "Ellipsoid", Size = { 0.42, 0.26, 0.3 }, Pos = base, Rot = { sa, 0, 0 }, Color = YEL_DEEP })
-								rod(base, vadd(base, vmul(sd, 0.5)), 0.22, STEM, "Stem", "Wood")
-								k:Part({ Name = "StemEnd", Shape = "Cylinder", Size = { 0.1, 0.28, 0.28 }, Pos = vadd(base, vmul(sd, 0.52)), Rot = alongX(sd), Color = STEM_DARK, Material = "Wood" })
+								local base = { 0, y, z }
+								k:Part({ Name = "StemCollar", Shape = "Ellipsoid", Size = { 0.52, 0.3, 0.34 }, Pos = base, Rot = { sa, 0, 0 }, Color = YEL_DEEP })
+								rod(vadd(base, vmul(sd, 0.05)), vadd(base, vmul(sd, 0.56)), 0.24, STEM, "Stem", "Wood")
+								k:Part({ Name = "StemEnd", Shape = "Cylinder", Size = { 0.1, 0.3, 0.3 }, Pos = vadd(base, vmul(sd, 0.59)), Rot = alongX(sd), Color = STEM_DARK, Material = "Wood" })
 							else
-								-- brown tip, curling outward
+								-- brown tip, flicking back outward
 								local ta = lastA - 30
 								local dy, dz = math.cos(rad(ta)), math.sin(rad(ta))
-								k:Part({ Name = "PeelTip", Shape = "Ellipsoid", Size = { 0.34 * scale, 0.42, 0.13 }, Pos = { 0, y - 0.02 + dy * 0.1, z + dz * 0.1 }, Rot = { ta, 0, 0 }, Color = PEEL_BROWN })
+								k:Part({ Name = "PeelTip", Shape = "Ellipsoid", Size = { 0.7 * scale, 0.38, 0.13 }, Pos = { 0, y + dy * 0.1, z + dz * 0.1 }, Rot = { ta, 0, 0 }, Color = PEEL_BROWN })
 							end
 						end)
 					end)
 				end
-				peelFlap(140, 0.0, 1.0) -- front right
-				peelFlap(220, 0.5, 1.0) -- front left
-				peelFlap(40, 0.25, 0.96, true) -- back right (stem end)
-				peelFlap(320, 0.75, 0.96) -- back left
+				peelFlap(138, 0.0, 1.0, true) -- front right (stem end)
+				peelFlap(222, 0.5, 1.0) -- front left
+				peelFlap(42, 0.25, 0.96) -- back right
+				peelFlap(318, 0.75, 0.96) -- back left
 
 				------------------------------------------------------------------------
 				-- Chimp torso popping out of the peel
 				------------------------------------------------------------------------
-				k:Part({ Name = "Chest", Shape = "Ellipsoid", Size = { 2.24, 1.4, 1.8 }, Pos = { 0, 5.72 + LIFT, -0.05 }, Color = FUR, Material = "Fabric", Anim = { Type = "Pulse", Amount = 0.02, Speed = 0.5 } })
+				local CHEST = { 0, 5.72 + LIFT, -0.05, 1.12, 0.7, 0.9 }
+				k:Part({ Name = "Chest", Shape = "Ellipsoid", Size = { CHEST[4] * 2, CHEST[5] * 2, CHEST[6] * 2 }, Pos = { CHEST[1], CHEST[2], CHEST[3] }, Color = FUR, Material = "Fabric", Anim = { Type = "Pulse", Amount = 0.02, Speed = 0.5 } })
+				do
+					local p, n = frontOf(CHEST, 0, CHEST[2] + 0.1, -0.07)
+					decal(p, n, { 1.04, 0.66, 0.2 }, FUR_LIGHT, "ChestFur", 0, { Material = "Fabric" })
+				end
 				k:Mirror(function()
-					k:Part({ Name = "Shoulder", Shape = "Ball", Size = { 0.76, 0.76, 0.76 }, Pos = { 0.97, 5.96 + LIFT, -0.12 }, Color = FUR, Material = "Fabric" })
-					tuft({ 0.42, 5.75 + LIFT, -0.88 }, { 0.3, -0.9, -0.5 }, 0.24, 0.36, FUR_DARK, "ChestFur")
+					k:Part({ Name = "Shoulder", Shape = "Ball", Size = { 0.8, 0.8, 0.8 }, Pos = { 0.97, 5.96 + LIFT, -0.12 }, Color = FUR, Material = "Fabric" })
 				end)
-				tuft({ 0, 5.68 + LIFT, -0.92 }, { 0, -1, -0.45 }, 0.26, 0.4, FUR_LIGHT, "ChestFur")
-				-- Fluffy fur ring where the chimp meets the peel
-				for i = 0, 5 do
-					local a = rad(i * 60 + 30)
+				-- Shaggy fur collar where the chimp meets the peel
+				k:Part({ Name = "FurCollar", Shape = "Ellipsoid", Size = { 2.64, 0.36, 2.58 }, Pos = { 0, RIM_Y + 0.1, UP_Z }, Color = FUR_DARK, Material = "Fabric" })
+				for i = 0, 9 do
+					local a = rad(i * 36 + 18)
 					local dir = { math.sin(a), 0, math.cos(a) }
-					local p = { dir[1] * 1.0, RIM_Y + 0.1, -0.05 + dir[3] * 0.8 }
-					tuft(p, { dir[1], 0.9, dir[3] }, 0.36, 0.42, if i % 2 == 0 then FUR_DARK else FUR, "RimFluff")
+					local p = { dir[1] * 1.12, RIM_Y + 0.14, UP_Z + dir[3] * 1.1 }
+					tuft(p, { dir[1], 0.75, dir[3] }, 0.3, 0.34, if i % 2 == 0 then FUR else FUR_DARK, "CollarFur", 0.5, dir)
 				end
 
 				------------------------------------------------------------------------
-				-- Arms
+				-- Arms (long chimp arms with big hands)
 				------------------------------------------------------------------------
+				local HS = 1.3 -- hand scale
 				local function hand(s, wristDir, palmFwd, curl)
 					-- built at the wrist; wristDir = forearm direction, palmFwd = palm normal
 					local d = vunit(wristDir)
 					local side = vunit(vcross(palmFwd, d)) -- across the palm
-					k:Part({ Name = "Palm", Shape = "Ellipsoid", Size = { 0.44, 0.48, 0.2 }, Pos = vmul(d, 0.2), Rot = alongY(d, vmul(palmFwd, -1)), Color = SKIN_DARK })
-					k:Part({ Name = "HandBack", Shape = "Ellipsoid", Size = { 0.4, 0.36, 0.12 }, Pos = vadd(vmul(d, 0.16), vmul(palmFwd, -0.07)), Rot = alongY(d, vmul(palmFwd, -1)), Color = FUR_DARK, Material = "Fabric" })
+					local rot = alongY(d, vmul(palmFwd, -1))
+					k:Part({ Name = "Palm", Shape = "Ellipsoid", Size = { 0.44 * HS, 0.48 * HS, 0.2 * HS }, Pos = vmul(d, 0.2 * HS), Rot = rot, Color = SKIN_DARK })
+					k:Part({ Name = "HandBack", Shape = "Ellipsoid", Size = { 0.4 * HS, 0.36 * HS, 0.12 * HS }, Pos = vmul(vadd(vmul(d, 0.15), vmul(palmFwd, -0.07)), HS), Rot = rot, Color = FUR_DARK, Material = "Fabric" })
 					for i = 1, 4 do
 						local off = (i - 2.5) * 0.1
 						local spread = (i - 2.5) * 0.2
-						local base = vadd(vmul(d, 0.36), vmul(side, off * s))
+						local base = vmul(vadd(vmul(d, 0.36), vmul(side, off * s)), HS)
 						local fdir = vunit(vadd(vadd(d, vmul(side, spread * s)), vmul(palmFwd, curl)))
-						local len = if i == 1 or i == 4 then 0.26 else 0.32
-						limb(base, vadd(base, vmul(fdir, len)), 0.1, SKIN, "Finger", "SmoothPlastic", 0.5)
+						local len = (if i == 1 or i == 4 then 0.26 else 0.32) * HS
+						limb(base, vadd(base, vmul(fdir, len)), 0.1 * HS, SKIN, "Finger", "SmoothPlastic", 0.5)
 					end
-					local tb = vadd(vmul(d, 0.14), vmul(side, -0.2 * s))
+					local tb = vmul(vadd(vmul(d, 0.14), vmul(side, -0.2 * s)), HS)
 					local tdir = vunit(vadd(vadd(d, vmul(side, -1.0 * s)), vmul(palmFwd, 0.3)))
-					limb(tb, vadd(tb, vmul(tdir, 0.26)), 0.11, SKIN, "Thumb", "SmoothPlastic", 0.5)
+					limb(tb, vadd(tb, vmul(tdir, 0.26 * HS)), 0.11 * HS, SKIN, "Thumb", "SmoothPlastic", 0.5)
 				end
 
 				-- Right arm: raised high and waving hello
 				k:Group({ Name = "RightArm", Pos = { 1.0, 5.98 + LIFT, -0.12 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 12, Speed = 0.8 } }, function()
-					local elbow = { 0.6, 0.82, -0.16 }
-					limb({ 0, 0, 0 }, elbow, 0.5, FUR, "UpperArm")
-					tuft(vadd(elbow, { 0.14, -0.06, 0.02 }), { 1, -0.4, 0.2 }, 0.2, 0.32, FUR_LIGHT, "ElbowTuft")
+					local elbow = { 0.62, 0.8, -0.16 }
+					limb({ 0, 0, 0 }, elbow, 0.54, FUR, "UpperArm")
+					limb(vmul(elbow, 0.2), vmul(elbow, 0.68), 0.62, FUR, "Bicep")
+					tuft(vadd(elbow, { 0.16, -0.06, 0.02 }), { 1, -0.5, 0.2 }, 0.2, 0.34, FUR_LIGHT, "ElbowTuft", 0.55, { 0, 0, -1 })
 					k:Group({ Name = "RightForearm", Pos = elbow, Anim = { Type = "Wiggle", Axis = "Z", Amount = 20, Speed = 0.8, Phase = 0.2 } }, function()
-						local wrist = { 0.1, 0.92, -0.08 }
-						limb({ 0, 0, 0 }, wrist, 0.45, FUR, "Forearm")
-						k:Part({ Name = "WristFur", Shape = "Ellipsoid", Size = { 0.46, 0.18, 0.46 }, Pos = vmul(wrist, 0.9), Rot = alongY(wrist), Color = FUR_LIGHT, Material = "Fabric" })
-						k:Group({ Name = "RightHand", Pos = wrist }, function()
+						local wrist = { 0.1, 0.9, -0.08 }
+						limb({ 0, 0, 0 }, wrist, 0.5, FUR, "Forearm")
+						k:Part({ Name = "WristFur", Shape = "Ellipsoid", Size = { 0.5, 0.2, 0.5 }, Pos = vmul(wrist, 0.9), Rot = alongY(wrist), Color = FUR_DARK, Material = "Fabric" })
+						k:Group({ Name = "RightHand", Pos = wrist, Anim = { Type = "Wiggle", Axis = "Y", Amount = 14, Speed = 0.8, Phase = 0.45 } }, function()
 							hand(1, { 0.08, 1, 0 }, { 0, 0, -1 }, 0.05)
 							-- golden sparkles trail off the waving hand (Epic flair)
-							k:Particles({ Pos = { 0.05, 0.55, 0 }, Color = "#fff6a8", Color2 = "#ffc928", Rate = 3, Size = 0.18, Speed = 0.7, Lifetime = 1.1, Spread = 60, Direction = "Top" })
+							k:Particles({ Pos = { 0.05, 0.7, 0 }, Color = "#fff6a8", Color2 = "#ffc928", Rate = 3, Size = 0.18, Speed = 0.7, Lifetime = 1.1, Spread = 60, Direction = "Top" })
 						end)
 					end)
 				end)
 
 				-- Left arm: hanging long and loose like a chimp, swinging gently
-				k:Group({ Name = "LeftArm", Pos = { -1.0, 5.94 + LIFT, -0.12 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 9, Speed = 0.6, Phase = 0.3 } }, function()
-					local elbow = { -0.72, -0.7, -0.16 }
-					limb({ 0, 0, 0 }, elbow, 0.5, FUR, "UpperArm")
-					tuft(vadd(elbow, { -0.12, 0.0, 0.1 }), { -0.6, -0.2, 0.8 }, 0.2, 0.32, FUR_LIGHT, "ElbowTuft")
+				k:Group({ Name = "LeftArm", Pos = { -1.0, 5.94 + LIFT, -0.12 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 8, Speed = 0.6, Phase = 0.3 } }, function()
+					local elbow = { -0.86, -0.6, -0.16 }
+					limb({ 0, 0, 0 }, elbow, 0.54, FUR, "UpperArm")
+					limb(vmul(elbow, 0.2), vmul(elbow, 0.68), 0.62, FUR, "Bicep")
+					tuft(vadd(elbow, { -0.14, 0.02, 0.1 }), { -0.7, -0.1, 0.7 }, 0.2, 0.34, FUR_LIGHT, "ElbowTuft", 0.55, { 0, 1, 0 })
 					k:Group({ Name = "LeftForearm", Pos = elbow, Anim = { Type = "Wiggle", Axis = "X", Amount = 10, Speed = 0.6, Phase = 0.45 } }, function()
-						local wrist = { -0.3, -0.82, -0.12 }
-						limb({ 0, 0, 0 }, wrist, 0.45, FUR, "Forearm")
-						k:Part({ Name = "WristFur", Shape = "Ellipsoid", Size = { 0.46, 0.18, 0.46 }, Pos = vmul(wrist, 0.9), Rot = alongY(wrist), Color = FUR_LIGHT, Material = "Fabric" })
+						local wrist = { -0.34, -0.84, -0.14 }
+						limb({ 0, 0, 0 }, wrist, 0.5, FUR, "Forearm")
+						k:Part({ Name = "WristFur", Shape = "Ellipsoid", Size = { 0.5, 0.2, 0.5 }, Pos = vmul(wrist, 0.9), Rot = alongY(wrist), Color = FUR_DARK, Material = "Fabric" })
 						k:Group({ Name = "LeftHand", Pos = wrist }, function()
 							hand(-1, { -0.3, -1, -0.1 }, { 1, 0, 0 }, 0.45)
 						end)
@@ -534,16 +560,22 @@ return {
 				end)
 
 				------------------------------------------------------------------------
-				-- Monkey tail curling out of the back of the peel
+				-- Curly monkey tail poking out of the back of the peel
 				------------------------------------------------------------------------
-				k:Group({ Name = "Tail", Pos = { 0, 2.5, 1.22 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 18, Speed = 0.6 } }, function()
-					local pts = { { 0, 0, 0 }, { 0.05, 0.05, 0.42 }, { 0.12, 0.36, 0.74 }, { 0.17, 0.8, 0.86 }, { 0.17, 1.2, 0.74 }, { 0.1, 1.42, 0.48 }, { 0.03, 1.36, 0.27 } }
-					for i = 1, #pts - 1 do
-						local d = lerp(0.26, 0.15, (i - 1) / (#pts - 2))
-						limb(pts[i], pts[i + 1], d, FUR, "TailSeg", "Fabric", 0.9)
-					end
-					k:Part({ Name = "TailTip", Shape = "Ellipsoid", Size = { 0.2, 0.24, 0.2 }, Pos = pts[#pts], Color = FUR_DARK, Material = "Fabric" })
-				end)
+				do
+					local tp = bananaAt(1.9, 12, -0.06)
+					k:Group({ Name = "Tail", Pos = tp, Anim = { Type = "Wiggle", Axis = "Y", Amount = 16, Speed = 0.6 } }, function()
+						local pts = {
+							{ 0, 0, 0 }, { 0.06, -0.02, 0.38 }, { 0.14, 0.12, 0.72 }, { 0.2, 0.45, 0.95 }, { 0.24, 0.86, 0.98 },
+							{ 0.26, 1.18, 0.82 }, { 0.27, 1.32, 0.56 }, { 0.27, 1.22, 0.34 }, { 0.26, 1.0, 0.32 }, { 0.25, 0.88, 0.48 },
+						}
+						for i = 1, #pts - 1 do
+							local d = lerp(0.28, 0.15, (i - 1) / (#pts - 2))
+							limb(pts[i], pts[i + 1], d, FUR, "TailSeg", "Fabric", 0.9)
+						end
+						k:Part({ Name = "TailTip", Shape = "Ellipsoid", Size = { 0.2, 0.22, 0.2 }, Pos = pts[#pts], Color = FUR_DARK, Material = "Fabric" })
+					end)
+				end
 
 				------------------------------------------------------------------------
 				-- Head (modelled at 1.0, built at HEAD_S through a scaled kit wrapper)
@@ -555,7 +587,7 @@ return {
 						k:Part({ Name = "Muzzle", Shape = "Ellipsoid", Size = { MUZ[4] * 2, MUZ[5] * 2, MUZ[6] * 2 }, Pos = { MUZ[1], MUZ[2], MUZ[3] }, Color = SKIN_LIGHT })
 
 						-- Mouth: wide toothy chimp grin framed by darker lips
-						k:Part({ Name = "Lips", Shape = "Ellipsoid", Size = { MOUTH_E[4] * 2 + 0.12, MOUTH_E[5] * 2 + 0.1, MOUTH_E[6] * 2 }, Pos = { MOUTH_E[1], MOUTH_E[2], MOUTH_E[3] + 0.035 }, Color = LIP })
+						k:Part({ Name = "Lips", Shape = "Ellipsoid", Size = { MOUTH_E[4] * 2 + 0.1, MOUTH_E[5] * 2 + 0.08, MOUTH_E[6] * 2 }, Pos = { MOUTH_E[1], MOUTH_E[2], MOUTH_E[3] + 0.035 }, Color = LIP })
 						k:Part({ Name = "Mouth", Shape = "Ellipsoid", Size = { MOUTH_E[4] * 2, MOUTH_E[5] * 2, MOUTH_E[6] * 2 }, Pos = { MOUTH_E[1], MOUTH_E[2], MOUTH_E[3] }, Color = MOUTH })
 						for i = -2, 2 do
 							local x = i * 0.14
@@ -566,34 +598,36 @@ return {
 							local p, n = frontOf(MOUTH_E, 0, 0.17, -0.01)
 							decal(p, n, { 0.36, 0.14, 0.07 }, TONGUE, "Tongue", 0)
 						end
-						local noseP, noseN = frontOf(MUZ, 0, 0.74, -0.04)
-						decal(noseP, noseN, { 0.4, 0.2, 0.16 }, SKIN, "Nose", 0)
+						-- flat chimp nose with two nostrils
+						local noseP, noseN = frontOf(MUZ, 0, 0.72, -0.03)
+						decal(noseP, noseN, { 0.38, 0.19, 0.14 }, SKIN, "Nose", 0)
 
 						k:Mirror(function()
 							-- heart-shaped upper face
 							k:Part({ Name = "FaceMask", Shape = "Ellipsoid", Size = { FACE_R[4] * 2, FACE_R[5] * 2, FACE_R[6] * 2 }, Pos = { FACE_R[1], FACE_R[2], FACE_R[3] }, Color = SKIN })
 							-- big expressive eyes (all blink together)
 							local blink = { Type = "Blink", Speed = 0.3, Phase = 0.1 }
-							k:Part({ Name = "EyeWhite", Shape = "Ellipsoid", Size = { 0.46, 0.56, 0.22 }, Pos = { 0.31, 1.08, -0.9 }, Color = EYE, Anim = blink })
+							k:Part({ Name = "EyeWhite", Shape = "Ellipsoid", Size = { 0.47, 0.57, 0.22 }, Pos = { 0.31, 1.08, -0.9 }, Color = EYE, Anim = blink })
 							k:Part({ Name = "Iris", Shape = "Ellipsoid", Size = { 0.31, 0.36, 0.08 }, Pos = { 0.29, 1.05, -1.0 }, Color = IRIS, Anim = blink })
-							k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.16, 0.19, 0.06 }, Pos = { 0.29, 1.05, -1.035 }, Color = PUPIL, Anim = blink })
+							k:Part({ Name = "Pupil", Shape = "Ellipsoid", Size = { 0.17, 0.2, 0.06 }, Pos = { 0.29, 1.05, -1.035 }, Color = PUPIL, Anim = blink })
 							k:Part({ Name = "EyeShine", Shape = "Ball", Size = { 0.09, 0.09, 0.09 }, Pos = { 0.345, 1.12, -1.06 }, Color = SHINE, Material = "Neon", Anim = blink })
 							k:Part({ Name = "EyeShine2", Shape = "Ball", Size = { 0.05, 0.05, 0.05 }, Pos = { 0.245, 0.99, -1.055 }, Color = SHINE, Anim = blink })
-							-- arched chimp brow ridge with happy, raised eyebrows
-							k:Part({ Name = "BrowRidge", Shape = "Ellipsoid", Size = { BROW_R[4] * 2, BROW_R[5] * 2, BROW_R[6] * 2 }, Pos = { BROW_R[1], BROW_R[2], BROW_R[3] }, Rot = { 0, 0, 6 }, Color = SKIN })
-							local b1, n1 = frontOf(BROW_R, 0.22, 1.5, -0.03)
-							decal(b1, n1, { 0.26, 0.1, 0.08 }, FUR_DARK, "Eyebrow", 22, { Material = "Fabric" })
-							local b2, n2 = frontOf(BROW_R, 0.44, 1.5, -0.03)
-							decal(b2, n2, { 0.26, 0.1, 0.08 }, FUR_DARK, "Eyebrow", -20, { Material = "Fabric" })
+							-- chimp brow ridge, tilted up in the middle: a happy, eager look
+							k:Part({ Name = "BrowRidge", Shape = "Ellipsoid", Size = { BROW_R[4] * 2, BROW_R[5] * 2, BROW_R[6] * 2 }, Pos = { BROW_R[1], BROW_R[2], BROW_R[3] }, Rot = { 0, 0, -7 }, Color = SKIN })
+							-- arched eyebrows (two strokes meeting at the peak of the arch)
+							local b1, n1 = frontOf(BROW_R, 0.21, 1.48, -0.035)
+							decal(b1, n1, { 0.24, 0.085, 0.08 }, FUR_DARK, "Eyebrow", 14, { Material = "Fabric" })
+							local b2, n2 = frontOf(BROW_R, 0.43, 1.45, -0.035)
+							decal(b2, n2, { 0.24, 0.085, 0.08 }, FUR_DARK, "Eyebrow", -26, { Material = "Fabric" })
 							-- upturned grin corners
 							local mp, mn = frontOf(MUZ, 0.43, 0.34, -0.005)
 							decal(mp, mn, { 0.17, 0.075, 0.06 }, MOUTH, "MouthCorner", 32)
 							-- lower fangs peeking up at the sides of the grin
 							local tp, tn = frontOf(MOUTH_E, 0.25, 0.15, -0.01)
 							decal(tp, tn, { 0.1, 0.11, 0.06 }, TEETH, "LowerTooth", 0)
-							-- nostrils, smile creases, blush
-							local np, nn = frontOf(MUZ, 0.1, 0.72, -0.01)
-							decal(np, nn, { 0.09, 0.065, 0.05 }, PEEL_BROWN_DARK, "Nostril", 20)
+							-- nostrils (on the nose), smile creases, blush
+							local np = vadd(frontOf(MUZ, 0.085, 0.71, -0.03), vmul(noseN, 0.07))
+							decal(np, noseN, { 0.1, 0.07, 0.05 }, PEEL_BROWN_DARK, "Nostril", 20)
 							local cp, cn = frontOf(MUZ, 0.53, 0.46, -0.01)
 							decal(cp, cn, { 0.18, 0.05, 0.05 }, SKIN_DARK, "SmileCrease", 60)
 							local blp, bln = frontOf(MUZ, 0.5, 0.62, -0.01)
@@ -604,23 +638,23 @@ return {
 								k:Part({ Name = "EarInner", Shape = "Ellipsoid", Size = { 0.1, 0.56, 0.46 }, Pos = { 0.19, 0, -0.04 }, Rot = { 0, 25, 0 }, Color = EAR_IN })
 								k:Part({ Name = "EarFold", Shape = "Ellipsoid", Size = { 0.08, 0.24, 0.12 }, Pos = { 0.22, -0.1, -0.08 }, Rot = { 0, 25, 0 }, Color = SKIN_DARK })
 							end)
-							-- fur sideburns framing the face
-							for _, d in { { 0.92, -0.15, -0.5 }, { 0.82, -0.45, -0.45 }, { 0.62, -0.72, -0.42 } } do
-								local p, n = onEll(CRAN, d, -0.05)
-								tuft(p, vadd(n, { 0, -0.6, 0 }), 0.26, 0.44, FUR, "Sideburn")
+							-- cheek fur: flat locks swept down and back, framing the face
+							for _, d in { { 0.9, -0.1, -0.52 }, { 0.84, -0.42, -0.42 }, { 0.62, -0.72, -0.4 } } do
+								local p, n = onEll(CRAN, d, -0.12)
+								tuft(p, vadd(n, { 0, -0.9, 0.35 }), 0.26, 0.5, FUR, "CheekFur", 0.45, n)
 							end
 						end)
 
-						-- chunky fur tuft on the crown: a forward quiff with side tufts swept back
+						-- shaggy fur on the crown: a forward quiff with side locks swept back
 						for _, t in {
-							{ { 0, 1, -0.25 }, { 0, 1, -0.7 }, 0.34, 0.62, FUR_LIGHT },
-							{ { 0.3, 0.95, -0.05 }, { 0.5, 1, 0.3 }, 0.3, 0.5, FUR },
-							{ { -0.3, 0.95, -0.05 }, { -0.5, 1, 0.3 }, 0.3, 0.5, FUR },
-							{ { 0.12, 0.85, 0.4 }, { 0.2, 0.7, 1 }, 0.3, 0.52, FUR_DARK },
-							{ { -0.14, 0.85, 0.42 }, { -0.25, 0.7, 1 }, 0.3, 0.48, FUR },
+							{ { 0, 1, -0.3 }, { 0, 0.8, -1 }, 0.4, 0.66, FUR_LIGHT },
+							{ { 0.32, 0.95, -0.12 }, { 0.6, 0.8, -0.5 }, 0.32, 0.52, FUR },
+							{ { -0.32, 0.95, -0.12 }, { -0.6, 0.8, -0.5 }, 0.32, 0.52, FUR },
+							{ { 0.14, 0.9, 0.36 }, { 0.3, 0.6, 1 }, 0.34, 0.54, FUR_DARK },
+							{ { -0.16, 0.88, 0.4 }, { -0.35, 0.55, 1 }, 0.32, 0.5, FUR },
 						} do
-							local p = onEll(CRAN, t[1], -0.06)
-							tuft(p, t[2], t[3], t[4], t[5], "HairTuft")
+							local p, n = onEll(CRAN, t[1], -0.1)
+							tuft(p, t[2], t[3], t[4], t[5], "HairTuft", 0.55, n)
 						end
 					end)
 					k = K0

@@ -2,10 +2,11 @@
 	Tralalero Tralala (Mythic)
 	The original Italian brainrot: a blue-grey great white shark with a white belly, gill
 	slits, big dorsal + pectoral fins and a crescent tail, grinning with rows of sharp teeth,
-	standing on THREE shark-skinned legs (two front, one rear) in blue sneakers with white
+	standing on THREE muscular legs (two front, one rear) in blue sneakers with white
 	soles, white laces and a plain side stripe (no brand logo).
-	Mythic flair: glowing water splash ring at its feet, orbiting bubbles, two lights and
-	three particle emitters - none of it changes the canonical shark-in-sneakers design.
+	Mythic flair: glowing water splash ring at its feet, orbiting bubbles, light-up midsole
+	trims, two lights and three particle emitters - none of it changes the canonical
+	shark-in-sneakers design.
 
 	Faces -Z (snout points to -Z), feet on y = 0.
 ]]
@@ -15,11 +16,11 @@ local SHARK = "#5a83aa" -- blue-grey top
 local SHARK_DARK = "#3e6085" -- fin tips, brows
 local SHARK_DEEP = "#24364a" -- gill slits, nostrils
 local SHARK_MID = "#83a3c2" -- highlights, gill lips
-local BELLY = "#eef3f3" -- white underside
+local BELLY = "#f2f5f2" -- white underside
 local BELLY_SHADE = "#d3dee5"
-local LEG = "#6889ab"
-local LEG_LIGHT = "#7b9aba"
-local MOUTH = "#6e1a2a"
+local LEG = "#6687aa"
+local LEG_LIGHT = "#7393b5"
+local MOUTH = "#5e1626"
 local GUM = "#e07a8a"
 local TONGUE = "#c24a5e"
 local TOOTH = "#fffaf0"
@@ -31,7 +32,6 @@ local SHOE_LIGHT = "#5d95ff"
 local SOLE = "#f7f6f1"
 local OUTSOLE = "#283a5e"
 local LACE = "#fbfbf6"
-local SOCK = "#f4f3ee"
 local WATER = "#8fe6ff"
 local WATER_DEEP = "#3aa8e0"
 local WATER_GLOW = "#46d8ff"
@@ -64,9 +64,11 @@ local function offset(p, n, d)
 	return { p[1] + n[1] * d, p[2] + n[2] * d, p[3] + n[3] * d }
 end
 
--- Main shark forms (shark-local coordinates; the Shark group origin sits at world y = 4.36)
-local TORSO_C, TORSO_S = { 0, 0, -0.35 }, { 2.4, 2.65, 3.8 }
-local CRANIUM_C, CRANIUM_S = { 0, 0.36, -1.6 }, { 2.15, 1.65, 2.75 } -- long cranium = smooth conical snout
+-- Main shark forms (shark-local coordinates; the Shark group origin sits at world y = 4.36).
+-- One long torso (no stacked mid/rear ellipsoids -> no rings from behind, no side seams).
+local TORSO_C, TORSO_S = { 0, 0, -0.3 }, { 2.4, 2.6, 4.4 }
+local CRANIUM_C, CRANIUM_S = { 0, 0.33, -1.6 }, { 2.15, 1.56, 2.75 } -- long cranium = smooth conical snout
+local BELLY_C, BELLY_S = { 0, -0.5, -0.2 }, { 2.1, 2.1, 4.1 }
 
 -- Mouth layout
 local MOUTH_Z = -1.85 -- centre of the mouth arcs
@@ -122,13 +124,16 @@ return {
 			shoePart({ Name = name .. "Midsole", Size = { 0.64, 0.17, 0.92 }, Pos = { 0, 0.15, -0.12 }, Color = SOLE })
 			shoePart({ Name = name .. "MidsoleToe", Shape = "Cylinder", Size = { 0.17, 0.64, 0.64 }, Pos = { 0, 0.15, -0.58 }, Rot = { 0, 0, 90 }, Color = SOLE })
 			shoePart({ Name = name .. "MidsoleHeel", Shape = "Cylinder", Size = { 0.17, 0.64, 0.64 }, Pos = { 0, 0.15, 0.34 }, Rot = { 0, 0, 90 }, Color = SOLE })
+			-- Mythic touch: a thin glowing trim line around the midsole (light-up sneakers)
+			shoePart({ Name = name .. "GlowTrim", Size = { 0.655, 0.042, 0.94 }, Pos = { 0, 0.105, -0.12 }, Color = WATER_GLOW, Material = "Neon" })
 			-- blue upper
 			shoePart({ Name = name .. "Upper", Shape = "Ellipsoid", Size = { 0.6, 0.56, 1.12 }, Pos = { 0, 0.32, -0.1 }, Color = SHOE, Material = "Fabric" })
 			shoePart({ Name = name .. "ToeBox", Shape = "Ellipsoid", Size = { 0.6, 0.38, 0.62 }, Pos = { 0, 0.25, -0.55 }, Color = SHOE, Material = "Fabric" })
 			shoePart({ Name = name .. "ToeBumper", Shape = "Ellipsoid", Size = { 0.62, 0.17, 0.32 }, Pos = { 0, 0.2, -0.79 }, Color = SOLE })
-			shoePart({ Name = name .. "HeelCounter", Shape = "Ellipsoid", Size = { 0.6, 0.44, 0.38 }, Pos = { 0, 0.39, 0.3 }, Color = SHOE_DARK, Material = "Leather" })
-			shoePart({ Name = name .. "Collar", Shape = "Cylinder", Size = { 0.12, 0.5, 0.5 }, Pos = { 0, 0.57, 0.06 }, Rot = { 0, 0, 90 }, Color = SHOE_DARK })
-			shoePart({ Name = name .. "Tongue", Size = { 0.28, 0.36, 0.08 }, Pos = { 0, 0.55, -0.2 }, Rot = { -18, 0, 0 }, Color = SHOE_LIGHT, Material = "Fabric" })
+			shoePart({ Name = name .. "HeelCounter", Shape = "Ellipsoid", Size = { 0.6, 0.44, 0.38 }, Pos = { 0, 0.37, 0.3 }, Color = SHOE_DARK, Material = "Leather" })
+			-- padded collar ring around the ankle + soft tongue
+			shoePart({ Name = name .. "Collar", Shape = "Ellipsoid", Size = { 0.54, 0.16, 0.62 }, Pos = { 0, 0.56, 0.1 }, Rot = { 8, 0, 0 }, Color = SHOE_DARK, Material = "Fabric" })
+			shoePart({ Name = name .. "Tongue", Shape = "Ellipsoid", Size = { 0.3, 0.32, 0.1 }, Pos = { 0, 0.58, -0.16 }, Rot = { -24, 0, 0 }, Color = SHOE_LIGHT, Material = "Fabric" })
 			for i = 0, 2 do
 				local ly, lz = 0.49 - i * 0.07, -0.3 - i * 0.12
 				shoePart({ Name = name .. "Lace", Size = { 0.36, 0.05, 0.07 }, Pos = { 0, ly, lz }, Rot = { -28, 0, 0 }, Color = LACE })
@@ -138,9 +143,11 @@ return {
 			end
 			shoePart({ Name = name .. "LaceBow", Shape = "Ellipsoid", Size = { 0.24, 0.06, 0.1 }, Pos = { 0, 0.54, -0.26 }, Rot = { -28, 0, 0 }, Color = LACE })
 			for _, sx in { -1, 1 } do
-				shoePart({ Name = name .. "SideStripe", Size = { 0.05, 0.09, 0.56 }, Pos = { sx * 0.29, 0.3, -0.1 }, Rot = { -16, 0, 0 }, Color = SOLE })
+				shoePart({ Name = name .. "LaceEnd", Shape = "Ellipsoid", Size = { 0.05, 0.18, 0.05 }, Pos = { sx * 0.09, 0.47, -0.3 }, Rot = { -10, 0, sx * 18 }, Color = LACE })
+				-- generic bold side stripe (plain band, NOT a brand logo)
+				shoePart({ Name = name .. "SideStripe", Size = { 0.05, 0.11, 0.6 }, Pos = { sx * 0.29, 0.3, -0.08 }, Rot = { -18, 0, 0 }, Color = SOLE })
 			end
-			shoePart({ Name = name .. "HeelTab", Size = { 0.14, 0.15, 0.05 }, Pos = { 0, 0.5, 0.47 }, Rot = { 10, 0, 0 }, Color = SOLE })
+			shoePart({ Name = name .. "HeelTab", Size = { 0.14, 0.17, 0.05 }, Pos = { 0, 0.55, 0.45 }, Rot = { 12, 0, 0 }, Color = SOLE })
 		end
 
 		-- One running leg. hip = joint position (Runner frame), phase = gait phase.
@@ -153,20 +160,20 @@ return {
 		local ANKLE_H = HIP_Y - L1 * cos(rad(HB)) - L2 * cos(rad(HB + KB)) -- ankle height in the base pose
 		local function leg(name, hip, phase)
 			k:Group({ Name = name .. "Hip", Pos = hip, Rot = { HB, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 26, Speed = RUN, Phase = phase } }, function()
-				k:Part({ Name = name .. "Haunch", Shape = "Ellipsoid", Size = { 0.95, 1.05, 0.98 }, Pos = { 0, 0.12, 0 }, Color = LEG })
-				k:Part({ Name = name .. "Thigh", Shape = "Ellipsoid", Size = { 0.8, 2.15, 0.82 }, Pos = { 0, -0.76, 0 }, Color = LEG })
-				k:Part({ Name = name .. "Quad", Shape = "Ellipsoid", Size = { 0.58, 1.15, 0.44 }, Pos = { 0, -0.62, -0.2 }, Color = LEG_LIGHT })
-				k:Part({ Name = name .. "Hamstring", Shape = "Ellipsoid", Size = { 0.58, 1.05, 0.42 }, Pos = { 0, -0.7, 0.19 }, Color = LEG })
+				-- thigh grows straight out of the belly (glute hidden inside), tapers into the knee
+				k:Part({ Name = name .. "Glute", Shape = "Ellipsoid", Size = { 0.86, 0.9, 0.9 }, Pos = { 0, 0.24, 0.02 }, Color = LEG })
+				k:Part({ Name = name .. "Thigh", Shape = "Ellipsoid", Size = { 0.8, 2.0, 0.84 }, Pos = { 0, -0.56, 0 }, Color = LEG })
+				k:Part({ Name = name .. "Quad", Shape = "Ellipsoid", Size = { 0.6, 1.15, 0.44 }, Pos = { 0, -0.6, -0.19 }, Color = LEG })
+				k:Part({ Name = name .. "Hamstring", Shape = "Ellipsoid", Size = { 0.56, 1.05, 0.42 }, Pos = { 0, -0.6, 0.19 }, Color = LEG })
 				k:Group({ Name = name .. "Knee", Pos = { 0, -L1, 0 }, Rot = { KB, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 10, Speed = RUN, Phase = phase + 0.5 } }, function()
-					k:Part({ Name = name .. "KneeJoint", Shape = "Ball", Size = { 0.58, 0.58, 0.58 }, Color = LEG })
-					k:Part({ Name = name .. "Kneecap", Shape = "Ellipsoid", Size = { 0.36, 0.34, 0.18 }, Pos = { 0, 0.02, -0.25 }, Color = LEG_LIGHT })
-					k:Part({ Name = name .. "Shin", Shape = "Ellipsoid", Size = { 0.56, 2.0, 0.6 }, Pos = { 0, -0.66, 0 }, Color = LEG })
-					k:Part({ Name = name .. "Calf", Shape = "Ellipsoid", Size = { 0.54, 0.95, 0.48 }, Pos = { 0, -0.46, 0.15 }, Color = LEG })
+					k:Part({ Name = name .. "KneeJoint", Shape = "Ball", Size = { 0.47, 0.47, 0.47 }, Color = LEG })
+					k:Part({ Name = name .. "Kneecap", Shape = "Ellipsoid", Size = { 0.3, 0.28, 0.15 }, Pos = { 0, 0.03, -0.19 }, Color = LEG_LIGHT })
+					k:Part({ Name = name .. "UpperShin", Shape = "Ellipsoid", Size = { 0.48, 0.8, 0.5 }, Pos = { 0, -0.2, 0 }, Color = LEG })
+					k:Part({ Name = name .. "Shin", Shape = "Ellipsoid", Size = { 0.46, 1.9, 0.48 }, Pos = { 0, -0.62, 0 }, Color = LEG })
+					k:Part({ Name = name .. "Calf", Shape = "Ellipsoid", Size = { 0.54, 0.95, 0.5 }, Pos = { 0, -0.42, 0.13 }, Color = LEG })
 					k:Group({ Name = name .. "Ankle", Pos = { 0, -L2, 0 }, Rot = { AB, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 14, Speed = RUN, Phase = phase + 0.5 } }, function()
-						k:Part({ Name = name .. "AnkleJoint", Shape = "Ball", Size = { 0.4, 0.4, 0.4 }, Pos = { 0, 0.08, 0 }, Color = LEG })
-						k:Part({ Name = name .. "Sock", Shape = "Cylinder", Size = { 0.36, 0.44, 0.44 }, Pos = { 0, 0.26, 0.04 }, Rot = { 0, 0, 90 }, Color = SOCK, Material = "Fabric" })
-						k:Part({ Name = name .. "SockStripe", Shape = "Cylinder", Size = { 0.05, 0.455, 0.455 }, Pos = { 0, 0.335, 0.04 }, Rot = { 0, 0, 90 }, Color = SHOE })
-						k:Part({ Name = name .. "SockStripe2", Shape = "Cylinder", Size = { 0.05, 0.455, 0.455 }, Pos = { 0, 0.405, 0.04 }, Rot = { 0, 0, 90 }, Color = SHOE })
+						k:Part({ Name = name .. "AnkleJoint", Shape = "Ball", Size = { 0.34, 0.34, 0.34 }, Pos = { 0, 0.1, 0 }, Color = LEG })
+						k:Part({ Name = name .. "Achilles", Shape = "Ellipsoid", Size = { 0.24, 0.6, 0.22 }, Pos = { 0, 0.3, 0.12 }, Color = LEG })
 						k:Group({ Name = name .. "Shoe", Pos = { 0, -ANKLE_H, -0.06 } }, function()
 							sneaker(name)
 						end)
@@ -180,21 +187,21 @@ return {
 		----------------------------------------------------------------------------------
 		k:Part({ Name = "Puddle", Shape = "Cylinder", Size = { 0.05, 4.9, 4.9 }, Pos = { 0, 0.03, 0 }, Rot = { 0, 0, 90 }, Color = WATER_DEEP, Material = "Glass", Transparency = 0.45 })
 		k:Group({ Name = "SplashRing", Pos = { 0, 0, 0 }, Anim = { Type = "Spin", Axis = "Y", Speed = 0.1 } }, function()
-			local R, N = 2.25, 12
+			local R, N = 2.25, 16
 			for i = 0, N - 1 do
 				local a = 2 * math.pi * i / N
 				local ad = deg(a)
-				k:Part({ Name = "RingWater", Shape = "Ellipsoid", Size = { 1.3, 0.22, 0.4 }, Pos = { R * cos(a), 0.11, R * sin(a) }, Rot = { 0, 90 - ad, 0 }, Color = WATER, Material = "Glass", Transparency = 0.3 })
-				k:Part({ Name = "RingGlow", Size = { 1.1, 0.06, 0.08 }, Pos = { R * cos(a), 0.22, R * sin(a) }, Rot = { 0, 90 - ad, 0 }, Color = WATER_GLOW, Material = "Neon" })
+				k:Part({ Name = "RingWater", Shape = "Ellipsoid", Size = { 1.05, 0.22, 0.4 }, Pos = { R * cos(a), 0.11, R * sin(a) }, Rot = { 0, 90 - ad, 0 }, Color = WATER, Material = "Glass", Transparency = 0.3 })
+				k:Part({ Name = "RingGlow", Size = { 0.92, 0.06, 0.08 }, Pos = { R * cos(a), 0.22, R * sin(a) }, Rot = { 0, 90 - ad, 0 }, Color = WATER_GLOW, Material = "Neon" })
 			end
 			-- splash crowns: little sheets of water flicking outward, with droplets above
-			for i = 0, 5 do
-				local a = 2 * math.pi * (i + 0.5) / 6
+			for i = 0, 7 do
+				local a = 2 * math.pi * (i + 0.5) / 8
 				local ad = deg(a)
-				local h = if i % 2 == 0 then 0.6 else 0.42
+				local h = if i % 2 == 0 then 0.62 else 0.42
 				local r = 2.3
 				k:Part({ Name = "SplashSheet", Shape = "Ellipsoid", Size = { 0.12, h, 0.42 }, Pos = { r * cos(a), h * 0.5 + 0.03, r * sin(a) }, Rot = { 0, -ad, -28 }, Color = WATER, Material = "Glass", Transparency = 0.35 })
-				k:Part({ Name = "SplashDrop", Shape = "Ball", Size = { 0.13, 0.13, 0.13 }, Pos = { (r + 0.28) * cos(a), h + 0.12, (r + 0.28) * sin(a) }, Color = WATER, Material = "Glass", Transparency = 0.2, Anim = { Type = "Bob", Axis = "Y", Amount = 0.12, Speed = 1.2, Phase = i / 6 } })
+				k:Part({ Name = "SplashDrop", Shape = "Ball", Size = { 0.13, 0.13, 0.13 }, Pos = { (r + 0.28) * cos(a), h + 0.12, (r + 0.28) * sin(a) }, Color = WATER, Material = "Glass", Transparency = 0.2, Anim = { Type = "Bob", Axis = "Y", Amount = 0.12, Speed = 1.2, Phase = i / 8 } })
 			end
 		end)
 
@@ -221,39 +228,52 @@ return {
 			leg("Rear", { 0, HIP_Y, 0.87 }, 0.25)
 
 			k:Group({ Name = "BodyBob", Pos = { 0, 4.36, -0.08 }, Anim = { Type = "Bob", Axis = "Y", Amount = 0.06, Speed = RUN * 2 } }, function()
+			k:Group({ Name = "BodyRoll", Anim = { Type = "Wiggle", Axis = "Z", Amount = 2, Speed = RUN, Phase = 0.25 } }, function()
 			k:Group({ Name = "Shark", Rot = { 6, 0, 0 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 3, Speed = RUN / 2 } }, function()
 				-- Big forms --------------------------------------------------------------
 				k:Part({ Name = "Torso", Shape = "Ellipsoid", Size = TORSO_S, Pos = TORSO_C, Color = SHARK })
 				k:Part({ Name = "Cranium", Shape = "Ellipsoid", Size = CRANIUM_S, Pos = CRANIUM_C, Color = SHARK })
-				k:Part({ Name = "MidBody", Shape = "Ellipsoid", Size = { 2.1, 2.35, 2.4 }, Pos = { 0, 0.06, 0.5 }, Color = SHARK })
-				k:Part({ Name = "RearBody", Shape = "Ellipsoid", Size = { 1.65, 1.85, 2.1 }, Pos = { 0, 0.14, 1.0 }, Color = SHARK })
-				k:Part({ Name = "Belly", Shape = "Ellipsoid", Size = { 2.15, 2.15, 3.6 }, Pos = { 0, -0.5, -0.45 }, Color = BELLY })
-				k:Part({ Name = "RearBelly", Shape = "Ellipsoid", Size = { 1.4, 1.35, 2.0 }, Pos = { 0, -0.34, 1.05 }, Color = BELLY })
+				k:Part({ Name = "Belly", Shape = "Ellipsoid", Size = BELLY_S, Pos = BELLY_C, Color = BELLY })
+				-- tail stock: bridges the torso into the narrow peduncle (smooth taper)
+				k:Part({ Name = "TailStock", Shape = "Ellipsoid", Size = { 1.1, 1.24, 1.7 }, Pos = { 0, 0.1, 1.45 }, Rot = { -6, 0, 0 }, Color = SHARK })
+				k:Part({ Name = "TailStockBelly", Shape = "Ellipsoid", Size = { 0.8, 0.8, 1.4 }, Pos = { 0, -0.22, 1.42 }, Color = BELLY })
 
 				-- Dorsal fin ---------------------------------------------------------------
+				-- thickness steps down toward the tip so it reads as a tapering blade, not a post
 				k:Group({ Name = "Dorsal", Pos = { 0, 1.18, -0.3 }, Rot = { 10, 0, 0 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 3, Speed = RUN / 2, Phase = 0.3 } }, function()
 					-- wedge = leading edge sloping up and back, vertical trailing edge
-					k:Part({ Name = "DorsalFin", Shape = "Wedge", Size = { 0.2, 1.8, 1.55 }, Pos = { 0, 0.9, 0 }, Color = SHARK })
-					k:Part({ Name = "DorsalCore", Shape = "Wedge", Size = { 0.3, 1.08, 0.93 }, Pos = { 0, 0.54, -0.31 }, Color = SHARK })
-					k:Part({ Name = "DorsalTip", Shape = "Wedge", Size = { 0.22, 0.47, 0.41 }, Pos = { 0, 1.565, 0.57 }, Color = SHARK_DARK })
-					k:Part({ Name = "DorsalTrail", Size = { 0.22, 1.35, 0.06 }, Pos = { 0, 0.68, 0.755 }, Color = SHARK_DARK })
-					k:Part({ Name = "DorsalBase", Shape = "Ellipsoid", Size = { 0.66, 0.6, 1.85 }, Pos = { 0, 0.05, 0.05 }, Color = SHARK })
+					local H, D = 1.8, 1.55
+					local function layer(name, s, thick, color)
+						k:Part({ Name = name, Shape = "Wedge", Size = { thick, H * s, D * s }, Pos = { 0, H * s / 2, -D / 2 + D * s / 2 }, Color = color })
+					end
+					layer("DorsalFin", 1, 0.16, SHARK)
+					layer("DorsalCore", 0.6, 0.24, SHARK)
+					layer("DorsalRoot", 0.32, 0.32, SHARK)
+					k:Part({ Name = "DorsalTip", Shape = "Wedge", Size = { 0.17, 0.47, 0.41 }, Pos = { 0, 1.565, 0.57 }, Color = SHARK_DARK })
+					k:Part({ Name = "DorsalTrail", Size = { 0.17, 1.35, 0.06 }, Pos = { 0, 0.68, 0.755 }, Color = SHARK_DARK })
+					k:Part({ Name = "DorsalBase", Shape = "Ellipsoid", Size = { 0.62, 0.55, 1.85 }, Pos = { 0, 0.04, 0.05 }, Color = SHARK })
 					-- battle notches on the trailing edge
-					k:Part({ Name = "DorsalNotch", Size = { 0.24, 0.07, 0.15 }, Pos = { 0, 1.1, 0.74 }, Rot = { 20, 0, 0 }, Color = SHARK_DEEP })
-					k:Part({ Name = "DorsalNotch", Size = { 0.24, 0.06, 0.11 }, Pos = { 0, 0.8, 0.75 }, Rot = { 20, 0, 0 }, Color = SHARK_DEEP })
+					k:Part({ Name = "DorsalNotch", Size = { 0.175, 0.07, 0.15 }, Pos = { 0, 1.1, 0.74 }, Rot = { 20, 0, 0 }, Color = SHARK_DEEP })
+					k:Part({ Name = "DorsalNotch", Size = { 0.175, 0.06, 0.11 }, Pos = { 0, 0.8, 0.75 }, Rot = { 20, 0, 0 }, Color = SHARK_DEEP })
 				end)
-				k:Part({ Name = "SecondDorsal", Shape = "Wedge", Size = { 0.12, 0.34, 0.36 }, Pos = { 0, 1.1, 1.45 }, Rot = { 12, 0, 0 }, Color = SHARK })
-				k:Part({ Name = "AnalFin", Shape = "Wedge", Size = { 0.12, 0.32, 0.36 }, Pos = { 0, -1.0, 1.6 }, Rot = { 0, 0, 180 }, Color = SHARK })
+				do
+					-- small second dorsal + anal fin sitting on the tapering tail stock
+					local p = onEllipsoid(TORSO_C, TORSO_S, 0, 0.668, 0.744)
+					k:Part({ Name = "SecondDorsal", Shape = "Wedge", Size = { 0.12, 0.38, 0.4 }, Pos = { 0, p[2] + 0.15, p[3] }, Rot = { 20, 0, 0 }, Color = SHARK })
+					k:Part({ Name = "AnalFin", Shape = "Wedge", Size = { 0.12, 0.36, 0.4 }, Pos = { 0, -1.12, 1.6 }, Rot = { -20, 0, 180 }, Color = SHARK })
+				end
 
 				-- Pectoral + pelvic fins (mirrored) ---------------------------------------
 				k:Mirror(function()
 					k:Group({ Name = "Pectoral", Pos = { 0.97, -0.64, -1.05 }, Rot = { 0, -15, -30 }, Anim = { Type = "Wiggle", Axis = "Z", Amount = 10, Speed = RUN, Phase = 0.1 } }, function()
 						k:Part({ Name = "PectoralFin", Shape = "Wedge", Size = { 0.16, 1.75, 1.3 }, Pos = { 0.82, 0, 0.32 }, Rot = { 0, 0, -90 }, Color = SHARK })
 						k:Part({ Name = "PectoralUnder", Shape = "Wedge", Size = { 0.06, 1.55, 1.15 }, Pos = { 0.77, -0.08, 0.38 }, Rot = { 0, 0, -90 }, Color = BELLY_SHADE })
-						k:Part({ Name = "PectoralTip", Shape = "Wedge", Size = { 0.18, 0.455, 0.338 }, Pos = { 1.4675, 0, 0.801 }, Rot = { 0, 0, -90 }, Color = SHARK_DARK })
+						k:Part({ Name = "PectoralTip", Shape = "Wedge", Size = { 0.17, 0.455, 0.338 }, Pos = { 1.4675, 0, 0.801 }, Rot = { 0, 0, -90 }, Color = SHARK_DARK })
 						-- thicker inner half along the leading edge so the fin tapers like a real one
 						k:Part({ Name = "PectoralCore", Shape = "Wedge", Size = { 0.26, 0.96, 0.72 }, Pos = { 0.426, 0, 0.027 }, Rot = { 0, 0, -90 }, Color = SHARK })
-						k:Part({ Name = "PectoralRoot", Shape = "Ellipsoid", Size = { 0.32, 0.3, 1.2 }, Pos = { 0.02, 0, 0.3 }, Color = SHARK })
+						-- rounded leading edge (root-front -> tip)
+						k:Part({ Name = "PectoralEdge", Shape = "Ellipsoid", Size = { 2.1, 0.2, 0.2 }, Pos = { 0.84, 0, 0.33 }, Rot = { 0, -36.6, 0 }, Color = SHARK })
+						k:Part({ Name = "PectoralRoot", Shape = "Ellipsoid", Size = { 0.34, 0.32, 1.2 }, Pos = { 0.02, 0, 0.3 }, Color = SHARK })
 					end)
 					k:Part({ Name = "PelvicFin", Shape = "Wedge", Size = { 0.1, 0.3, 0.4 }, Pos = { 0.44, -1.02, 1.35 }, Rot = { 0, 0, 160 }, Color = SHARK })
 				end)
@@ -307,7 +327,7 @@ return {
 				k:Group({ Name = "Jaw", Pos = { 0, -0.3, -1.2 }, Rot = { -6, 0, 0 }, Anim = { Type = "Wiggle", Axis = "X", Amount = 6, Speed = 0.7 } }, function()
 					local jy = LGUM_Y + 0.3 -- lower gum centre in jaw frame
 					local jz = MOUTH_Z + 1.2
-					k:Part({ Name = "LowerJaw", Shape = "Ellipsoid", Size = { 1.72, 0.6, 1.62 }, Pos = { 0, -0.42, -0.5 }, Color = BELLY })
+					k:Part({ Name = "LowerJaw", Shape = "Ellipsoid", Size = { 1.7, 0.54, 1.58 }, Pos = { 0, -0.4, -0.48 }, Color = BELLY })
 					k:Part({ Name = "Tongue", Shape = "Ellipsoid", Size = { 0.9, 0.24, 1.1 }, Pos = { 0, -0.17, -0.55 }, Color = TONGUE })
 					k:Part({ Name = "LowerGum", Shape = "Ellipsoid", Size = { GUM_SX * 0.94, GUM_SY, GUM_SZ * 0.94 }, Pos = { 0, jy, jz }, Color = GUM })
 					local f = sqrt(1 - (0.05 / (GUM_SY / 2)) ^ 2)
@@ -317,25 +337,25 @@ return {
 
 				-- Tail: peduncle swishes, the fin follows with a delay ---------------------
 				k:Group({ Name = "Tail", Pos = { 0, 0.15, 1.65 }, Rot = { -8, 0, 0 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 14, Speed = RUN / 2, Phase = 0.5 } }, function()
-					k:Part({ Name = "Peduncle", Shape = "Ellipsoid", Size = { 0.7, 0.85, 1.1 }, Pos = { 0, 0, 0.3 }, Color = SHARK })
-					k:Part({ Name = "PeduncleBelly", Shape = "Ellipsoid", Size = { 0.52, 0.55, 0.95 }, Pos = { 0, -0.17, 0.22 }, Color = BELLY })
+					k:Part({ Name = "Peduncle", Shape = "Ellipsoid", Size = { 0.7, 0.85, 1.2 }, Pos = { 0, 0, 0.3 }, Color = SHARK })
+					k:Part({ Name = "PeduncleBelly", Shape = "Ellipsoid", Size = { 0.52, 0.55, 1.0 }, Pos = { 0, -0.17, 0.22 }, Color = BELLY })
 					k:Mirror(function()
 						k:Part({ Name = "CaudalKeel", Shape = "Ellipsoid", Size = { 0.14, 0.09, 0.6 }, Pos = { 0.3, 0, 0.45 }, Color = SHARK_DARK })
 					end)
-					k:Group({ Name = "TailFin", Pos = { 0, 0.02, 0.55 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 12, Speed = RUN / 2, Phase = 0.62 } }, function()
+					k:Group({ Name = "TailFin", Pos = { 0, 0.02, 0.6 }, Anim = { Type = "Wiggle", Axis = "Y", Amount = 12, Speed = RUN / 2, Phase = 0.62 } }, function()
 						-- lunate tail: two swept blades meeting at a thick root
-						local ua, la = 60, 60
 						local function lobe(name, len, wid, ang, tipColor)
 							local a = rad(ang)
 							local dy, dz = sin(a), cos(a)
 							k:Part({ Name = name, Shape = "Ellipsoid", Size = { 0.16, wid, len }, Pos = { 0, dy * len * 0.42, dz * len * 0.42 }, Rot = { -ang, 0, 0 }, Color = SHARK })
 							k:Part({ Name = name .. "Tip", Shape = "Ellipsoid", Size = { 0.18, wid * 0.5, len * 0.26 }, Pos = { 0, dy * len * 0.8, dz * len * 0.8 }, Rot = { -ang, 0, 0 }, Color = tipColor })
 						end
-						lobe("UpperLobe", 1.8, 0.5, ua, SHARK_DARK)
-						lobe("LowerLobe", 1.25, 0.46, -la, SHARK_DARK)
-						k:Part({ Name = "TailRoot", Shape = "Ellipsoid", Size = { 0.24, 0.85, 0.55 }, Pos = { 0, 0.05, 0.05 }, Color = SHARK })
+						lobe("UpperLobe", 2.0, 0.56, 58, SHARK_DARK)
+						lobe("LowerLobe", 1.5, 0.5, -55, SHARK_DARK)
+						k:Part({ Name = "TailRoot", Shape = "Ellipsoid", Size = { 0.26, 0.9, 0.6 }, Pos = { 0, 0.05, 0.05 }, Color = SHARK })
 					end)
 				end)
+			end)
 			end)
 			end)
 		end)
@@ -352,17 +372,17 @@ return {
 
 	BuildMini = function(k)
 		-- body + white belly, dorsal fin, crescent tail, black eyes, open mouth, 3 legs in blue sneakers
-		k:Part({ Name = "Body", Shape = "Ellipsoid", Size = { 1.3, 1.2, 2.45 }, Pos = { 0, 0.3, -0.05 }, Color = SHARK })
-		k:Part({ Name = "Belly", Shape = "Ellipsoid", Size = { 1.14, 0.94, 2.25 }, Pos = { 0, 0.1, -0.1 }, Color = BELLY })
-		k:Part({ Name = "Dorsal", Shape = "Wedge", Size = { 0.13, 0.62, 0.6 }, Pos = { 0, 0.98, 0.05 }, Rot = { 10, 0, 0 }, Color = SHARK })
-		k:Part({ Name = "Tail", Shape = "Ellipsoid", Size = { 0.12, 0.95, 0.36 }, Pos = { 0, 0.55, 0.98 }, Rot = { -25, 0, 0 }, Color = SHARK })
-		k:Part({ Name = "Eyes", Shape = "Cylinder", Size = { 1.1, 0.2, 0.2 }, Pos = { 0, 0.48, -0.74 }, Color = EYE })
-		k:Part({ Name = "Mouth", Shape = "Ellipsoid", Size = { 0.7, 0.2, 0.3 }, Pos = { 0, 0.12, -1.1 }, Color = MOUTH })
+		k:Part({ Name = "Body", Shape = "Ellipsoid", Size = { 1.24, 1.12, 2.5 }, Pos = { 0, 0.32, -0.08 }, Color = SHARK })
+		k:Part({ Name = "Belly", Shape = "Ellipsoid", Size = { 1.1, 0.86, 2.2 }, Pos = { 0, 0.1, -0.16 }, Color = BELLY })
+		k:Part({ Name = "Dorsal", Shape = "Wedge", Size = { 0.14, 0.64, 0.62 }, Pos = { 0, 0.95, 0.06 }, Rot = { 12, 0, 0 }, Color = SHARK })
+		k:Part({ Name = "Tail", Shape = "Ellipsoid", Size = { 0.12, 1.0, 0.34 }, Pos = { 0, 0.6, 1.02 }, Rot = { -30, 0, 0 }, Color = SHARK })
+		k:Part({ Name = "Eyes", Shape = "Cylinder", Size = { 1.0, 0.24, 0.24 }, Pos = { 0, 0.5, -0.82 }, Color = EYE })
+		k:Part({ Name = "Mouth", Shape = "Ellipsoid", Size = { 0.9, 0.36, 0.5 }, Pos = { 0, 0.16, -1.08 }, Color = MOUTH })
 		k:Mirror(function()
-			k:Part({ Name = "FrontLeg", Shape = "Cylinder", Size = { 0.48, 0.25, 0.25 }, Pos = { 0.3, -0.44, -0.42 }, Rot = { 0, 0, 90 }, Color = LEG })
-			k:Part({ Name = "FrontShoe", Shape = "Ellipsoid", Size = { 0.36, 0.27, 0.6 }, Pos = { 0.3, -0.75, -0.52 }, Color = SHOE })
+			k:Part({ Name = "FrontLeg", Shape = "Cylinder", Size = { 0.5, 0.26, 0.26 }, Pos = { 0.3, -0.46, -0.45 }, Rot = { 0, 0, 90 }, Color = LEG })
+			k:Part({ Name = "FrontShoe", Shape = "Ellipsoid", Size = { 0.38, 0.3, 0.64 }, Pos = { 0.3, -0.78, -0.55 }, Color = SHOE })
 		end)
-		k:Part({ Name = "RearLeg", Shape = "Cylinder", Size = { 0.48, 0.25, 0.25 }, Pos = { 0, -0.44, 0.5 }, Rot = { 0, 0, 90 }, Color = LEG })
-		k:Part({ Name = "RearShoe", Shape = "Ellipsoid", Size = { 0.36, 0.27, 0.6 }, Pos = { 0, -0.75, 0.4 }, Color = SHOE })
+		k:Part({ Name = "RearLeg", Shape = "Cylinder", Size = { 0.5, 0.26, 0.26 }, Pos = { 0, -0.46, 0.5 }, Rot = { 0, 0, 90 }, Color = LEG })
+		k:Part({ Name = "RearShoe", Shape = "Ellipsoid", Size = { 0.38, 0.3, 0.64 }, Pos = { 0, -0.78, 0.4 }, Color = SHOE })
 	end,
 }
