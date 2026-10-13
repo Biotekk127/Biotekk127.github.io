@@ -46,7 +46,10 @@ def main():
             continue
         with open(src_path, encoding="utf-8") as f:
             src = f.read()
-        name = (re.search(r'Name\s*=\s*"([^"]+)"', src) or [None, cid])[1]
+        # The character's display Name follows its Id in the returned table (helper functions
+        # earlier in the file also use Name = "..." for parts).
+        name_match = re.search(r'Id\s*=\s*"' + cid + r'"\s*,\s*Name\s*=\s*"([^"]+)"', src)
+        name = name_match.group(1) if name_match else cid
         rarity = (re.search(r'Rarity\s*=\s*"(\w+)"', src) or [None, "Common"])[1]
         sheet = Image.open(path)
         tw, th = sheet.width // 5, sheet.height // 2

@@ -1,0 +1,232 @@
+[
+ {
+  "id": "LiriliLarila",
+  "accuracy": 8,
+  "detail": 4,
+  "consistency": 5,
+  "targetParts": "180-210 (now 100; Common tier 170-210, tertiary share >=30%, now 15%)",
+  "mustFix": [
+   "Eyes (Build > Head group > k:Mirror, the EyeWhite/Pupil/EyeShine/EyeLid/Brow block): rebuild to the house recipe. EyeWhite Size {0.6,0.55,0.3} -> {0.8,0.74,0.3} (eye height ~28% of the 2.6 skull); add an Iris Ellipsoid {0.5,0.52,0.1} colour \"#5a4232\" at +0.05 along the eye's forward axis; Pupil -> flat Ellipsoid {0.26,0.28,0.08} at +0.08; replace the single SmoothPlastic EyeShine with two Material=\"Neon\" Balls colour \"#fffdf4\" (0.18 upper-outer, 0.08 lower-inner) at +0.11; all five eyeball parts share one table `local BLINK = { Type = \"Blink\", Speed = 0.22, Phase = 0.6 }`. Keep the deadpan look by keeping EyeLid but sizing it to cover only the top 35% of the larger white ({0.86,0.36,0.38}, same yaw).",
+   "Trunk (TRUNK table + trunkSegment): the five TrunkSeg ellipsoids pinch at every group boundary (visible segmented-sausage look). Make each TrunkSeg Size Y = s.len * 2.6 (was 1.9) so neighbours overlap >=30%, keep diameters stepping <=15% (0.86,0.78,0.70,0.62,0.55), and replace the 2 TrunkWrinkle rings with 3 thin GREY_W ring Cylinders (0.05 thick) per segment (15 total) plus 2 Nostril ellipsoids on the TrunkTip.",
+   "Legs (Build > first k:Mirror): the Cylinder \"Leg\" ends in a hard rim on top of the Foot dome. Replace it with an Ellipsoid {1.12,1.9,1.12} at the same centre so the leg flows into the foot, add 3 GREY_W wrinkle-crease ellipsoids (0.05 thick, 0.9 wide) around each ankle and a cuticle (GREY_W 0.32x0.08x0.12) behind each Toenail.",
+   "Raise to 180-210 parts with tertiary detail (>=30% of parts with max dimension <=0.35): (a) 12 more spineRod calls in BODY_SPINES (back ribs 4-6 too, so the back view is not bald) - each rod already gives two spines; (b) an areole tuft Ball 0.13 colour \"#efe6c8\" at the root of every spine pair on the visible side; (c) 3-spine clusters on each ArmTip; (d) sandal stitching: a row of 6 tiny 0.05 LEATHER_D blocks along each ToeStrap edge and a Foil GOLD buckle (0.22x0.18x0.06) on each AnkleStrap; (e) watch: 4 numeral bars at 12/3/6/9, a 4-link Metal chain (Cylinders 0.08 dia) between the arm and WatchBow, and a glass cover (Glass, Transparency 0.4, 0.04 thick); (f) 3 GREY_W forehead wrinkle arcs on the Skull and 2 PINK-dark vein ellipsoids on each EarInner.",
+   "Animation: 18 animated -> >=20 (Common minimum). Add a Wiggle on the watch chain group (Amount 6, Speed 0.5, Phase 0.2) and a Pulse breathing on CactusBase (Amount 0.025, Speed 0.45, Phase 0.3). Re-run charlab: zero ANIM warnings."
+  ],
+  "shouldFix": [
+   "Mini (BuildMini): replace the single flat \"Sandals\" slab (reads as a plinth) with two sandal-sole Ellipsoids {0.5,0.16,0.62} at x=+-0.27; to stay at 12 parts merge ArmBranch+ArmUpright into one bent Ellipsoid per side. Give the Eye balls a white back (EYE_W ellipsoid 0.22) only if you can free a part (e.g. drop Trunk into Head by stretching Head forward).",
+   "Add one Common-tier particle emitter at the sandals: sand dust, Color \"#e8d6a8\", Color2 \"#f6ead0\", Rate 2, Size 0.15, Speed 0.4, Lifetime 1.5, Direction \"Top\".",
+   "Add a lighter belly/forehead highlight (GREY_LIGHT \"#a2adbd\" cap ellipsoid on the forehead) so the grey head is not one flat value."
+  ],
+  "name": "Liril\u00ec Laril\u00e0"
+ },
+ {
+  "id": "BonecaAmbalabu",
+  "accuracy": 9,
+  "detail": 5,
+  "consistency": 6,
+  "targetParts": "180-210 (now 100; tertiary share >=30%, now 20%)",
+  "mustFix": [
+   "Legs (buildLeg): the Cylinder Thigh + Ball KneeJoint + Cylinder Shin reads as a wooden mannequin leg with visible joint rings. Keep the RightLeg/Knee/Ankle/Toes groups and their Anim exactly, but replace ThighMass/Thigh with a loft of 3 overlapping Ellipsoid beads (radii 0.36 -> 0.30 -> 0.25, each bead length = segment length x 2.6) and Shin/Calf with 3 beads (0.24 -> 0.2 -> 0.16) plus the Calf bulge; delete the KneeJoint Ball and let the first shin bead overlap the knee pivot by >=0.15 studs; keep KneeCap as a soft SKIN bump. No ring or edge may be visible at knee or ankle in the side view.",
+   "Tyre tread (buildTire, Tread loop): 2 rows x 10 plain blocks read as chunky boxes. Use 3 staggered rows x 16 blocks (rows at z = -0.55, 0, +0.55, size {0.18,0.42,0.42}) with a RUBBER_DARK groove ring Cylinder between rows; add generic raised sidewall lettering (12 RUBBER_LIGHT blocks 0.06 thick, 0.2x0.08, in a ring at r = 1.55 on BOTH sidewalls - no brand names) and 6 wear-indicator nubs.",
+   "Frog skin tertiary detail (buildHead): add 14 warts (Balls 0.08-0.14, FROG_SPOT/FROG_DARK, placed with headSurface(...,-0.02) over the crown, back and cheeks), 2 dorsolateral ridges (thin FROG_DARK ellipsoids 0.12x0.08x1.4 from behind each EyeLid back over the skull), 3 throat crease lines (THROAT-dark \"#b7c95f\" 0.05 ellipsoids) and 4 more back spots so the back view is not plain green.",
+   "Raise to 180-210 parts; with the leg beads, tread and skin detail above, also add toenails on all 5 toes (currently only the big toe), ankle-bone bumps and knee creases."
+  ],
+  "shouldFix": [
+   "Eyes are the house template for bulging eyes; only add a thin FROG_DARK lower-lid ring (Ellipsoid 1.2x0.18x1.1 under the Eyeball) to frame them from the 3/4 view.",
+   "Mini: colour the two Eye balls IRIS gold with the Pupil on top (canonical golden frog eye) instead of plain EYE_WHITE.",
+   "Optional Common emitter (Rate <= 2): a puff of road dust at the toes."
+  ],
+  "name": "Boneca Ambalabu"
+ },
+ {
+  "id": "BrrBrrPatapim",
+  "accuracy": 7,
+  "detail": 5,
+  "consistency": 4,
+  "targetParts": "210-240 (now 130; tertiary share >=30%, now 12%)",
+  "mustFix": [
+   "Eyes (buildHead > k:Mirror, EyeSocket/EyeWhite/Pupil/EyeShine): 0.3-stud eyes are unreadable. EyeSocket -> {0.64,0.56,0.12} SKIN_DARK rim; EyeWhite -> {0.46,0.44,0.16}; add Iris Ellipsoid {0.3,0.32,0.08} colour \"#5a3a22\"; Pupil -> {0.16,0.18,0.06}; replace EyeShine with two Neon \"#fffdf4\" Balls (0.1 upper-outer, 0.05 lower-inner); move Brow up 0.06. All eyeball parts share `local BLINK = { Type = \"Blink\", Speed = 0.3, Phase = 0.45 }` (currently three separate tables with no Phase).",
+   "Canon colour: Patapim is green-furred/mossy everywhere except face, hands and feet. Skull (BARK Wood) -> LEAF_DARK Fabric with 8-10 moss tuft ellipsoids (MOSS/LEAF, 0.3-0.45 wide) over the crown and back of the head; keep BarkRidge but recolour to MOSS as fur locks. Arms (buildArm): wrap UpperArm and LowerArm in green fur sleeves (Ellipsoid around each twig, diameter 0.36/0.3, colour \"#4c7f2c\", Fabric) and end each arm in a tan SKIN palm Ellipsoid {0.26,0.32,0.18} with the twig fingers recoloured SKIN_DARK; keep the bark root legs and giant bare feet.",
+   "Breathing: add Pulse Amount 0.03 Speed 0.45 Phase 0.2 to TrunkCore and wrap the Head joint in a group with Bob Y Amount 0.04 Speed 0.45 Phase 0.35 (there is currently no breathing/bob).",
+   "Uncommon flair (Neon 0 -> 6-12 incl. catch-lights): inside the Glass Slim add a Neon core Ellipsoid {0.6,0.18,0.6} colour SLIME, plus 3 Neon slime drips (0.08-0.12 balls) hanging over the HatBrim edge with Bob Y 0.05 Speed 0.6 phase-offset 0.15 each. Keep the leaf particle.",
+   "Raise to 210-240 parts with tertiary detail: a LEAF_DARK midrib vein on every RobeLeaf/HemLeaf/CollarLeaf/ElbowLeaf, 3 NOSTRIL-tint wrinkle arcs across NoseBridge, 5 SKIN_DARK freckles on NoseBulb, toenails on all 5 toes per foot (only 2 now) plus knuckle creases, bark grain lines (BARK_DARK 0.05 ellipsoids) on RootShin/RootThigh, and gill-like moss specks on the robe."
+  ],
+  "shouldFix": [
+   "Root legs (buildLeg): taper the twisted roots from 0.28 at the hip to 0.18 at the ankle and add 2 small root tendrils per leg so the legs read as entwined roots rather than straight sticks.",
+   "Mini: replace the black dot eyes with a SKIN face carrying two tiny white-backed eyes, and add the HAT_BAND colour to the hat (swap the Arm cylinders for the band if you need the part).",
+   "Hat: lore calls it a golden hat - consider HAT_BAND-gold accents on the brim edge."
+  ],
+  "name": "Brr Brr Patapim"
+ },
+ {
+  "id": "TrippiTroppi",
+  "accuracy": 9,
+  "detail": 7,
+  "consistency": 7,
+  "targetParts": "215-245 (now 171; tertiary share >=30%, now 11%)",
+  "mustFix": [
+   "Presence/scale: top y is 6.69 and the 3/4 coverage is 17% (target 20-30%). In Build, give the existing Model group Rot = {0, -20, 0} (shrimp body yawed so its length runs partly along Z), counter-rotate the head joint by +20 deg about Y so the cat face still looks straight down -Z, then scale the whole model x1.12 about the origin (scale HC, NECK, CARA, AC, SEGMENTS sizes, leg reach/hip/knee/ankle/foot, head volumes - or route Build through a scaled-kit wrapper like Ballerina's scaledKit). Re-check the footprint in charlab (x and z within +-3.2 in every pose).",
+   "Antennae (buildAntenna calls in Build): raise the bezier control/end points so the whips arc to an apex near y 8.4-8.7 (canonical long whips) and sweep back over the tail - this lifts the silhouette height to >=8.3.",
+   "Raise to 215-245 parts with tertiary detail: 3-4 SHELL_DARK speckle dots on every Segment Shell, a SHELL_PALE joint band at each leg knee, 2 lower fangs + a lower teeth strip inside Mouth, a pink tongue tip highlight, 4 more tabby stripes on the back/top of the head, cream ear-fur lines in each EarInner, and a gloss streak (SHELL_LIGHT, Reflectance 0.15) on each of segments 1-4.",
+   "Uncommon flair: Neon 4 -> 6-12. Add 3 pulsing Neon water-droplet glints \"#d8f3ff\" (Balls 0.1, Pulse 0.3 Speed 0.8, Phase 0.0/0.33/0.66) on the shell top of segments 1-3."
+  ],
+  "shouldFix": [
+   "Mini: the Fan and Tail read as blobs - make the Fan a wider SHELL_RED ellipsoid {1.0,0.5,0.2} and give the cat head eye whites by recolouring Muzzle-free space (drop the Antenna if a part is needed).",
+   "Whiskers: add a second whisker group on the other cheek moving with Phase 0.55 so both sides do not twitch in sync (currently mirrored)."
+  ],
+  "name": "Trippi Troppi"
+ },
+ {
+  "id": "TungTungTungSahur",
+  "accuracy": 8,
+  "detail": 6,
+  "consistency": 6,
+  "targetParts": "240-270 (now 167)",
+  "mustFix": [
+   "Eyes (buildFace > surfaceGroup \"Eye\"): keep the canonical tiny pupils but bring them to house standard: add an iris ring Ellipsoid {0.36,0.38,0.08} colour \"#3a2314\" behind the Pupil (offset -0.11), Pupil {0.22,0.24} -> {0.26,0.28}; EyeShine 0.08 -> 0.13 and EyeShineSmall 0.05 -> 0.07, BOTH Material=\"Neon\" colour \"#fffdf4\" (the small one is SmoothPlastic now); darken EyeSocket to \"#a87642\" and add a lower-lid crease (WOOD_SHADE ellipsoid 0.8x0.06x0.06 under each eye).",
+   "Stick-limb joints (buildBatArm, buildSwayArm, buildLeg): the perfect LIMB_DARK Balls at Shoulder/Elbow/Knee/Ankle/Wrist read as a construction toy. Replace each with a knotted wood joint: Ellipsoid {0.3,0.26,0.3} in LIMB, rotated 15-25 deg, plus a thin LIMB_DARK ring (Cylinder 0.05 thick) on one side; and taper every limb segment by building it as two overlapping pieces (0.24 at the proximal end -> 0.17 distal) instead of one constant Cylinder.",
+   "Log silhouette (buildLog): grow BaseLip into a flared root base - Ellipsoid {2.9,0.6,2.9} WOOD_SHADE at LOG_BOTTOM+0.12 plus 5 root-buttress ellipsoids {0.5,0.55,0.9} radiating at 72 deg steps - and round the sawn top edge with an Ellipsoid {2.44,0.32,2.44} WOOD_LIGHT at LOG_TOP-0.03 under the EndGrain discs, so it reads as a worn log, not a tin can.",
+   "Animation 21 -> >=30 (Rare minimum) and calmer rhythm: Body Bob Speed 1.8 -> 0.9 (sync with the BatArm 0.9 knock), Amount 0.05. Add: a \"Grin\" group around the 9 Mouth + 5 Tooth parts with Bob Y 0.02 Speed 0.9 Phase 0.1; Toes group on the tapping foot (Wiggle X 6, Speed 0.9, Phase 0.3); 3 Neon knock-ring arcs near the bat barrel (thin Neon \"#ffd59a\" ellipsoid arcs, Pulse 0.35 Speed 0.9 Phase 0.05/0.15/0.25); a Pulse glint on the bat; two loose bark strips at the base with Wiggle.",
+   "Rare flair Neon 2 -> 8-20: the 4 catch-lights + the knock-ring arcs + one pulsing Neon varnish glint (\"#ffe3b8\", 0.12 ball) on the bat barrel.",
+   "Raise to 240-270 parts: grain lines on the bald lower-front (between the mouth and BaseLip: 4 GRAIN_SOFT lines and 6 pores), carved eyelid lines, separations between the 5 teeth, toenail nubs, a tape-grip ring and dent cluster on the bat handle, and 4 wood chips (WOOD_LIGHT 0.12-0.2 wedges) around the feet."
+  ],
+  "shouldFix": [
+   "Mini: add two thin brows (BROW blocks) - free the parts by merging the two Leg cylinders into the Log bottom if needed; keep the bat.",
+   "Lights are good; keep key Brightness <= 0.9."
+  ],
+  "name": "Tung Tung Tung Sahur"
+ },
+ {
+  "id": "CappuccinoAssassino",
+  "accuracy": 9,
+  "detail": 7,
+  "consistency": 7,
+  "targetParts": "245-275 (now 204)",
+  "mustFix": [
+   "Eyes (cupHead > Mirror > group \"Eye\"): add EyeShine2 (Neon Ball 0.05, lower-inner, offset -0.13) so each eye has two catch-lights; Iris {0.33,0.37} -> {0.42,0.44} and Pupil -> {0.2,0.24} so the red-brown iris reads at distance; keep the AngryLid.",
+   "No pure white: SHINE \"#ffffff\" -> \"#fffdf4\", STEAM \"#ffffff\" -> \"#fffaf2\", and the steam k:Particles Color \"#ffffff\" -> \"#fffaf2\".",
+   "Ninja body reads as one black blob from 40 studs. Lift the value structure: NINJA \"#25252f\" -> \"#2b2b38\", NINJA_LIGHT \"#424257\" -> \"#4a4a62\"; add 2-3 NINJA_LIGHT fold ellipsoids (0.06 thick) on each Sleeve and Thigh, a quilted chest panel (4 NINJA_LIGHT stitched seam lines on CHEST front via torsoZ), and SASH-coloured trims on the hem flaps' inner edges.",
+   "Raise to 245-275 parts with tertiary detail: 3 rivets on each Tekko, 2 extra wrap bands on each forearm and shin (alternating tilt), stitch row along the Sash, 4 more FoamBubble balls on the crema, a gloss streak on the cup (CUP_HI, Reflectance 0.3, thin ellipsoid on the side away from the face), a small chip in the rim, toe-seam lines on the tabi."
+  ],
+  "shouldFix": [
+   "Mini: eyes are dark blobs on grey - merge CupWall into CupBowl (one taller Ellipsoid) and use the freed part for white eye backs (one white Ellipsoid behind both eyes) so the angry face reads on the conveyor.",
+   "Breathing: add a Pulse 0.025 Speed 0.5 to the Chest volume part.",
+   "Blade light moves with the katana flourish; keep its Brightness <= 0.6 so it doesn't flash on the cup face."
+  ],
+  "name": "Cappuccino Assassino"
+ },
+ {
+  "id": "ChimpanziniBananini",
+  "accuracy": 8,
+  "detail": 7,
+  "consistency": 6,
+  "targetParts": "285-315 (now 236)",
+  "mustFix": [
+   "Peel strips (peelFlap): PeelOuter/PeelInner are Blocks, so every flap reads as a stack of cardboard planks. Rebuild each rise and DROOP segment as curved slabs: PeelOuter = Ellipsoid {w*0.9, L*1.35, 0.14} YEL, PeelInner = Ellipsoid {w, L*1.3, 0.09} CREAM offset 0.05 toward the banana, overlapping the next segment by >=30%; taper width along the strip (x1.0, x0.88, x0.72); add a thin YEL_DEEP edge-rim ellipsoid along each strip side and round the PeelFold Cylinder ends with small YEL ellipsoid caps. Keep the PeelSway animation and hinge positions.",
+   "Banana top: BananaUpper (flat-topped Cylinder) + PeelLip read as a can. Replace BananaUpper with an Ellipsoid {2.74, 3.0, 2.74} centred at y = (UP_BOT+RIM_Y)/2 overlapping BananaBelly, and make the 5 PeelRidge lines continuous creases by building each segment as an Ellipsoid (rod -> limb-style, length x1.3 overlap, 0.1 diameter) instead of a Cylinder.",
+   "Eyes (head > Mirror): EyeShine2 -> Material \"Neon\", size 0.06; EyeWhite {0.47,0.57} -> {0.52,0.66} (x HEAD_S 1.1 = 0.73 studs, ~33% of the head), Iris/Pupil scaled x1.12 to match.",
+   "Sparkle noise: the three Glint groups and the body particle scatter '+' marks across the front of the banana. Move the Glints off the front (phi 120/240/300, y 4.4-5.0), shorten GlintRay lengths 30%, and lower the k:Particles at {0,3.0,0} from Rate 3 to 2.",
+   "Raise to 285-315 parts: 4 fur strand tufts per forearm, knuckle creases and SKIN_LIGHT fingernails on every finger, toenails, 3 stringy CREAM banana fibres hanging between flaps, 2 bruise streaks on the belly back, chest-fur locks around ChestFur."
+  ],
+  "shouldFix": [
+   "Mini: FlapRight/FlapLeft/FlapBack are CREAM - make them YEL outside (canonical peel) and keep PeelInside CREAM; eyes are tiny (0.14) - raise to 0.18 and add white backs if a part can be freed by merging Ears into Head.",
+   "Waving hand particle (hand sparkles) Rate 3 is fine; keep total emitters at 3."
+  ],
+  "name": "Chimpanzini Bananini"
+ },
+ {
+  "id": "FrigoCamelo",
+  "accuracy": 6,
+  "detail": 8,
+  "consistency": 5,
+  "targetParts": "300-325 (now 322 - rebalance, do not just add)",
+  "mustFix": [
+   "Camel head is the smallest face in the set (~1.1 studs wide; house range 2.0-2.9). Head scale HS 1.15 -> 1.65 and eyeball ER 0.25 -> 0.29 (eyeball ~0.96 studs); NECK_D taper 0.86->0.58 becomes 1.05->0.78. To stay under 9.5: J {0,8.2,-0.95} -> {0,7.7,-1.05}, FT 6.55 -> 6.25 and FB 2.5 -> 2.3 (shorten the leg Shin ellipsoid 1.05 -> 0.9 and adjust the Ankle group offset); adjust the NECK bezier control points accordingly. Verify top <= 9.4 in the charlab animation sweep.",
+   "Fridge is the narrowest body in the lineup (2.5 wide = 41% of the footprint). FX 1.25 -> 1.55; every hard-coded x literal that depends on width (GlassShelf/ShelfTrim 1.96, food x -0.72/-0.25/-0.66/-0.36, Grille 1.9 / GrilleSlat 1.7, CoilTube 1.7 + headers +-0.85, coil wires +-0.42, DoorSeam 2.45, icicle x list, SnowCap x, magnets/drawing x on the doors, Door bins 1.6) scales x1.24.",
+   "Neck (buildNeck): Cylinder segments + NeckJoint Balls read as stacked rings (segmented sausage). Replace with an overlapping Ellipsoid bead loft along NECK_PTS (each bead: radius = NECK_D/2, length = segment length x 2.6, FUR) and delete the NeckJoint balls; keep Mane and ThroatFur.",
+   "Lights and whites: key k:Light Brightness 1.8 -> 1.2 (house max) and Range 7 -> 9; SHINE \"#ffffff\" -> \"#fffdf4\"; frostStar colour \"#ffffff\" (two calls in buildFreezerDoor) -> \"#f4fbff\".",
+   "Animation 31 -> >=36 (Epic minimum): HumpTuft Wiggle, 2 MeltDrop Bob Y 0.06 Speed 0.6 (phase 0/0.5), Pulse on two frost-bloom Neon glints, a lash-flutter Wiggle on each eye's lash group.",
+   "Part budget stays 300-325: pay for the bigger head (eyelid crease, 6 more lashes, nostril rims, lip wrinkles, ear fur tufts, cheek fur) by removing 12-16 low-value interior/back parts (one BinLip/BinFloor pair, DrawingSun, 2 of 4 Eggs, CoilWire x2, 2 BackVents)."
+  ],
+  "shouldFix": [
+   "Mini: Fridge 1.0 wide -> 1.3, Head scaled x1.3 and give the camel two white-backed eyes (drop Seam, keep Handle).",
+   "Hump is only visible from behind; enlarge it 20% and push it up so it breaks the silhouette in the 3/4 view."
+  ],
+  "name": "Frigo Camelo"
+ },
+ {
+  "id": "BallerinaCappuccina",
+  "accuracy": 8,
+  "detail": 7,
+  "consistency": 5,
+  "targetParts": "330-355 (now 313)",
+  "mustFix": [
+   "Presence: she covers 11% of the 3/4 view (the smallest biped; target 20-30%). HEAD_S 0.86 -> 1.12 (cup ~2.25 wide); scale the en-couronne arm points x1.25 (Arm group E {0.93,1.4,-0.26} -> {1.15,1.75,-0.3}, Forearm W {-0.86,0.92,0.04} -> {-1.05,1.15,0.05}) so the hands still meet above the larger cup; scale TORSO_SHAPES, BUST_CUP, CHEST, SHOULDERS and Pelvis x1.2 in X/Z; limb diameters x1.3 (thigh core 0.31->0.4, shin 0.22->0.29, upper arm 0.23->0.3, forearm 0.19->0.25, bulges likewise); TutuCore 2.9 -> 3.6 wide and all tutu tier radii/ruffle sizes x1.22. Keep top <= 9.3 (lower the Head pivot by shortening StandingLeg 0.15 if needed).",
+   "Pirouette hides the face: the Dancer group Spin (0.2 rev/s) turns the cup face away from the viewer ~50% of every loop (house rule: beauty side within +-45 deg for >=75%). Replace with Wiggle Axis Y Amount 35 Speed 0.25 and wrap it in a relev\u00e9 group with Bob Y Amount 0.06 Speed 0.5 Phase 0.3; keep Spin only on SparkleOrbit.",
+   "Limb joints: softLimb (Cylinder core) + Knee/Ankle/Elbow/Wrist Balls read as a jointed doll. Rebuild thighs, shins, upper arms and forearms as tapered Ellipsoid bead lofts (La Vacca loft pattern, 3 beads per bone, length x2.6 overlap) and delete the separate joint Balls; keep the muscle bulges and all group pivots/anims.",
+   "Eyes (head > Mirror > group \"Eye\"): Shine and Shine2 -> Material \"Neon\", colour \"#fffdf4\"; add a lighter iris ring \"#8a5435\" around the IRIS for depth.",
+   "Neon budget: 48 Neon parts exceed the Legendary cap of 40 (and the eye fix adds 4). Convert every second SPARK rhinestone/sequin (tutuSequins, waist Rhinestone loop) from Neon to Foil (Reflectance 0.3); keep gems, sparkles and catch-lights Neon. GlazeShine \"#ffffff\" -> \"#fffaf2\"."
+  ],
+  "shouldFix": [
+   "Mini: the cup face is two ink dots - add a white eye back (one EYE_W ellipsoid behind both eyes; free a part by merging Crema into Cup).",
+   "With the scale-up, add tertiary detail to reach 330-355: gold dot band on the cup, ribbon ends trailing from the pointe-shoe wraps, pleats on the bodice, more foam bubbles."
+  ],
+  "name": "Ballerina Cappuccina"
+ },
+ {
+  "id": "BombardiroCrocodilo",
+  "accuracy": 7,
+  "detail": 8,
+  "consistency": 4,
+  "targetParts": "330-355 (now 318)",
+  "mustFix": [
+   "Presence: top y is 4.65 (49% of 9.5) and it covers 13% of the 3/4 view - the smallest silhouette in the set while being Legendary. Re-pose it IN FLIGHT on a display stand (the meme always flies): add a base disc (Cylinder {0.2,1.8,1.8} METAL_DARK at y 0.1 with a Foil GOLD rim ring), a tapered post (Cylinder 0.22 -> 0.16 dia, METAL_DARK) from y 0.2 up to the belly with a slight forward lean, and a cradle Ellipsoid under the fuselage; raise the Stance group so the fuselage axis sits at y ~4.6 (Stance Pos y AXLE_Y -> ~3.0) and PITCH 7 -> 10 (climb). Retract the landing gear (remove MainTire/Hub/Fork/GearPiston/GearSleeve/GearBrace and TailTire/TailFork/TailStrut; add 2 closed OLIVE_DARK gear-door panels under each inner nacelle). Target top 7.6-8.2, 3/4 coverage >= 20%, still inside +-3.2 in every pose.",
+   "The crocodile head is the meme: scale SKULL, SNOUT, LIP, LJAW, NECK semi-axes and all head-detail offsets x1.3 about the neck collar (or build the head through a scaled-kit wrapper), tooth heights x1.3; FR 0.8 -> 0.9 so the NeckCollar still hides the seam.",
+   "Eyes (head Mirror block): Eye ball 0.44 -> 0.58 (after the head scale ~0.6+); EyeShine -> Material \"Neon\" colour \"#fffdf4\" 0.12 and add EyeShine2 Neon 0.06 lower-inner; keep Iris + slit Pupil and the angry EyeLid; all on one shared BLINK table with a Phase (currently each part has its own table without Phase).",
+   "Legendary flair + animation 35 -> >=45: add an ORBIT group (Spin Y 0.12, radius 2.6, centred at the fuselage) with 5 golden sparkles (Neon core + 2 GOLD Foil rays each, Pulse 0.3, Bob Y 0.12, Phase i*0.2) - this also lifts Neon from 10 to the 15-40 Legendary range.",
+   "Part count stays 330-355 after the stand (+8-12) and orbit (+15-20): trim by dropping the removed gear parts and compacting the WingBomb fins."
+  ],
+  "shouldFix": [
+   "Mini: keep it a plane but make the croc Head x1.2 and the Fin taller so its silhouette height is >= 1.5.",
+   "Add 6-8 more head scutes and cheek scales after the scale-up so the larger head keeps its density."
+  ],
+  "name": "Bombardiro Crocodilo"
+ },
+ {
+  "id": "TralaleroTralala",
+  "accuracy": 9,
+  "detail": 7,
+  "consistency": 6,
+  "targetParts": "355-380 (now 292 - below both Legendaries)",
+  "mustFix": [
+   "Eyes (eyes Mirror block): the solid black Eye with SmoothPlastic shines reads as a dead dot. Keep the canonical black shark eye but enlarge Eye {0.46,0.46,0.24} -> {0.58,0.58,0.26}, add a navy iris ring Ellipsoid {0.7,0.7,0.2} colour \"#1d2c44\" between EyeSocket and Eye, EyeSocket -> {0.78,0.68,0.2}; EyeShine -> Neon \"#fffdf4\" 0.16 and EyeShineSmall -> Neon 0.08; add a thin SHARK_MID lower-lid ellipsoid; one shared BLINK table with Phase 0.25.",
+   "Legs (leg()): Glute/Thigh/Quad/Hamstring + KneeJoint Ball + UpperShin/Shin/Calf + AnkleJoint Ball read as stacked robot capsules. Keep the Hip/Knee/Ankle groups and their gait Anims exactly, but replace thigh and shin forms with 3-bead Ellipsoid lofts per bone (length x2.6 overlap, radii thigh 0.42->0.34, shin 0.27->0.2) and delete KneeJoint/AnkleJoint Balls (beads overlap the pivots); keep Quad/Calf as soft LEG_LIGHT definition. Zero ANIM warnings.",
+   "Tier inversion: raise to 355-380 parts with tertiary detail: 12 more skin pores on the cranium, a lateral-line streak along each flank, fin-ray lines (thin SHARK_DARK ellipsoids) on the dorsal and pectoral fins, 2 extra scars, stitching rows on each sneaker side, aglets on the lace ends, tread nubs on each outsole, tooth gaps on the gum line.",
+   "Presence: raise HIP_Y 3.19 -> 3.45 with L1/L2 1.4 -> 1.52 (recompute ANKLE_H) so the dorsal tip reaches ~8.2 (now 7.51); keep the splash ring radius <= 2.4.",
+   "Animation 50 -> >=55 and flair: add 4 Neon splash droplets (WATER_GLOW, Pulse 0.3 Speed 1.0, phase-offset) on the splash crowns (also lifts Neon to the Mythic 25-55 range), plus a lace-end Wiggle on each sneaker.",
+   "Lights/particles: ground k:Light Brightness 1.5 -> 1.2; splash particle Rate 8 -> 6 (house max per emitter)."
+  ],
+  "shouldFix": [
+   "Mini: the single Cylinder 'Eyes' bar works; consider white-rimmed eyes only if a part can be freed.",
+   "Pectoral fins: add a rounded trailing-edge ellipsoid so the Wedge corners don't read as hard plates in the front view."
+  ],
+  "name": "Tralalero Tralala"
+ },
+ {
+  "id": "LaVaccaSaturnoSaturnita",
+  "accuracy": 9,
+  "detail": 9,
+  "consistency": 8,
+  "targetParts": "385-400 (now 386, hard cap 400 - re-budget, then spend)",
+  "mustFix": [
+   "Ring budget (buildRings): 146 of the 386 parts are ring tiles (RingC 24 + RingB 28+30 + RingA 32 + RingGlow 32). Rebuild the bands as stacked concentric thin discs (Cylinder with Rot {0,0,90} inside the RingSpin frame, centred on the planet): RingGlow r=3.1 thickness 0.06 (Neon RING_GLOW), RingA r=3.04 thickness 0.09 (Ice RING_A[1]), Cassini-gap disc r=2.89 thickness 0.10 colour \"#4a5a74\", RingB outer r=2.82 thickness 0.11 (RING_B[1]), RingB inner r=2.62 thickness 0.12 (RING_B[3]), RingC r=2.44 thickness 0.13 (RING_C[1], SmoothPlastic, opaque) - each smaller disc slightly thicker so only its annulus shows; the planet hides the disc centres. This frees ~140 parts and drops Neon from 74 to ~43.",
+   "Spend the freed budget back up to 385-400 on visible detail: 4 extra thin ringlet discs inside the B ring (alternating RING_B shades, +0.005 thickness steps), 10 more festoons + 3 storms on the planet, 2 more horn growth ridges per horn, eyelashes 3 -> 5 per eye, nostril rims, 4 more muzzle freckles, ear veins, toe knuckle creases and ankle tendons, and 2 more halo stars and 4 more twinkling ring stars to keep Neon in the Secret 40-80 band.",
+   "No pure white: Stardust colour \"#ffffff\" -> \"#fffdf4\"; first k:Particles Color \"#ffffff\" -> \"#fffaf2\"."
+  ],
+  "shouldFix": [
+   "Mini: give the Planet a band (swap Patch for a darker band ellipsoid) so it reads as Saturn, not a ball; eyes are already readable.",
+   "Add a subtle breathing Pulse 0.02 Speed 0.4 on the Planet core part (body sway exists, breathing does not)."
+  ],
+  "name": "La Vacca Saturno Saturnita"
+ }
+]
