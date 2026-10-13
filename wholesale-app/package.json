@@ -1,0 +1,12 @@
+{
+  "name": "wholesale-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-only real estate wholesaling toolkit (Connecticut). No paid APIs, no accounts, no cloud.",
+  "type": "module",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js"
+  }
+}
