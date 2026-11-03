@@ -52,6 +52,10 @@ body {
     repeating-linear-gradient(90deg, transparent 0 46px, rgba(255, 255, 255, 0.03) 46px 48px);
 }
 
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee { animation: marquee 40s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

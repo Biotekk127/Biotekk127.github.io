@@ -23,6 +23,9 @@ const icons: Record<string, React.ReactNode> = {
   repair: <path d="M8 40 L26 22 M22 10 a8 8 0 1 0 12 10 l6 6 -4 4 -6 -6 a8 8 0 0 1 -8 -14 z" />,
   siding: <path d="M8 12 H40 V40 H8 Z M8 19 H40 M8 26 H40 M8 33 H40" />,
   reno: <path d="M10 40 V18 L24 8 L38 18 V40 Z M19 40 V28 H29 V40 M30 6 L34 10" />,
+  deck: <path d="M4 22 H44 M8 22 V40 M40 22 V40 M24 22 V40 M4 30 H44 M8 22 V10 M40 22 V10 M8 12 H40" />,
+  bath: <path d="M6 24 H42 V30 a10 10 0 0 1 -10 10 H16 a10 10 0 0 1 -10 -10 Z M12 24 V10 a4 4 0 0 1 8 0 M14 40 L12 44 M34 40 L36 44" />,
+  paint: <path d="M8 8 H36 V18 H8 Z M36 13 H42 V26 H22 V32 M19 32 H25 V44 H19 Z" />,
 };
 
 function SectionTitle({ kicker, title, dark = false }: { kicker: string; title: React.ReactNode; dark?: boolean }) {
@@ -66,10 +69,10 @@ export default function Page() {
         <section className="border-y border-slate-ink/10 bg-bone">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 py-8 text-center sm:px-8 md:grid-cols-4">
             {[
-              ["Local", `Based in ${business.address.city}`],
-              ["Free", "Estimates"],
               [ratingText ? `${ratingText}★` : "—", ratingText ? "Google rating" : <Ph key="r">rating</Ph>],
-              [business.yearsInBusiness ? `${business.yearsInBusiness}+` : "—", business.yearsInBusiness ? "Years in business" : <Ph key="y">years</Ph>],
+              [business.reviewCount ?? "—", business.reviewCount ? "Google reviews" : <Ph key="c">review count</Ph>],
+              ["Same-day", "Quotes"],
+              ["Local", `Based in ${business.address.city}`],
             ].map(([big, small], i) => (
               <div key={i} data-reveal={i * 0.08}>
                 <p className="font-display text-3xl font-black text-slate-ink uppercase sm:text-4xl">{big}</p>
@@ -92,12 +95,15 @@ export default function Page() {
                     <Ph>Owner&apos;s story — how {business.name} started, who runs it, and what they care about.</Ph>
                   </p>
                 )}
-                <p>
-                  From full roof replacements to siding and renovation projects, {business.name} works on homes across{" "}
-                  {business.serviceArea ?? <Ph>service area towns</Ph>}. Every project starts with an honest look at your
-                  home and a clear estimate.
-                </p>
               </div>
+              <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+                {business.highlights.map((h, i) => (
+                  <li key={h.title} data-reveal={i * 0.08} className="border-l-4 border-copper bg-white p-5 shadow-lg shadow-slate-ink/5">
+                    <b className="block font-display text-lg uppercase">{h.title}</b>
+                    <span className="mt-1 block text-sm text-slate-ink/70">{h.body}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             <div data-reveal className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-deep shadow-2xl shadow-slate-ink/30">
               <div data-parallax="-12" className="shingles absolute -inset-10 bg-[linear-gradient(160deg,#1e3246,#0c1622)]" />
@@ -110,7 +116,7 @@ export default function Page() {
                 </div>
               )}
               <div className="absolute bottom-0 left-0 rounded-tr-2xl bg-copper px-6 py-4 font-display font-black text-slate-ink uppercase">
-                Locally owned · {business.address.city}
+                Owner-run · {business.address.city}
               </div>
             </div>
           </div>
@@ -119,8 +125,8 @@ export default function Page() {
         {/* services */}
         <section id="services" className="grain relative bg-slate-ink py-24 text-bone sm:py-32">
           <div className="mx-auto max-w-6xl px-4 sm:px-8">
-            <SectionTitle dark kicker="What we do" title="Roofing, siding & renovations." />
-            <div className="grid gap-5 sm:grid-cols-2">
+            <SectionTitle dark kicker="What we do" title="Roofs first. Then everything else." />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {business.services.map((s, i) => (
                 <article
                   key={s.title}
@@ -157,7 +163,7 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {(business.reviews.length ? business.reviews : [null, null, null]).map((r, i) => (
                 <figure key={i} data-reveal={i * 0.1} className="flex flex-col rounded-xl bg-white p-7 shadow-xl shadow-slate-ink/5">
                   <Stars value={r?.rating ?? 5} className="text-copper" />
@@ -177,8 +183,18 @@ export default function Page() {
               ))}
             </div>
 
+            <div className="relative mt-14 overflow-hidden border-y border-slate-ink/10 py-5 [mask-image:linear-gradient(90deg,transparent,#000_10%,#000_90%,transparent)]">
+              <div className="marquee flex w-max gap-12 whitespace-nowrap">
+                {[...business.shortQuotes, ...business.shortQuotes].map((q, i) => (
+                  <p key={i} className="text-slate-ink/80" aria-hidden={i >= business.shortQuotes.length}>
+                    <span className="text-copper">★★★★★</span> &ldquo;{q.text}&rdquo; <b className="text-slate-ink">— {q.name}</b>
+                  </p>
+                ))}
+              </div>
+            </div>
+
             <a data-reveal href={business.googleUrl} target="_blank" rel="noopener" className="mt-10 inline-flex items-center gap-2 font-display font-extrabold tracking-wide text-slate-ink uppercase underline decoration-copper decoration-4 underline-offset-8 hover:text-copper">
-              See us on Google →
+              See all {business.reviewCount} reviews on Google →
             </a>
           </div>
         </section>
@@ -255,10 +271,10 @@ export default function Page() {
           <div className="absolute -top-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-copper/20 blur-3xl" aria-hidden />
           <div className="relative mx-auto grid max-w-6xl gap-14 px-4 sm:px-8 lg:grid-cols-2">
             <div>
-              <SectionTitle dark kicker="Free estimate" title={<>Let&apos;s look at your roof.</>} />
+              <SectionTitle dark kicker="Get a quote" title={<>Let&apos;s look at your roof.</>} />
               <p data-reveal className="max-w-md text-lg text-bone/75">
-                Tell us what&apos;s going on: a leak, storm damage, an aging roof or a siding project. We&apos;ll get back to you with
-                next steps and an honest estimate.
+                Tell us what&apos;s going on: a leak, an aging roof, a new deck or a remodel. Shaun will get back to you with
+                next steps and a clear quote.
               </p>
               <a data-reveal href={business.phoneHref} className="mt-8 inline-block font-display text-4xl font-black text-copper hover:text-copper-light sm:text-5xl">
                 {business.phone}

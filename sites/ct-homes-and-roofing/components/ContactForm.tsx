@@ -14,7 +14,7 @@ export function ContactForm() {
     const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
     if (business.email) {
       const body = `Name: ${data.name}\nPhone: ${data.phone}\nAddress: ${data.address}\nService: ${data.service}\n\n${data.message}`;
-      window.location.href = `mailto:${business.email}?subject=${encodeURIComponent("Estimate request")}&body=${encodeURIComponent(body)}`;
+      window.location.href = `mailto:${business.email}?subject=${encodeURIComponent("Quote request")}&body=${encodeURIComponent(body)}`;
     }
     setSent(true);
   }
@@ -68,7 +68,7 @@ export function ContactForm() {
         <textarea name="message" rows={4} placeholder="Tell us about the project (leaks, storm damage, age of roof…)" className={field} />
       </label>
       <button className="rounded-md bg-copper px-7 py-4 font-display text-lg font-extrabold tracking-wide text-slate-ink uppercase transition hover:bg-copper-light sm:col-span-2">
-        Request My Free Estimate
+        Request My Quote
       </button>
     </form>
   );

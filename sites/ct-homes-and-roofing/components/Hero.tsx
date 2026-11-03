@@ -89,14 +89,14 @@ export function Hero() {
           <span className="text-copper">New England.</span>
         </h1>
         <p data-hero-in className="mt-6 max-w-xl text-lg text-bone/80 sm:text-xl">
-          {business.tagline}. Honest estimates, clean job sites, and roofs that hold up to every nor&apos;easter.
+          {business.tagline}. Same-day quotes, fair prices, and a crew that cleans up before they leave.
         </p>
         <div data-hero-in className="mt-9 flex flex-col gap-3 sm:flex-row">
           <a href={business.phoneHref} className="rounded-md bg-copper px-7 py-4 text-center font-display text-lg font-extrabold tracking-wide text-slate-ink uppercase shadow-lg shadow-copper/30 transition hover:bg-copper-light">
             Call {business.phone}
           </a>
           <a href="#contact" className="rounded-md border border-bone/30 px-7 py-4 text-center font-display text-lg font-extrabold tracking-wide uppercase transition hover:border-bone hover:bg-bone/10">
-            Free Estimate
+            Get a Quote
           </a>
         </div>
         <a data-hero-in href="#reviews" className="mt-10 inline-flex items-center gap-3 text-sm text-bone/80 hover:text-bone">

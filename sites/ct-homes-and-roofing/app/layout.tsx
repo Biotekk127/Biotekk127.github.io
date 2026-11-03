@@ -6,7 +6,7 @@ import { business, fullAddress } from "@/lib/business";
 const archivo = Archivo({ subsets: ["latin"], weight: ["600", "800", "900"], variable: "--font-archivo" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-const description = `${business.name} — roofing, roof repair, siding and home renovations in ${business.address.city}, ${business.address.region}. Call ${business.phone} for an estimate.`;
+const description = `${business.name} — roofing, roof repair, decks and home renovations in ${business.address.city}, ${business.address.region}. Call ${business.phone} for a quote.`;
 
 export const metadata: Metadata = {
   title: `${business.name} | Roofing Contractor in ${business.address.city}, CT`,
