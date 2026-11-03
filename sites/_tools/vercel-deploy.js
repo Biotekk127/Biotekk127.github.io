@@ -1,4 +1,5 @@
-// Deploy a static directory to Vercel as a preview via the REST API.
+// Deploy a static directory to Vercel via the REST API.
+// Targets production so the stable https://<name>.vercel.app link (the one sent to clients) always shows the latest build.
 // Usage (from a site folder, after `npm run build`):
 //   NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt node ../_tools/vercel-deploy.js out cyberedge-<slug>
 // Auth comes from the VERCEL_TOKEN network secret the environment adds to api.vercel.com requests.
@@ -16,7 +17,7 @@ const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDi
   }
   const r = await fetch(`${API}/v13/deployments?skipAutoDetectionConfirmation=1`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, files, projectSettings: { framework: null, buildCommand: '', outputDirectory: '.', installCommand: '' } }),
+    body: JSON.stringify({ name, files, target: 'production', projectSettings: { framework: null, buildCommand: '', outputDirectory: '.', installCommand: '' } }),
   });
   const j = await r.json(); if (!r.ok) throw new Error(JSON.stringify(j));
   console.log('id', j.id, 'url https://' + j.url);
