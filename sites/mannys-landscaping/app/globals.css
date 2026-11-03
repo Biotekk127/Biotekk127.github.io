@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-stone: #f1f0ea;
-  --color-stone-deep: #e4e2d8;
-  --color-char: #1b1e1c;
-  --color-char-soft: #2a2f2c;
-  --color-grass: #3f8a24;
-  --color-grass-light: #8bd157;
-  --color-slate: #56677a;
-  --color-sand: #d8c6a2;
+  --color-navy: #0f1a2e;
+  --color-navy-soft: #1a2741;
+  --color-navy-mid: #2b3d5e;
+  --color-cream: #f6efe2;
+  --color-beige: #eadcc3;
+  --color-sand: #d4bb8f;
+  --color-red: #b8322a;
+  --color-red-bright: #e4574b;
   --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
 }
@@ -18,17 +18,17 @@ html {
 }
 
 body {
-  background: var(--color-stone);
-  color: var(--color-char);
+  background: var(--color-cream);
+  color: var(--color-navy);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 /* paver bond pattern */
 .pavers {
-  background-color: var(--color-stone-deep);
-  background-image: linear-gradient(var(--color-stone) 3px, transparent 3px),
-    linear-gradient(90deg, var(--color-stone) 3px, transparent 3px);
+  background-color: var(--color-beige);
+  background-image: linear-gradient(var(--color-cream) 3px, transparent 3px),
+    linear-gradient(90deg, var(--color-cream) 3px, transparent 3px);
   background-size: 96px 48px, 96px 48px;
   background-position: 0 0, 48px 24px;
 }
@@ -62,6 +62,18 @@ body {
 .marquee {
   animation: marquee 30s linear infinite;
 }
+
+/* Manny mascot motion */
+@keyframes mallet-tap {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  70% { transform: rotate(-14deg); }
+  80% { transform: rotate(4deg); }
+}
+@keyframes bob {
+  50% { transform: translateY(-6px); }
+}
+.manny-mallet { transform-box: view-box; transform-origin: 66px 134px; animation: mallet-tap 2.6s ease-in-out infinite; }
+.manny-bob { animation: bob 3.2s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   html {

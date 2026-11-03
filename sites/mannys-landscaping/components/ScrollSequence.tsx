@@ -103,7 +103,7 @@ export function ScrollSequence({ manifest, beats }: { manifest: FrameManifest; b
 
   if (mode === "still") {
     return (
-      <section id="top" className="relative flex min-h-[100svh] items-end bg-char text-stone">
+      <section id="top" className="relative flex min-h-[100svh] items-end bg-navy text-cream">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={manifest.pattern.replace("%04d", "0001")} alt="Storefront" className="absolute inset-0 h-full w-full object-cover" />
         <div className="vignette absolute inset-0" />
@@ -113,23 +113,23 @@ export function ScrollSequence({ manifest, beats }: { manifest: FrameManifest; b
   }
 
   return (
-    <section ref={section} id="top" className="relative h-[450vh] bg-char text-stone">
+    <section ref={section} id="top" className="relative h-[450vh] bg-navy text-cream">
       <div className="sticky top-0 h-[100svh] overflow-hidden [perspective:1200px]">
         <div className="seq-frame grain absolute inset-0 origin-bottom">
           <canvas ref={canvas} className="h-full w-full" aria-label="Cinematic walk-up to the storefront" role="img" />
         </div>
         <div className="vignette pointer-events-none absolute inset-0" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-char/80 via-transparent to-char/40" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/80 via-transparent to-navy/40" />
         {beats.map((b, i) => (
           <div key={i} className={`seq-beat-${i} absolute inset-x-0 bottom-[18%] mx-auto max-w-5xl px-4 opacity-0 sm:px-8`}>
-            {b.kicker && <p className="mb-3 text-sm font-semibold tracking-[0.25em] text-grass-light uppercase">{b.kicker}</p>}
+            {b.kicker && <p className="mb-3 text-sm font-semibold tracking-[0.25em] text-red-bright uppercase">{b.kicker}</p>}
             <h2 className="font-display text-[clamp(2.4rem,7vw,6rem)] leading-[0.95] font-black tracking-tight uppercase">{b.title}</h2>
           </div>
         ))}
         {loaded < Math.min(12, manifest.count) && (
-          <div className="absolute inset-0 grid place-items-center bg-char">
-            <div className="h-1 w-48 overflow-hidden rounded bg-stone/10">
-              <div className="h-full bg-grass transition-all" style={{ width: `${(loaded / Math.min(12, manifest.count)) * 100}%` }} />
+          <div className="absolute inset-0 grid place-items-center bg-navy">
+            <div className="h-1 w-48 overflow-hidden rounded bg-cream/10">
+              <div className="h-full bg-red transition-all" style={{ width: `${(loaded / Math.min(12, manifest.count)) * 100}%` }} />
             </div>
           </div>
         )}

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: { title: business.name, description, type: "website", images: ["/photos/walkway.jpg"] },
 };
 
-export const viewport: Viewport = { themeColor: "#1b1e1c" };
+export const viewport: Viewport = { themeColor: "#0f1a2e" };
 
 const jsonLd = {
   "@context": "https://schema.org",
