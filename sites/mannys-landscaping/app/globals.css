@@ -1,20 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  --color-navy: #0f1a2e;
-  --color-navy-soft: #1a2741;
-  --color-navy-mid: #2b3d5e;
-  --color-cream: #f6efe2;
-  --color-beige: #eadcc3;
-  --color-sand: #d4bb8f;
+  --color-navy: #0c1526;
+  --color-navy-soft: #142036;
+  --color-navy-mid: #24344f;
+  --color-cream: #f5eee1;
+  --color-beige: #e9dcc4;
+  --color-sand: #cdb68c;
   --color-red: #b8322a;
-  --color-red-bright: #e4574b;
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
+  --color-red-bright: #e2554a;
+  --font-display: var(--font-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
+}
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
 }
 
 body {
@@ -22,15 +31,12 @@ body {
   color: var(--color-navy);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* paver bond pattern */
-.pavers {
-  background-color: var(--color-beige);
-  background-image: linear-gradient(var(--color-cream) 3px, transparent 3px),
-    linear-gradient(90deg, var(--color-cream) 3px, transparent 3px);
-  background-size: 96px 48px, 96px 48px;
-  background-position: 0 0, 48px 24px;
+::selection {
+  background: var(--color-red);
+  color: var(--color-cream);
 }
 
 .grain::after {
@@ -38,20 +44,58 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.07;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .vignette {
-  background: radial-gradient(ellipse at center, transparent 45%, rgba(10, 12, 11, 0.7) 100%);
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(8, 12, 22, 0.7) 100%);
 }
 
 .placeholder {
-  outline: 2px dashed #e0a800;
+  outline: 1.5px dashed #e0a800;
   outline-offset: 3px;
   background: repeating-linear-gradient(135deg, #fff7d6 0 10px, #fff1b8 10px 20px);
   color: #6b5200;
-  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+/* section index label, e.g. (03) */
+.idx {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* service rows: navy fill wipes up on hover */
+.row-fill {
+  position: relative;
+  isolation: isolate;
+}
+.row-fill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-navy);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+.row-fill:hover::before,
+.row-fill:focus-within::before {
+  transform: scaleY(1);
+}
+
+/* outline type for the footer wordmark */
+.outline-type {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 238, 225, 0.35);
 }
 
 @keyframes marquee {
@@ -60,25 +104,10 @@ body {
   }
 }
 .marquee {
-  animation: marquee 30s linear infinite;
+  animation: marquee 40s linear infinite;
 }
-
-/* Manny mascot motion */
-@keyframes mallet-tap {
-  0%, 60%, 100% { transform: rotate(0deg); }
-  70% { transform: rotate(-14deg); }
-  80% { transform: rotate(4deg); }
-}
-@keyframes bob {
-  50% { transform: translateY(-6px); }
-}
-.manny-mallet { transform-box: view-box; transform-origin: 66px 134px; animation: mallet-tap 2.6s ease-in-out infinite; }
-.manny-bob { animation: bob 3.2s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   *,
   *::before,
   *::after {

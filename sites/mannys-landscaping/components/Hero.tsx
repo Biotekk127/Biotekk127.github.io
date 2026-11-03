@@ -4,12 +4,8 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { business } from "@/lib/business";
-import { Manny } from "./Manny";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const COLS = 5;
-const ROWS = 6;
 
 export function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -17,34 +13,22 @@ export function Hero() {
   useEffect(() => {
     const el = root.current;
     if (!el) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = gsap.context(() => {
-      gsap.from("[data-hero-in]", { y: 36, opacity: 0, duration: 1, ease: "power3.out", stagger: 0.1 });
-      if (reduce) {
-        gsap.set(".paver-tile", { opacity: 0 });
-        return;
-      }
-      // photo revealed paver by paver, laid from the bottom of the path up
-      gsap.to(".paver-tile", {
-        opacity: 0,
-        scale: 0.6,
-        rotateX: 70,
-        duration: 0.55,
-        ease: "power2.in",
-        stagger: { grid: [ROWS, COLS], from: "end", amount: 1.3 },
-        delay: 0.3,
-      });
-      gsap.from(".manny-pop", { y: 80, opacity: 0, rotate: -12, duration: 0.9, ease: "back.out(1.8)", delay: 1.7 });
-      gsap.from(".hero-photo img", { scale: 1.25, duration: 2.6, ease: "power2.out", delay: 0.2 });
-      // scroll: path tilts back in 3D like you're stepping onto it
-      gsap.to(".hero-photo", {
-        rotateX: 22,
-        y: 60,
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+      tl.from(".hero-line > span", { yPercent: 115, duration: 1.4, stagger: 0.1 }, 0.1)
+        .from(".hero-fade", { y: 24, opacity: 0, duration: 1.1, stagger: 0.08 }, 0.6)
+        .fromTo(".hero-media", { clipPath: "inset(100% 0% 0% 0% round 1.75rem)" }, { clipPath: "inset(0% 0% 0% 0% round 1.75rem)", duration: 1.6 }, 0.45)
+        .from(".hero-media img", { scale: 1.35, duration: 2.2 }, 0.45);
+      gsap.to(".hero-media img", {
+        yPercent: 10,
+        scale: 1.08,
         ease: "none",
         scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true },
       });
-      gsap.to(".hero-photo img", {
-        scale: 1.15,
+      gsap.to(".hero-title", {
+        yPercent: -18,
+        opacity: 0.25,
         ease: "none",
         scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true },
       });
@@ -55,53 +39,63 @@ export function Hero() {
   const photo = business.photos[0];
 
   return (
-    <section ref={root} id="top" className="relative overflow-hidden bg-navy pt-24 pb-16 text-cream sm:pt-32 sm:pb-24">
-      <div className="pointer-events-none absolute -top-40 -left-40 h-[36rem] w-[36rem] rounded-full bg-red/20 blur-3xl" aria-hidden />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-8 lg:grid-cols-[1.15fr_1fr]">
-        <div>
-          <p data-hero-in className="inline-flex items-center gap-2 rounded-full bg-red/15 px-4 py-1.5 text-sm font-medium text-red-bright">
-            <span className="h-2 w-2 rounded-full bg-red-bright" /> Landscaping &amp; hardscape · {business.address.city}, CT
-          </p>
-          <h1 data-hero-in className="mt-6 font-display text-[clamp(3rem,8.5vw,6.8rem)] leading-[0.9] font-extrabold tracking-tight">
-            Every cut,
-            <br />
-            <span className="text-red-bright">every detail.</span>
-          </h1>
-          <p data-hero-in className="mt-7 max-w-lg text-lg leading-relaxed text-cream/75">
-            Paver walkways, stone steps, landscaping and seasonal yard care from {business.ownerName} and his crew in{" "}
-            {business.address.city}.
-          </p>
-          <div data-hero-in className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <a href={business.phoneHref} className="rounded-xl bg-red px-7 py-4 text-center font-display text-lg font-bold text-cream shadow-lg shadow-red/30 transition hover:bg-red-bright">
-              Call {business.phone}
-            </a>
-            <a href="#contact" className="rounded-xl border border-cream/25 px-7 py-4 text-center font-display text-lg font-bold transition hover:border-cream hover:bg-cream/10">
-              Get a quote
-            </a>
-          </div>
+    <section ref={root} id="top" className="grain relative overflow-hidden bg-navy pt-28 pb-10 text-cream sm:pt-36">
+      <div className="pointer-events-none absolute top-0 right-0 h-[40rem] w-[40rem] translate-x-1/3 -translate-y-1/3 rounded-full bg-red/20 blur-[120px]" aria-hidden />
+
+      <div className="relative mx-auto max-w-[88rem] px-4 sm:px-8">
+        <div className="hero-fade flex items-center justify-between border-b border-cream/15 pb-5 text-cream/60">
+          <span className="idx">(01) Landscaping &amp; Hardscape</span>
+          <span className="idx hidden sm:block">Willimantic, Connecticut</span>
         </div>
 
-        <div className="relative [perspective:1100px]">
-          <figure data-hero-in className="hero-photo relative aspect-[850/815] origin-bottom overflow-hidden rounded-3xl shadow-2xl shadow-black/50 ring-1 ring-cream/10">
+        <h1 className="hero-title mt-10 font-display text-[clamp(3.4rem,11.5vw,11.5rem)] leading-[0.86] font-semibold tracking-[-0.055em]">
+          <span className="hero-line block overflow-hidden pb-[0.06em]">
+            <span className="block">Every cut,</span>
+          </span>
+          <span className="hero-line block overflow-hidden pb-[0.06em]">
+            <span className="block">
+              every <em className="font-serif font-normal tracking-[-0.02em] text-red-bright italic">detail.</em>
+            </span>
+          </span>
+        </h1>
+
+        <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-8">
+          <div className="flex flex-col justify-between gap-10 lg:col-span-4">
+            <p className="hero-fade max-w-sm text-lg leading-relaxed text-cream/70">
+              Paver walkways, stone steps and year-round yard care, built by {business.ownerName} and his crew in{" "}
+              {business.address.city}.
+            </p>
+            <div className="hero-fade flex flex-wrap items-center gap-3">
+              <a data-magnetic href={business.phoneHref} className="inline-flex items-center gap-3 rounded-full bg-red py-2 pr-2 pl-6 font-medium text-cream transition-colors hover:bg-red-bright">
+                Call {business.phone}
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-navy" aria-hidden>
+                  ↗
+                </span>
+              </a>
+              <a href="#contact" className="rounded-full px-5 py-4 font-medium text-cream/80 underline decoration-cream/30 underline-offset-8 transition hover:text-cream hover:decoration-cream">
+                Request a quote
+              </a>
+            </div>
+            <a href="#reviews" className="hero-fade flex items-center gap-4 border-t border-cream/15 pt-5 text-sm text-cream/60 hover:text-cream">
+              <span className="font-display text-3xl font-semibold tracking-tight text-cream">{business.rating.toFixed(1)}</span>
+              <span>
+                <span className="text-red-bright">★★★★</span>
+                <span className="text-cream/30">★</span>
+                <br />
+                {business.reviewCount} reviews on Google
+              </span>
+            </a>
+          </div>
+
+          <figure className="hero-media relative aspect-[16/10] overflow-hidden rounded-[1.75rem] lg:col-span-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={photo.src} alt={photo.alt} className="h-full w-full object-cover" fetchPriority="high" />
-            <div className="pointer-events-none absolute inset-0 grid [perspective:600px]" style={{ gridTemplateColumns: `repeat(${COLS},1fr)`, gridTemplateRows: `repeat(${ROWS},1fr)` }} aria-hidden>
-              {Array.from({ length: COLS * ROWS }, (_, i) => (
-                <span key={i} className="paver-tile border border-navy/60 bg-navy-mid" />
-              ))}
-            </div>
-            <figcaption className="absolute right-4 bottom-4 rounded-full bg-navy/80 px-4 py-2 text-sm text-cream backdrop-blur">
-              Paver walkway · recent job
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent" />
+            <figcaption className="absolute right-5 bottom-5 left-5 flex items-end justify-between text-sm text-cream">
+              <span className="font-serif text-2xl italic">Curved paver walkway</span>
+              <span className="idx text-cream/70">Recent job</span>
             </figcaption>
           </figure>
-          <div className="manny-pop pointer-events-none absolute -bottom-10 -left-6 z-10 w-28 sm:-left-14 sm:w-40">
-            <div className="manny-bob">
-              <Manny />
-            </div>
-            <span className="absolute -top-8 left-16 rounded-2xl rounded-bl-sm bg-cream px-3 py-1.5 font-display text-sm font-bold whitespace-nowrap text-navy shadow-lg sm:-top-6 sm:left-24">
-              Hi, I&apos;m Manny!
-            </span>
-          </div>
         </div>
       </div>
     </section>
