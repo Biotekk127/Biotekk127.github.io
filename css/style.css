@@ -282,6 +282,10 @@ img {
   border: 1px solid var(--border);
 }
 
+.feature + .feature {
+  margin-top: var(--sp-24);
+}
+
 .feature-body {
   margin-top: var(--sp-8);
   max-width: 68ch;
