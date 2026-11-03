@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-slate-ink: #0c1622;
+  --color-slate-deep: #13212f;
+  --color-slate-mid: #1e3246;
+  --color-copper: #d9822b;
+  --color-copper-light: #f0a451;
+  --color-bone: #f5f1ea;
+  --color-stone: #8a97a5;
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bone);
+  color: var(--color-slate-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vignette {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(5, 10, 16, 0.75) 100%);
+}
+
+.placeholder {
+  outline: 2px dashed #e0a800;
+  outline-offset: 3px;
+  background: repeating-linear-gradient(135deg, #fff7d6 0 10px, #fff1b8 10px 20px);
+  color: #6b5200;
+}
+
+.shingles {
+  background-image: repeating-linear-gradient(
+      0deg,
+      transparent 0 22px,
+      rgba(255, 255, 255, 0.04) 22px 24px
+    ),
+    repeating-linear-gradient(90deg, transparent 0 46px, rgba(255, 255, 255, 0.03) 46px 48px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
